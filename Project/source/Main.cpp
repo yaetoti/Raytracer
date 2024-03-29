@@ -1,10 +1,9 @@
+#define NOMINMAX
+
 #include <Windows.h>
 #include <ConsoleLib/Console.h>
+#include <Engine/source/utils/FpsTimer.h>
 
-#include <gdiplus.h>
-#pragma comment(lib, "Gdiplus.lib")
-
-using namespace Gdiplus;
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     return DefWindowProcW(hWnd, msg, wParam, lParam);
@@ -34,7 +33,7 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
     }
 
     HWND hWnd = CreateWindowExW(
-        WS_EX_OVERLAPPEDWINDOW,
+        0,
         wc.lpszClassName,
         L"Dragons Ray",
         WS_OVERLAPPEDWINDOW,
@@ -63,7 +62,7 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
     BITMAPINFO info = { };
     info.bmiHeader.biSize = sizeof(BITMAPINFO);
     info.bmiHeader.biWidth = width;
-    info.bmiHeader.biHeight = height;
+    info.bmiHeader.biHeight = -height;
     info.bmiHeader.biPlanes = 1;
     info.bmiHeader.biBitCount = 24;
     info.bmiHeader.biCompression = BI_RGB;
@@ -72,8 +71,25 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
     info.bmiHeader.biClrImportant = 0;
 
     MSG message;
+    FpsTimer timer;
+
+    // FPS limiter
+    //double renderTimer = 0.0;
+    int targetFps = 69;
+    double renderDelta = 1.0 / targetFps;
+    double renderAccumulator = 0.0;
+    // FPS counter
+    int frames = 0;
+    int lastFps = 0;
+    double fpsElapsed = 0.0;
 
     while (true) {
+        // Timer
+        double elapsedTime = timer.Tick();
+        fpsElapsed += elapsedTime;
+        renderAccumulator = std::max(renderAccumulator + elapsedTime, renderDelta);
+
+        // Input
         while (PeekMessageW(&message, nullptr, 0, 0, PM_REMOVE)) {
             if (message.message == WM_QUIT) {
                 return static_cast<int>(message.wParam);
@@ -81,8 +97,55 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
 
             TranslateMessage(&message);
             DispatchMessageW(&message);
+        }
 
-            StretchDIBits(dc, 0, 0, width, height, 0, 0, width, height, framebuffer, &info, DIB_RGB_COLORS, SRCCOPY);
+        // Update
+        static bool goUp = true;
+        static float coef = 0.0f;
+
+        if (goUp) {
+            coef += renderAccumulator;
+            if (coef >= 1.0f) {
+                coef = 1.0f;
+                goUp = false;
+            }
+        }
+        else {
+            coef -= renderAccumulator;
+            if (coef <= 0.0f) {
+                coef = 0.0f;
+                goUp = true;
+            }
+        }
+
+        // FPS counter
+        if (fpsElapsed >= 1.0) {
+            fpsElapsed = 0.0;
+            lastFps = frames;
+            frames = 0;
+            Console::GetInstance()->WPrintF(L"FPS: %d\n", lastFps);
+        }
+
+        // Render
+        //renderTimer = 0.0;
+        // FPS counter
+        ++frames;
+
+        for (int i = 0; i < height; ++i) {
+            for (int j = 0; j < width; ++j) {
+                framebuffer[(i * width + j) * 3 + 0] = coef * 255;
+                framebuffer[(i * width + j) * 3 + 1] = coef * 178;
+                framebuffer[(i * width + j) * 3 + 2] = coef * 128;
+            }
+        }
+
+        StretchDIBits(dc, 0, 0, 1920, 1080, 0, 0, width, height, framebuffer, &info, DIB_RGB_COLORS, SRCCOPY);
+
+        renderAccumulator = 0.0;
+
+        // Sleep
+        while (FpsTimer::Duration(FpsTimer::Clock::now() - timer.GetCurrentTimePoint()).count() < renderDelta) {
+            std::this_thread::yield();
         }
     }
 
