@@ -201,7 +201,11 @@ struct TVec4 final {
 
     // Functions
     T Length() const {
-        return sqrt(Dot(*this));
+        return sqrt(SquaredLength());
+    }
+
+    T SquaredLength() const {
+        return Dot(*this);
     }
 
     TVec4& Normalize() {

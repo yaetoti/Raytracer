@@ -6,24 +6,24 @@
 
 template <typename T>
 struct TRay3 final {
-    TVec3<T> center;
+    TVec3<T> origin;
     TVec3<T> direction;
 
-    explicit TRay3(const TVec3<T>& center, const TVec3<T>& direction)
-    : center(center), direction(direction) {
+    explicit TRay3(const TVec3<T>& origin, const TVec3<T>& direction)
+    : origin(origin), direction(direction) {
     }
 
     TVec3<T> AtParameter(T t) const {
-        return center + t * direction;
+        return origin + t * direction;
     }
 
     friend std::ostream& operator<<(std::ostream& out, const TRay3 ray) {
-        out << "{ C: " << ray.center << ", D: " << ray.direction << " }";
+        out << "{ C: " << ray.origin << ", D: " << ray.direction << " }";
         return out;
     }
 
     friend std::wostream& operator<<(std::wostream& out, const TRay3 ray) {
-        out << L"{ C: " << ray.center << L", D: " << ray.direction << L" }";
+        out << L"{ C: " << ray.origin << L", D: " << ray.direction << L" }";
         return out;
     }
 };

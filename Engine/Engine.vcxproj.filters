@@ -30,6 +30,9 @@
     <ClInclude Include="source\math\TRay3.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="source\math\TSphere.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\utils\FpsTimer.cpp">

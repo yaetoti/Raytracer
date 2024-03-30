@@ -13,12 +13,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
     Console::GetInstance()->RedirectStdHandles();
 
-    Vec4d vec(1, 0, 0, 22);
-    Vec3f vec2(0, 0, 1);
-    Ray3f ray(Vec3f(0, 0, 0), Vec3f(1, 1, 1).Normalized());
+    SphereF sphere(Vec3F(0, 0, -5), 0.5);
+    Ray3F ray(Vec3F(0, 0, 0), Vec3F(0, 0, -1).Normalized());
 
     std::wcout << ray << L'\n';
     std::wcout << ray.AtParameter(30) << L'\n';
+    std::wcout << sphere << L'\n';
+    std::wcout << sphere.Hit(ray) << L'\n';
 
     Console::GetInstance()->Pause();
 
