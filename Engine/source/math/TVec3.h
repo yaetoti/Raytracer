@@ -218,6 +218,11 @@ TVec3<T> operator+(const TVec3<T>& v, const T& scalar) {
     return TVec3<T>(v) += scalar;
 }
 
+template <typename T>
+TVec3<T> operator+(const T& scalar, const TVec3<T>& v) {
+    return TVec3<T>(v) += scalar;
+}
+
 template <typename T, typename U>
 TVec3<T> operator+(const TVec3<T>& v1, const TVec3<U>& v2) {
     return TVec3<T>(v1) += v2;
@@ -237,6 +242,11 @@ TVec3<T> operator-(const TVec3<T>& v1, const TVec3<U>& v2) {
 // Mul
 template <typename T>
 TVec3<T> operator*(const TVec3<T>& v, const T& scalar) {
+    return TVec3<T>(v) *= scalar;
+}
+
+template <typename T>
+TVec3<T> operator*(const T& scalar, const TVec3<T>& v) {
     return TVec3<T>(v) *= scalar;
 }
 

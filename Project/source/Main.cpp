@@ -15,10 +15,10 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
 
     Vec4d vec(1, 0, 0, 22);
     Vec3f vec2(0, 0, 1);
+    Ray3f ray(Vec3f(0, 0, 0), Vec3f(1, 1, 1).Normalized());
 
-    std::wcout << vec << L'\n';
-    std::wcout << vec2 << L'\n';
-    std::wcout << vec.Cross(static_cast<Vec4f>(vec2)) << L'\n';
+    std::wcout << ray << L'\n';
+    std::wcout << ray.AtParameter(30) << L'\n';
 
     Console::GetInstance()->Pause();
 
@@ -86,7 +86,7 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
 
     // FPS limiter
     //double renderTimer = 0.0;
-    int targetFps = 10;
+    int targetFps = 120;
     double renderDelta = 1.0 / targetFps;
     double renderAccumulator = 0.0;
     // FPS counter

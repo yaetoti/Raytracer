@@ -127,6 +127,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="source\math\TRay3.h" />
     <ClInclude Include="source\math\TVec4.h" />
     <ClInclude Include="source\math\Vector.h" />
     <ClInclude Include="source\utils\FpsTimer.h" />
