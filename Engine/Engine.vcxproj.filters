@@ -18,6 +18,15 @@
     <ClInclude Include="source\utils\FpsTimer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="source\math\TVec3.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\math\Vector.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\math\TVec4.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\utils\FpsTimer.cpp">

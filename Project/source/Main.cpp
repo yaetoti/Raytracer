@@ -1,9 +1,10 @@
 #define NOMINMAX
 
+#include <iostream>
 #include <Windows.h>
 #include <ConsoleLib/Console.h>
 #include <Engine/source/utils/FpsTimer.h>
-
+#include <Engine/source/math/Vector.h>
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     return DefWindowProcW(hWnd, msg, wParam, lParam);
@@ -11,6 +12,16 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
 int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
     Console::GetInstance()->RedirectStdHandles();
+
+    Vec4d vec(1, 0, 0, 22);
+    Vec3f vec2(0, 0, 1);
+
+    std::wcout << vec << L'\n';
+    std::wcout << vec2 << L'\n';
+    std::wcout << vec.Cross(static_cast<Vec4f>(vec2)) << L'\n';
+
+    Console::GetInstance()->Pause();
+
     Console::GetInstance()->WPrintF(L"Çהאנמגא, קונעט!\n");
 
     WNDCLASSEX wc = { };
@@ -35,7 +46,7 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
     HWND hWnd = CreateWindowExW(
         0,
         wc.lpszClassName,
-        L"Dragons Ray",
+        L"Dragons' Rays",
         WS_OVERLAPPEDWINDOW,
         CW_USEDEFAULT, CW_USEDEFAULT, 1366, 768,
         nullptr, nullptr, GetModuleHandleW(nullptr), nullptr);
@@ -75,7 +86,7 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
 
     // FPS limiter
     //double renderTimer = 0.0;
-    int targetFps = 69;
+    int targetFps = 10;
     double renderDelta = 1.0 / targetFps;
     double renderAccumulator = 0.0;
     // FPS counter
