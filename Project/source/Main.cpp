@@ -1,5 +1,6 @@
 #define NOMINMAX
 
+#include <random>
 #include <iostream>
 #include <Windows.h>
 #include <ConsoleLib/Console.h>
@@ -13,7 +14,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
     Console::GetInstance()->RedirectStdHandles();
 
-    SphereF sphere(Vec3F(0, 0, -500), 100);
+    SphereF sphere(Vec3F(0, 0, -500), 200);
     //Ray3F ray(Vec3F(0, 0, 0), Vec3F(0, 0, -1).Normalized());
 
     //std::wcout << ray << L'\n';
@@ -44,8 +45,8 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
         return 1;
     }
 
-    int width = 800;
-    int height = 800;
+    int width = 500;
+    int height = 500;
 
     HWND hWnd = CreateWindowExW(
         0,
@@ -144,23 +145,51 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
         // FPS counter
         ++frames;
 
+        Vec3I skyColor(128, 178, 255);
+        Vec3I sphereColor(70, 128, 255);
+
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_real_distribution<float> dis;
+
+        Vec3F unit(1, 1, 0);
+
         for (int i = 0; i < height; ++i) {
             for (int j = 0; j < width; ++j) {
                 //float x = j / static_cast<float>(height) * 2 - 1;
                 //float y = i / static_cast<float>(height) * 2 - 1;
                 float x = j - width / 2;
                 float y = i - height / 2;
-                Ray3F ray(Vec3F(x, y, 0), Vec3F(0, 0, -1).Normalized());
 
-                if (sphere.Hit(ray)) {
-                    framebuffer[(i * width + j) * 3 + 0] = 255;
-                    framebuffer[(i * width + j) * 3 + 1] = 128;
-                    framebuffer[(i * width + j) * 3 + 2] = 70;
-                } else {
-                    framebuffer[(i * width + j) * 3 + 0] = 255;
-                    framebuffer[(i * width + j) * 3 + 1] = 178;
-                    framebuffer[(i * width + j) * 3 + 2] = 128;
+                int rays = 20;
+                Vec3I resultColor;
+                for (int k = 0; k < rays; ++k) {
+                    Ray3F ray(Vec3F(x, y, 0) + unit * dis(gen), Vec3F(0, 0, -1).Normalized());
+                    if (sphere.Hit(ray)) {
+                        resultColor += sphereColor;
+                    } else {
+                        resultColor += skyColor;
+                    }
                 }
+
+                resultColor /= rays;
+                framebuffer[(i * width + j) * 3 + 0] = resultColor.b;
+                framebuffer[(i * width + j) * 3 + 1] = resultColor.g;
+                framebuffer[(i * width + j) * 3 + 2] = resultColor.r;
+
+                // Ray3F ray(Vec3F(x, y, 0), Vec3F(0, 0, -1).Normalized());
+
+
+
+                //if (sphere.Hit(ray)) {
+                //    framebuffer[(i * width + j) * 3 + 0] = sphereColor.b;
+                //    framebuffer[(i * width + j) * 3 + 1] = sphereColor.g;
+                //    framebuffer[(i * width + j) * 3 + 2] = sphereColor.r;
+                //} else {
+                //    framebuffer[(i * width + j) * 3 + 0] = skyColor.b;
+                //    framebuffer[(i * width + j) * 3 + 1] = skyColor.g;
+                //    framebuffer[(i * width + j) * 3 + 2] = skyColor.r;
+                //}
             }
         }
 
