@@ -13,13 +13,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
     Console::GetInstance()->RedirectStdHandles();
 
-    SphereF sphere(Vec3F(0, 0, -5), 0.5);
-    Ray3F ray(Vec3F(0, 0, 0), Vec3F(0, 0, -1).Normalized());
+    SphereF sphere(Vec3F(0, 0, -500), 100);
+    //Ray3F ray(Vec3F(0, 0, 0), Vec3F(0, 0, -1).Normalized());
 
-    std::wcout << ray << L'\n';
-    std::wcout << ray.AtParameter(30) << L'\n';
+    //std::wcout << ray << L'\n';
+    //std::wcout << ray.AtParameter(30) << L'\n';
     std::wcout << sphere << L'\n';
-    std::wcout << sphere.Hit(ray) << L'\n';
+    //std::wcout << sphere.Hit(ray) << L'\n';
 
     Console::GetInstance()->Pause();
 
@@ -44,22 +44,23 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
         return 1;
     }
 
+    int width = 800;
+    int height = 800;
+
     HWND hWnd = CreateWindowExW(
         0,
         wc.lpszClassName,
         L"Dragons' Rays",
         WS_OVERLAPPEDWINDOW,
-        CW_USEDEFAULT, CW_USEDEFAULT, 1366, 768,
+        CW_USEDEFAULT, CW_USEDEFAULT, width, height,
         nullptr, nullptr, GetModuleHandleW(nullptr), nullptr);
     if (hWnd == nullptr) {
         return 1;
     }
 
-    ShowWindow(hWnd, SW_SHOWMAXIMIZED);
+    //ShowWindow(hWnd, SW_SHOWMAXIMIZED);
+    ShowWindow(hWnd, SW_SHOW);
     UpdateWindow(hWnd);
-
-    int width = 800;
-    int height = 600;
 
     BYTE* framebuffer = new BYTE[width * height * 3];
     for (int i = 0; i < height; ++i) {
@@ -113,19 +114,19 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
 
         // Update
         static bool goUp = true;
-        static float coef = 0.0f;
+        static float coef = 0.5f;
 
         if (goUp) {
-            coef += renderAccumulator;
+            coef += renderAccumulator / 4;
             if (coef >= 1.0f) {
                 coef = 1.0f;
                 goUp = false;
             }
         }
         else {
-            coef -= renderAccumulator;
-            if (coef <= 0.0f) {
-                coef = 0.0f;
+            coef -= renderAccumulator / 4;
+            if (coef <= 0.5f) {
+                coef = 0.5f;
                 goUp = true;
             }
         }
@@ -145,13 +146,25 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
 
         for (int i = 0; i < height; ++i) {
             for (int j = 0; j < width; ++j) {
-                framebuffer[(i * width + j) * 3 + 0] = coef * 255;
-                framebuffer[(i * width + j) * 3 + 1] = coef * 178;
-                framebuffer[(i * width + j) * 3 + 2] = coef * 128;
+                //float x = j / static_cast<float>(height) * 2 - 1;
+                //float y = i / static_cast<float>(height) * 2 - 1;
+                float x = j - width / 2;
+                float y = i - height / 2;
+                Ray3F ray(Vec3F(x, y, 0), Vec3F(0, 0, -1).Normalized());
+
+                if (sphere.Hit(ray)) {
+                    framebuffer[(i * width + j) * 3 + 0] = 255;
+                    framebuffer[(i * width + j) * 3 + 1] = 128;
+                    framebuffer[(i * width + j) * 3 + 2] = 70;
+                } else {
+                    framebuffer[(i * width + j) * 3 + 0] = 255;
+                    framebuffer[(i * width + j) * 3 + 1] = 178;
+                    framebuffer[(i * width + j) * 3 + 2] = 128;
+                }
             }
         }
 
-        StretchDIBits(dc, 0, 0, 1920, 1080, 0, 0, width, height, framebuffer, &info, DIB_RGB_COLORS, SRCCOPY);
+        StretchDIBits(dc, 0, 0, width, height, 0, 0, width, height, framebuffer, &info, DIB_RGB_COLORS, SRCCOPY);
 
         renderAccumulator = 0.0;
 
