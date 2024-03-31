@@ -15,7 +15,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         WORD width = LOWORD(lParam);
         WORD height = HIWORD(lParam);
         framebuffer.Resize(width, height);
-        std::wcout << framebuffer.GetWidth() << ", " << framebuffer.GetHeight() << "\n";
         return 0;
     }
 
@@ -25,7 +24,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
     Console::GetInstance()->RedirectStdHandles();
 
-    SphereF sphere(Vec3F(100, 100, -500), 200);
+    SphereF sphere(Vec3F(0, 0, -180), 200);
     std::wcout << sphere << L'\n';
 
     Console::GetInstance()->Pause();
@@ -174,8 +173,6 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
         info.bmiHeader.biBitCount = 32;
         info.bmiHeader.biCompression = BI_RGB;
         HDC dc = GetDC(hWnd);
-        std::cout << width << "x" << height << '\n';
-        // SetDIBitsToDevice(dc, 0, 0, 500, 500, 0, 0, 0, 500, framebuffer.GetData(), &info, DIB_RGB_COLORS);
         StretchDIBits(dc, 0, 0, width, height, 0, 0, width, height, framebuffer.GetData(), &info, DIB_RGB_COLORS, SRCCOPY);
         ReleaseDC(hWnd, dc);
 

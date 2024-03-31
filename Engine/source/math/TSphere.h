@@ -22,7 +22,12 @@ struct TSphere final {
         T c = oc.SquaredLength() - radius * radius;
         T d = b * b - 4 * a * c;
 
-        return d > 0;
+        if (d > 0) {
+            T t = (-b - sqrt(d)) / (2 * a);
+            return t >= 0;
+        }
+
+        return false;
     }
 
     friend std::ostream& operator<<(std::ostream& out, const TSphere& s) {
