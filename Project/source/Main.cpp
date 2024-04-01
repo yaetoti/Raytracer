@@ -9,7 +9,9 @@
 #include <Engine/source/render/Framebuffer.h>
 #include <Engine/source/window/Window.h>
 
-SphereF sphere(Vec3F(0, 0, -180), 0.5);
+SphereF sphere(Vec3F(0, 0, -2), 0.5f);
+SphereF sphere1(Vec3F(0.8f, 0.8f, -1.0f), 0.4f);
+SphereF sphere2(Vec3F(0, -10.5f, -2.0f), 10.0f);
 Framebuffer framebuffer(800, 600);
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
@@ -23,21 +25,63 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     return DefWindowProcW(hWnd, msg, wParam, lParam);
 }
 
+//Vec3I Color(const Ray3F& ray) {
+//    Vec3I skyColor(128, 178, 255);
+//    Vec3I sphereColor(70, 128, 255);
+//
+//    if (sphere.Hit(ray)) {
+//        return sphereColor;
+//    }
+//    else {
+//        return skyColor;
+//    }
+//}
+
+bool Scatter(const Ray3F& ray, const HitRecord<float>& record, Ray3F& scattered, Vec3F& attenuation) {
+    Vec3F reflected = ray.direction.Reflect(record.normal);
+    scattered = Ray3F(record.point, reflected);
+    attenuation = Vec3F(0.95f);
+    return reflected.Dot(record.normal) > 0;
+}
+
+Vec3F Color(const Ray3F& ray, int depth) {
+    Vec3F skyColor(0.5f, 0.7f, 1.0f);
+    Vec3F sphereColor(0.28f, 0.5f, 1.0f);
+    Vec3F sphere1Color(0.28f, 1.0f, 0.5f);
+    Vec3F sphere2Color(1.0f, 0.28f, 0.5f);
+
+    HitRecord<float> record;
+    if (sphere1.Hit(ray, 0.01f, std::numeric_limits<float>::max(), record)) {
+        return sphere1Color * (ray.direction.y + 1) * 0.5f;
+    }
+
+    //if (sphere2.Hit(ray, 0.01f, std::numeric_limits<float>::max(), record)) {
+    //    return sphere2Color * (ray.origin.x + 1) * 0.5f;
+    //}
+
+    if (sphere.Hit(ray, 0.01f, std::numeric_limits<float>::max(), record)) {
+        Ray3F scattered;
+        Vec3F attenuation;
+
+        if (depth < 3 && Scatter(ray, record, scattered, attenuation)) {
+            return attenuation * Color(scattered, depth + 1);
+        } else {
+            return Vec3F(0.0f);
+        }
+    }
+
+    float t = (ray.direction.y + 1) * 0.5f;
+    return skyColor * t + (1.0f - t) * Vec3F(1.0f);
+}
+
 int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
     Console::GetInstance()->RedirectStdHandles();
     Console::GetInstance()->WPrintF(L"Çהאנמגא, קונעט!\n");
 
 
-    Vec3F v1(1, 1, 0);
-    std::cout << v1 << '\n';
-    std::cout << v1.Reflect(Vec3F(1, 0, 0)) << '\n';
-
-
-    Console::GetInstance()->Pause();
-
     Window window;
     window.GetSizeDispatcher()->AddListener([](WORD width, WORD height) {
-        framebuffer.Resize(width / 8, height / 8);
+        framebuffer.Resize(width / 1, height / 1);
     });
 
     window.CreateResources();
@@ -86,9 +130,6 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
         ++frames;
 
         /// Render
-        Vec3I skyColor(128, 178, 255);
-        Vec3I sphereColor(70, 128, 255);
-
         int rays = 10;
         float raysScale = 1.0f / rays;
 
@@ -112,14 +153,11 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
                 Vec3F resultColor;
                 for (int k = 0; k < rays; ++k) {
                     Ray3F ray(Vec3F(x, y, 0) + unit * dis(gen), Vec3F(0, 0, -1));
-                    if (sphere.Hit(ray)) {
-                        resultColor += sphereColor;
-                    } else {
-                        resultColor += skyColor;
-                    }
+                    resultColor += Color(ray, 0);
                 }
 
                 resultColor *= raysScale;
+                resultColor *= 255.0f;
                 framebuffer.SetPixel(j, i, static_cast<BYTE>(resultColor.r), static_cast<BYTE>(resultColor.g), static_cast<BYTE>(resultColor.b));
             }
         }
