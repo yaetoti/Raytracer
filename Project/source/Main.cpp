@@ -9,7 +9,7 @@
 #include <Engine/source/render/Framebuffer.h>
 #include <Engine/source/window/Window.h>
 
-SphereF sphere(Vec3F(0, 0, -180), 200);
+SphereF sphere(Vec3F(0, 0, -180), 0.5);
 Framebuffer framebuffer(800, 600);
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
@@ -28,11 +28,12 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
     Console::GetInstance()->WPrintF(L"Çהאנמגא, קונעט!\n");
 
     Window window;
-    window.CreateResources();
-    window.Show(SW_SHOW);
     window.GetSizeDispatcher()->AddListener([](WORD width, WORD height) {
         framebuffer.Resize(width / 8, height / 8);
     });
+
+    window.CreateResources();
+    window.Show(SW_SHOW);
 
     MSG message;
     FpsTimer timer;
@@ -80,16 +81,24 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
         Vec3I skyColor(128, 178, 255);
         Vec3I sphereColor(70, 128, 255);
 
-        Vec3F unit(1, 1, 0);
         int rays = 10;
         float raysScale = 1.0f / rays;
 
         int width = static_cast<int>(framebuffer.GetWidth());
         int height = static_cast<int>(framebuffer.GetHeight());
+        float aspectRatio = static_cast<float>(width) / static_cast<float>(height);
+        float scaleX = std::min(aspectRatio, 1.0f);
+        float scaleY = std::min(1 / aspectRatio, 1.0f);
+        Vec3F unit(1.0f / width, 1.0f / height, 0);
+
         for (int i = 0; i < height; ++i) {
             for (int j = 0; j < width; ++j) {
-                float x = j - width / 2;
-                float y = i - height / 2;
+                //float x = j - width / 2;
+                //float y = i - height / 2;
+                //float x = 2.0f * j / width - 1.0f;
+                //float y = 2.0f * i / height - 1.0f;
+                float x = (2.0f * j / width - 1.0f) * scaleX;
+                float y = (2.0f * i / height - 1.0f) * scaleY;
 
                 
                 Vec3F resultColor;
