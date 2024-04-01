@@ -7,7 +7,11 @@
 #include <Engine/source/utils/FpsTimer.h>
 #include <Engine/source/math/Vector.h>
 #include <Engine/source/render/Framebuffer.h>
+#include <Engine/source/window/Window.h>
 
+#include "Engine/source/utils/TDispatcher.h"
+
+SphereF sphere(Vec3F(0, 0, -180), 200);
 Framebuffer framebuffer(800, 600);
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
@@ -21,53 +25,31 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     return DefWindowProcW(hWnd, msg, wParam, lParam);
 }
 
+void f1(WORD w1, WORD w2) {
+    std::cout << w1 << ' ' << w2 << '\n';
+}
+
+void f2(WORD w1, WORD w2) {
+    std::cout << "ABOBA\n";
+}
+
 int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
     Console::GetInstance()->RedirectStdHandles();
-
-    SphereF sphere(Vec3F(0, 0, -180), 200);
-    std::wcout << sphere << L'\n';
-
-    Console::GetInstance()->Pause();
     Console::GetInstance()->WPrintF(L"Çהאנמגא, קונעט!\n");
 
-    WNDCLASSEX wc = { };
-    wc.cbSize = sizeof(WNDCLASSEX);
-    wc.cbClsExtra = 0;
-    wc.cbWndExtra = 0;
-    wc.style = CS_HREDRAW | CS_VREDRAW;
-    wc.lpfnWndProc = WndProc;
-    wc.hInstance = GetModuleHandleW(nullptr);
-    wc.lpszClassName = L"RaytracerClass";
-    wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
-    wc.hIcon = LoadIconW(nullptr, IDI_APPLICATION);
-    wc.hIconSm = LoadIconW(nullptr, IDI_APPLICATION);
-    wc.hCursor = LoadCursorW(nullptr, IDC_ARROW);
-    wc.lpszMenuName = nullptr;
+    TDispatcher<WORD, WORD> d1;
+    auto e1 = d1.AddListener(f1);
+    auto e2 = d1.AddListener(f2);
+    auto e3 = d1.AddListener(f1);
 
-    if (!RegisterClassExW(&wc)) {
-        // TODO error
-        return 1;
-    }
+    d1.RemoveListener(e1);
+    d1.Dispatch(1, 2);
 
-    int width = static_cast<int>(framebuffer.GetWidth());
-    int height = static_cast<int>(framebuffer.GetHeight());
+    Console::GetInstance()->Pause();
 
-    RECT windowRect {0, 0, width, height};
-    AdjustWindowRectEx(&windowRect, WS_OVERLAPPEDWINDOW, 0, 0);
-    HWND hWnd = CreateWindowExW(
-        0,
-        wc.lpszClassName,
-        L"Dragons' Rays",
-        WS_OVERLAPPEDWINDOW,
-        CW_USEDEFAULT, CW_USEDEFAULT, windowRect.right - windowRect.left, windowRect.bottom - windowRect.top,
-        nullptr, nullptr, GetModuleHandleW(nullptr), nullptr);
-    if (hWnd == nullptr) {
-        return 1;
-    }
-
-    //ShowWindow(hWnd, SW_SHOWMAXIMIZED);
-    ShowWindow(hWnd, SW_SHOW);
-    UpdateWindow(hWnd);
+    Window window;
+    window.CreateResources();
+    window.Show(SW_SHOW);
 
     MSG message;
     FpsTimer timer;
@@ -76,7 +58,6 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
     //double renderTimer = 0.0;
     int targetFps = 120;
     double renderDelta = 1.0 / targetFps;
-    double renderAccumulator = 0.0;
     // FPS counter
     int frames = 0;
     int lastFps = 0;
@@ -88,9 +69,16 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
 
     while (true) {
         // Timer
-        double elapsedTime = timer.Tick();
+        double elapsedTime = std::max(timer.Tick(), renderDelta);
+
+        // FPS counter
         fpsElapsed += elapsedTime;
-        renderAccumulator = std::max(renderAccumulator + elapsedTime, renderDelta);
+        if (fpsElapsed >= 1.0) {
+            fpsElapsed = 0.0;
+            lastFps = frames;
+            frames = 0;
+            Console::GetInstance()->WPrintF(L"FPS: %d\n", lastFps);
+        }
 
         // Input
         while (PeekMessageW(&message, nullptr, 0, 0, PM_REMOVE)) {
@@ -102,38 +90,10 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
             DispatchMessageW(&message);
         }
 
-        // Update
-        static bool goUp = true;
-        static float coef = 0.5f;
-
-        if (goUp) {
-            coef += renderAccumulator / 4;
-            if (coef >= 1.0f) {
-                coef = 1.0f;
-                goUp = false;
-            }
-        }
-        else {
-            coef -= renderAccumulator / 4;
-            if (coef <= 0.5f) {
-                coef = 0.5f;
-                goUp = true;
-            }
-        }
-
-        // FPS counter
-        if (fpsElapsed >= 1.0) {
-            fpsElapsed = 0.0;
-            lastFps = frames;
-            frames = 0;
-            Console::GetInstance()->WPrintF(L"FPS: %d\n", lastFps);
-        }
-
-        // Render
-        //renderTimer = 0.0;
         // FPS counter
         ++frames;
 
+        /// Render
         Vec3I skyColor(128, 178, 255);
         Vec3I sphereColor(70, 128, 255);
 
@@ -141,9 +101,8 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
         int rays = 10;
         float raysScale = 1.0f / rays;
 
-        width = static_cast<int>(framebuffer.GetWidth());
-        height = static_cast<int>(framebuffer.GetHeight());
-
+        int width = static_cast<int>(framebuffer.GetWidth());
+        int height = static_cast<int>(framebuffer.GetHeight());
         for (int i = 0; i < height; ++i) {
             for (int j = 0; j < width; ++j) {
                 float x = j - width / 2;
@@ -165,27 +124,11 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
             }
         }
 
-        BITMAPINFO info = { };
-        info.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-        info.bmiHeader.biWidth = width;
-        info.bmiHeader.biHeight = height;
-        info.bmiHeader.biPlanes = 1;
-        info.bmiHeader.biBitCount = 32;
-        info.bmiHeader.biCompression = BI_RGB;
-        HDC dc = GetDC(hWnd);
-        StretchDIBits(dc, 0, 0, width, height, 0, 0, width, height, framebuffer.GetData(), &info, DIB_RGB_COLORS, SRCCOPY);
-        ReleaseDC(hWnd, dc);
-
-        renderAccumulator = 0.0;
+        window.Blit(framebuffer);
 
         // Sleep
         while (FpsTimer::Duration(FpsTimer::Clock::now() - timer.GetCurrentTimePoint()).count() < renderDelta) {
             std::this_thread::yield();
         }
     }
-
-    UnregisterClassW(wc.lpszClassName, GetModuleHandleW(nullptr));
-    Console::GetInstance()->Pause();
-
-    return 0;
 }

@@ -6,12 +6,29 @@ struct FpsTimer final {
     using TimePoint = std::chrono::time_point<Clock>;
     using Duration = std::chrono::duration<double>;
 
-    FpsTimer();
+    FpsTimer() : m_lastTime(Clock::now())
+        , m_currentTime(Clock::now())
+        , m_elapsedTime(0.0f) {
+    }
 
-    double Tick();
-    double GetElapsedTime() const;
-    TimePoint GetLastTimePoint() const;
-    TimePoint GetCurrentTimePoint() const;
+    double Tick() {
+        m_lastTime = m_currentTime;
+        m_currentTime = Clock::now();
+        m_elapsedTime = Duration(m_currentTime - m_lastTime).count();
+        return m_elapsedTime;
+    }
+
+    double GetElapsedTime() const {
+        return m_elapsedTime;
+    }
+
+    TimePoint GetLastTimePoint() const {
+        return m_lastTime;
+    }
+
+    TimePoint GetCurrentTimePoint() const {
+        return m_currentTime;
+    }
 
 private:
     TimePoint m_lastTime;

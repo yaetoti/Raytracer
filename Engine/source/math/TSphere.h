@@ -18,7 +18,7 @@ struct TSphere final {
         // Quadratic equation
         TVec3<T> oc = r.origin - center;
         T a = r.direction.SquaredLength();
-        T b = 2.0 * oc.Dot(r.direction);
+        T b = static_cast<T>(2.0 * oc.Dot(r.direction));
         T c = oc.SquaredLength() - radius * radius;
         T d = b * b - 4 * a * c;
 

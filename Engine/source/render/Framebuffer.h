@@ -3,6 +3,7 @@
 #include <vector>
 #include <cassert>
 #include <windef.h>
+#include "../math/Vector.h"
 
 struct Framebuffer final {
     Framebuffer(size_t width, size_t height)
