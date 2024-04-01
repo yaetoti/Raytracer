@@ -27,6 +27,14 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
     Console::GetInstance()->RedirectStdHandles();
     Console::GetInstance()->WPrintF(L"Çהאנמגא, קונעט!\n");
 
+
+    Vec3F v1(1, 1, 0);
+    std::cout << v1 << '\n';
+    std::cout << v1.Reflect(Vec3F(1, 0, 0)) << '\n';
+
+
+    Console::GetInstance()->Pause();
+
     Window window;
     window.GetSizeDispatcher()->AddListener([](WORD width, WORD height) {
         framebuffer.Resize(width / 8, height / 8);

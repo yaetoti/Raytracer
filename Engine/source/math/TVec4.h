@@ -232,17 +232,28 @@ struct TVec4 final {
             0
         );
     }
+
+    // TODO: What to do with w
+    template <typename U>
+    TVec4 Reflect(const TVec4<U>& normal) {
+        return TVec4(
+            x * (1 - 2 * normal.x),
+            y * (1 - 2 * normal.y),
+            z * (1 - 2 * normal.z),
+            w
+        );
+    }
 };
 
 // Binary arithmetic operators
 // Sum
-template <typename T>
-TVec4<T> operator+(const TVec4<T>& v, const T& scalar) {
+template <typename T, typename U>
+TVec4<T> operator+(const TVec4<T>& v, const U& scalar) {
     return TVec4<T>(v) += scalar;
 }
 
-template <typename T>
-TVec4<T> operator+(const T& scalar, const TVec4<T>& v) {
+template <typename T, typename U>
+TVec4<T> operator+(const U& scalar, const TVec4<T>& v) {
     return TVec4<T>(v) += scalar;
 }
 
@@ -252,8 +263,8 @@ TVec4<T> operator+(const TVec4<T>& v1, const TVec4<U>& v2) {
 }
 
 // Sub
-template <typename T>
-TVec4<T> operator-(const TVec4<T>& v, const T& scalar) {
+template <typename T, typename U>
+TVec4<T> operator-(const TVec4<T>& v, const U& scalar) {
     return TVec4<T>(v) -= scalar;
 }
 
@@ -263,13 +274,13 @@ TVec4<T> operator-(const TVec4<T>& v1, const TVec4<U>& v2) {
 }
 
 // Mul
-template <typename T>
-TVec4<T> operator*(const TVec4<T>& v, const T& scalar) {
+template <typename T, typename U>
+TVec4<T> operator*(const TVec4<T>& v, const U& scalar) {
     return TVec4<T>(v) *= scalar;
 }
 
-template <typename T>
-TVec4<T> operator*(const T& scalar, const TVec4<T>& v) {
+template <typename T, typename U>
+TVec4<T> operator*(const U& scalar, const TVec4<T>& v) {
     return TVec4<T>(v) *= scalar;
 }
 
@@ -279,8 +290,8 @@ TVec4<T> operator*(const TVec4<T>& v1, const TVec4<U>& v2) {
 }
 
 // Div
-template <typename T>
-TVec4<T> operator/(const TVec4<T>& v, const T& scalar) {
+template <typename T, typename U>
+TVec4<T> operator/(const TVec4<T>& v, const U& scalar) {
     return TVec4<T>(v) /= scalar;
 }
 

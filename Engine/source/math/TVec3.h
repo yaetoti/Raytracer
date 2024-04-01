@@ -190,6 +190,7 @@ struct TVec3 final {
         return Dot(*this);
     }
 
+    // TODO: inconsistent naming (infinitive = create new vector in other methods)
     TVec3& Normalize() {
         T scale = 1 / Length();
         *this *= scale;
@@ -213,17 +214,26 @@ struct TVec3 final {
             x * v.y - y * v.x
         );
     }
+
+    template <typename U>
+    TVec3 Reflect(const TVec3<U>& normal) {
+        return TVec3(
+            x * (1 - 2 * normal.x),
+            y * (1 - 2 * normal.y),
+            z * (1 - 2 * normal.z)
+        );
+    }
 };
 
 // Binary arithmetic operators
 // Sum
-template <typename T>
-TVec3<T> operator+(const TVec3<T>& v, const T& scalar) {
+template <typename T, typename U>
+TVec3<T> operator+(const TVec3<T>& v, const U& scalar) {
     return TVec3<T>(v) += scalar;
 }
 
-template <typename T>
-TVec3<T> operator+(const T& scalar, const TVec3<T>& v) {
+template <typename T, typename U>
+TVec3<T> operator+(const U& scalar, const TVec3<T>& v) {
     return TVec3<T>(v) += scalar;
 }
 
@@ -233,8 +243,8 @@ TVec3<T> operator+(const TVec3<T>& v1, const TVec3<U>& v2) {
 }
 
 // Sub
-template <typename T>
-TVec3<T> operator-(const TVec3<T>& v, const T& scalar) {
+template <typename T, typename U>
+TVec3<T> operator-(const TVec3<T>& v, const U& scalar) {
     return TVec3<T>(v) -= scalar;
 }
 
@@ -244,13 +254,13 @@ TVec3<T> operator-(const TVec3<T>& v1, const TVec3<U>& v2) {
 }
 
 // Mul
-template <typename T>
-TVec3<T> operator*(const TVec3<T>& v, const T& scalar) {
+template <typename T, typename U>
+TVec3<T> operator*(const TVec3<T>& v, const U& scalar) {
     return TVec3<T>(v) *= scalar;
 }
 
-template <typename T>
-TVec3<T> operator*(const T& scalar, const TVec3<T>& v) {
+template <typename T, typename U>
+TVec3<T> operator*(const U& scalar, const TVec3<T>& v) {
     return TVec3<T>(v) *= scalar;
 }
 
@@ -260,8 +270,8 @@ TVec3<T> operator*(const TVec3<T>& v1, const TVec3<U>& v2) {
 }
 
 // Div
-template <typename T>
-TVec3<T> operator/(const TVec3<T>& v, const T& scalar) {
+template <typename T, typename U>
+TVec3<T> operator/(const TVec3<T>& v, const U& scalar) {
     return TVec3<T>(v) /= scalar;
 }
 
