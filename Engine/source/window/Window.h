@@ -2,8 +2,11 @@
 
 #include <Windows.h>
 #include "../render/Framebuffer.h"
+#include "Engine/source/utils/TDispatcher.h"
 
 struct Window final {
+    using SizeDispatcher = TDispatcher<WORD, WORD>;
+
     Window()
     : m_hWnd(nullptr), m_width(800), m_height(600) {
     }
@@ -72,22 +75,47 @@ struct Window final {
         ReleaseDC(m_hWnd, dc);
     }
 
+    // Dispatchers
+    SizeDispatcher* GetSizeDispatcher() {
+        return &m_sizeDispatcher;
+    }
+
     // Handlers
     void OnResize(WORD width, WORD height) {
-        // TODO listener
-        //framebuffer.Resize(width, height);
+        m_width = width;
+        m_height = height;
+        m_sizeDispatcher.Dispatch(width, height);
     }
+
+    void OnKey(WORD vkCode, BYTE scanCode, bool isPressed, bool wasPressed, WORD repeatCount) {
+        
+    }
+
+    // TODO KeyDown
+    // TODO KeyUp
+    // TODO SysKeyDown
+    // TODO SysKeyUp
+    // TODO MouseLeftDown
+    // TODO MouseLeftUp
+    // TODO MouseRightDown
+    // TODO MouseRightUp
 
 private:
     HWND m_hWnd;
     size_t m_width;
     size_t m_height;
+    SizeDispatcher m_sizeDispatcher;
     inline const static wchar_t* kClassName = L"DlRaycasterWindow";
 
     static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         Window* window = reinterpret_cast<Window*>(GetWindowLongPtrW(hWnd, GWLP_USERDATA));
-
+        
         switch (msg) {
+        case WM_CREATE: {
+            CREATESTRUCTW* data = reinterpret_cast<CREATESTRUCTW*>(lParam);
+            SetWindowLongPtrW(hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(data->lpCreateParams));
+            return 0;
+        }
         case WM_SIZE: {
             window->OnResize(LOWORD(lParam), HIWORD(lParam));
             return 0;

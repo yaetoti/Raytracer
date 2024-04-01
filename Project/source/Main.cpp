@@ -9,8 +9,6 @@
 #include <Engine/source/render/Framebuffer.h>
 #include <Engine/source/window/Window.h>
 
-#include "Engine/source/utils/TDispatcher.h"
-
 SphereF sphere(Vec3F(0, 0, -180), 200);
 Framebuffer framebuffer(800, 600);
 
@@ -25,31 +23,16 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     return DefWindowProcW(hWnd, msg, wParam, lParam);
 }
 
-void f1(WORD w1, WORD w2) {
-    std::cout << w1 << ' ' << w2 << '\n';
-}
-
-void f2(WORD w1, WORD w2) {
-    std::cout << "ABOBA\n";
-}
-
 int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
     Console::GetInstance()->RedirectStdHandles();
     Console::GetInstance()->WPrintF(L"Çהאנמגא, קונעט!\n");
 
-    TDispatcher<WORD, WORD> d1;
-    auto e1 = d1.AddListener(f1);
-    auto e2 = d1.AddListener(f2);
-    auto e3 = d1.AddListener(f1);
-
-    d1.RemoveListener(e1);
-    d1.Dispatch(1, 2);
-
-    Console::GetInstance()->Pause();
-
     Window window;
     window.CreateResources();
     window.Show(SW_SHOW);
+    window.GetSizeDispatcher()->AddListener([](WORD width, WORD height) {
+        framebuffer.Resize(width / 8, height / 8);
+    });
 
     MSG message;
     FpsTimer timer;
