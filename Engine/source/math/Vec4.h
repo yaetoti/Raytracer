@@ -236,12 +236,7 @@ struct Vec4 final {
     // TODO: What to do with w
     template <typename U>
     Vec4 Reflect(const Vec4<U>& normal) const {
-        return Vec4(
-            x * (1 - 2 * normal.x),
-            y * (1 - 2 * normal.y),
-            z * (1 - 2 * normal.z),
-            w
-        );
+        return *this - 2 * Dot(normal) * normal;
     }
 };
 

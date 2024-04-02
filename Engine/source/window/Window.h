@@ -6,6 +6,9 @@
 
 struct Window final {
     using SizeDispatcher = TDispatcher<WORD, WORD>;
+    using KeyDispatcher = TDispatcher<WORD, bool, bool, WORD, WORD>;
+    using MouseButtonDispatcher = TDispatcher<bool, bool>;
+    using MouseMoveDispatcher = TDispatcher<int, int>;
 
     Window()
     : m_hWnd(nullptr), m_width(800), m_height(600) {
@@ -80,6 +83,18 @@ struct Window final {
         return &m_sizeDispatcher;
     }
 
+    KeyDispatcher* GetKeyDispatcher() {
+        return &m_keyDispatcher;
+    }
+
+    MouseButtonDispatcher* GetMouseButtonDispatcher() {
+        return &m_mouseButtonDispatcher;
+    }
+
+    MouseMoveDispatcher* GetMouseMoveDispatcher() {
+        return &m_mouseMoveDispatcher;
+    }
+
     // Handlers
     void OnResize(WORD width, WORD height) {
         m_width = width;
@@ -87,14 +102,18 @@ struct Window final {
         m_sizeDispatcher.Dispatch(width, height);
     }
 
-    void OnKey(WORD vkCode, BYTE scanCode, bool isPressed, bool wasPressed, WORD repeatCount) {
-        
+    void OnKey(WORD vkCode, bool isPressed, bool wasPressed, WORD repeatCount, WORD scanCode) {
+        m_keyDispatcher.Dispatch(vkCode, isPressed, wasPressed, repeatCount, scanCode);
     }
 
-    // TODO KeyDown
-    // TODO KeyUp
-    // TODO SysKeyDown
-    // TODO SysKeyUp
+    void OnMouseButton(bool isLeft, bool isPressed) {
+        m_mouseButtonDispatcher.Dispatch(isLeft, isPressed);
+    }
+
+    void OnMouseMove(int x, int y) {
+        m_mouseMoveDispatcher.Dispatch(x, y);
+    }
+
     // TODO MouseLeftDown
     // TODO MouseLeftUp
     // TODO MouseRightDown
@@ -105,6 +124,9 @@ private:
     size_t m_width;
     size_t m_height;
     SizeDispatcher m_sizeDispatcher;
+    KeyDispatcher m_keyDispatcher;
+    MouseButtonDispatcher m_mouseButtonDispatcher;
+    MouseMoveDispatcher m_mouseMoveDispatcher;
     inline const static wchar_t* kClassName = L"DlRaycasterWindow";
 
     static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
@@ -120,6 +142,38 @@ private:
             window->OnResize(LOWORD(lParam), HIWORD(lParam));
             return 0;
         }
+        case WM_KEYDOWN: // fallthrough
+        case WM_KEYUP: // fallthrough
+        case WM_SYSKEYDOWN: // fallthrough
+        case WM_SYSKEYUP: {
+            WORD vkCode = LOWORD(wParam);
+            WORD keyFlags = HIWORD(lParam);
+            WORD scanCode = LOBYTE(keyFlags);
+            if ((keyFlags & KF_EXTENDED) == KF_EXTENDED) {
+                scanCode = MAKEWORD(scanCode, 0xE0);
+            }
+            BOOL wasKeyDown = (keyFlags & KF_REPEAT) == KF_REPEAT;
+            WORD repeatCount = LOWORD(lParam);
+            BOOL isKeyReleased = (keyFlags & KF_UP) == KF_UP;
+
+            window->OnKey(vkCode, !isKeyReleased, wasKeyDown, repeatCount, scanCode);
+            return 0;
+        }
+        case WM_LBUTTONDOWN:
+            window->OnMouseButton(true, true);
+            return 0;
+        case WM_LBUTTONUP:
+            window->OnMouseButton(true, false);
+            return 0;
+        case WM_RBUTTONDOWN:
+            window->OnMouseButton(false, true);
+            return 0;
+        case WM_RBUTTONUP:
+            window->OnMouseButton(false, false);
+            return 0;
+        case WM_MOUSEMOVE:
+            window->OnMouseMove(LOWORD(lParam), HIWORD(lParam));
+            return 0;
         default: 
             return DefWindowProcW(hWnd, msg, wParam, lParam);
         }

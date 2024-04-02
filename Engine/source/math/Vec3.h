@@ -218,11 +218,6 @@ struct Vec3 final {
     template <typename U>
     Vec3 Reflect(const Vec3<U>& normal) const {
         return *this - 2 * Dot(normal) * normal;
-        return Vec3(
-            x * (1 - 2 * normal.x),
-            y * (1 - 2 * normal.y),
-            z * (1 - 2 * normal.z)
-        );
     }
 };
 

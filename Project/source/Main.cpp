@@ -10,7 +10,7 @@
 #include <Engine/source/window/Window.h>
 
 SphereF sphere(Vec3F(0, 0, -2), 0.5f);
-SphereF sphere1(Vec3F(0.8f, 0.8f, -1.0f), 0.4f);
+SphereF sphere1(Vec3F(0.8f, 0.2f, -1.0f), 0.4f);
 SphereF sphere2(Vec3F(0, -10.5f, -2.0f), 10.0f);
 Framebuffer framebuffer(800, 600);
 
@@ -40,7 +40,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 bool Scatter(const Ray3F& ray, const HitRecord<float>& record, Ray3F& scattered, Vec3F& attenuation) {
     Vec3F reflected = ray.direction.Reflect(record.normal);
     scattered = Ray3F(record.point, reflected);
-    attenuation = Vec3F(0.95f);
+    attenuation = Vec3F(0.98f, 0.98f, 0.98f);
     return reflected.Dot(record.normal) > 0;
 }
 
@@ -53,6 +53,16 @@ Vec3F Color(const Ray3F& ray, int depth) {
     HitRecord<float> record;
     if (sphere1.Hit(ray, 0.01f, std::numeric_limits<float>::max(), record)) {
         return sphere1Color * (ray.direction.y + 1) * 0.5f;
+
+        Ray3F scattered;
+        Vec3F attenuation;
+
+        if (depth < 50 && Scatter(ray, record, scattered, attenuation)) {
+            return attenuation * Color(scattered, depth + 1);
+        }
+        else {
+            return Vec3F(0.0f);
+        }
     }
 
     //if (sphere2.Hit(ray, 0.01f, std::numeric_limits<float>::max(), record)) {
@@ -63,7 +73,7 @@ Vec3F Color(const Ray3F& ray, int depth) {
         Ray3F scattered;
         Vec3F attenuation;
 
-        if (depth < 3 && Scatter(ray, record, scattered, attenuation)) {
+        if (depth < 50 && Scatter(ray, record, scattered, attenuation)) {
             return attenuation * Color(scattered, depth + 1);
         } else {
             return Vec3F(0.0f);
@@ -81,7 +91,7 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
 
     Window window;
     window.GetSizeDispatcher()->AddListener([](WORD width, WORD height) {
-        framebuffer.Resize(width / 1, height / 1);
+        framebuffer.Resize(width / 4, height / 4);
     });
 
     window.CreateResources();
@@ -94,6 +104,7 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
     //double renderTimer = 0.0;
     int targetFps = 120;
     double renderDelta = 1.0 / targetFps;
+    double elapsedTime = 0.0;
     // FPS counter
     int frames = 0;
     int lastFps = 0;
@@ -103,9 +114,44 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
     std::mt19937 gen(rd());
     std::uniform_real_distribution<float> dis;
 
+    bool wDown = false;
+    bool aDown = false;
+    bool sDown = false;
+    bool dDown = false;
+    bool rmbDown = false;
+    int x = 0;
+    int y = 0;
+    int lastX = 0;
+    int lastY = 0;
+
+    window.GetKeyDispatcher()->AddListener([&wDown, &aDown, &sDown, &dDown](WORD vkCode, bool isPressed, bool wasPressed, WORD repeatCount, WORD scanCode) {
+        if (vkCode == 'A') {
+            aDown = isPressed;
+        } else if (vkCode == 'D') {
+            dDown = isPressed;
+        } else if (vkCode == 'W') {
+            wDown = isPressed;
+        } else if (vkCode == 'S') {
+            sDown = isPressed;
+        }
+    });
+
+    window.GetMouseButtonDispatcher()->AddListener([&rmbDown](bool isLeft, bool isPressed) {
+        if (!isLeft) {
+            rmbDown = isPressed;
+        }
+    });
+
+    window.GetMouseMoveDispatcher()->AddListener([&x, &y, &lastX, &lastY](int newX, int newY) {
+        lastX = x;
+        lastY = y;
+        x = newX;
+        y = newY;
+    });
+
     while (true) {
         // Timer
-        double elapsedTime = std::max(timer.Tick(), renderDelta);
+        elapsedTime = std::max(timer.Tick(), renderDelta);
 
         // FPS counter
         fpsElapsed += elapsedTime;
@@ -128,6 +174,25 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
 
         // FPS counter
         ++frames;
+
+        if (aDown) {
+            sphere1.center -= Vec3F(1.0f * elapsedTime, 0, 0);
+        }
+        if (dDown) {
+            sphere1.center -= Vec3F(-1.0f * elapsedTime, 0, 0);
+        }
+        if (wDown) {
+            sphere1.center -= Vec3F(0, -1.0f * elapsedTime, 0);
+        }
+        if (sDown) {
+            sphere1.center -= Vec3F(0, 1.0f * elapsedTime, 0);
+        }
+
+        if (rmbDown) {
+            sphere1.center -= Vec3F((lastX - x) * elapsedTime, -(lastY - y) * elapsedTime, 0);
+            lastX = x;
+            lastY = y;
+        }
 
         /// Render
         int rays = 10;

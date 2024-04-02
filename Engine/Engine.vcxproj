@@ -149,6 +149,7 @@
     <ClInclude Include="source\math\Vector.h" />
     <ClInclude Include="source\render\Camera.h" />
     <ClInclude Include="source\render\Framebuffer.h" />
+    <ClInclude Include="source\render\Scene.h" />
     <ClInclude Include="source\utils\FpsTimer.h" />
     <ClInclude Include="source\math\Vec3.h" />
     <ClInclude Include="source\utils\TDispatcher.h" />

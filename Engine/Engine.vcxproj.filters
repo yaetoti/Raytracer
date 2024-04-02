@@ -51,5 +51,8 @@
     <ClInclude Include="source\math\IHitable.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="source\render\Scene.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
