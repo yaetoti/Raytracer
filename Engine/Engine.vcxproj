@@ -154,10 +154,15 @@
     <ClInclude Include="source\render\Framebuffer.h" />
     <ClInclude Include="source\render\IMaterial.h" />
     <ClInclude Include="source\render\MetalMaterial.h" />
-    <ClInclude Include="source\render\Scene.h" />
+    <ClInclude Include="source\utils\EventDispatcher.h" />
     <ClInclude Include="source\utils\FpsTimer.h" />
     <ClInclude Include="source\math\Vec3.h" />
-    <ClInclude Include="source\utils\EventDispatcher.h" />
+    <ClInclude Include="source\utils\FunctionalDispatcher.h" />
+    <ClInclude Include="source\window\events\KeyWindowEvent.h" />
+    <ClInclude Include="source\window\events\MouseButtonWindowEvent.h" />
+    <ClInclude Include="source\window\events\MouseMoveWindowEvent.h" />
+    <ClInclude Include="source\window\events\ResizeWindowEvent.h" />
+    <ClInclude Include="source\window\events\WindowEvent.h" />
     <ClInclude Include="source\window\Window.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -42,16 +42,13 @@
     <ClInclude Include="source\render\Camera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\utils\EventDispatcher.h">
+    <ClInclude Include="source\utils\FunctionalDispatcher.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\math\HitRecord.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\math\IHitable.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\render\Scene.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\math\HitableList.h">
@@ -67,6 +64,24 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\render\AlbedoMaterial.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\utils\EventDispatcher.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\window\events\WindowEvent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\window\events\ResizeWindowEvent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\window\events\KeyWindowEvent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\window\events\MouseButtonWindowEvent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\window\events\MouseMoveWindowEvent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

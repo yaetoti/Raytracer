@@ -3,19 +3,15 @@
 #include <Windows.h>
 #include "../render/Framebuffer.h"
 #include "Engine/source/utils/EventDispatcher.h"
+#include "events/KeyWindowEvent.h"
+#include "events/MouseButtonWindowEvent.h"
+#include "events/MouseMoveWindowEvent.h"
+#include "events/ResizeWindowEvent.h"
+#include "events/WindowEvent.h"
 
 struct Window final {
-    using SizeDispatcher = EventDispatcher<WORD, WORD>;
-    using KeyDispatcher = EventDispatcher<WORD, bool, bool, WORD, WORD>;
-    using MouseButtonDispatcher = EventDispatcher<bool, bool>;
-    using MouseMoveDispatcher = EventDispatcher<int, int>;
-
-    Window()
-    : m_hWnd(nullptr), m_width(800), m_height(600) {
-    }
-
-    explicit Window(size_t width, size_t height)
-        : m_hWnd(nullptr), m_width(width), m_height(height) {
+    explicit Window(const wchar_t* title, size_t width, size_t height)
+    : m_hWnd(nullptr), m_width(width), m_height(height), m_title(title) {
     }
 
     ~Window() {
@@ -46,7 +42,7 @@ struct Window final {
         m_hWnd = CreateWindowExW(
             0,
             wc.lpszClassName,
-            L"Flame 🔥",
+            m_title,
             WS_OVERLAPPEDWINDOW,
             CW_USEDEFAULT, CW_USEDEFAULT, windowRect.right - windowRect.left, windowRect.bottom - windowRect.top,
             nullptr, nullptr, GetModuleHandleW(nullptr), this);
@@ -83,51 +79,40 @@ struct Window final {
     }
 
     // Dispatchers
-    SizeDispatcher* GetSizeDispatcher() {
-        return &m_sizeDispatcher;
-    }
-
-    KeyDispatcher* GetKeyDispatcher() {
-        return &m_keyDispatcher;
-    }
-
-    MouseButtonDispatcher* GetMouseButtonDispatcher() {
-        return &m_mouseButtonDispatcher;
-    }
-
-    MouseMoveDispatcher* GetMouseMoveDispatcher() {
-        return &m_mouseMoveDispatcher;
+    EventDispatcher<WindowEvent>* GetDispatcher() {
+        return &m_dispatcher;
     }
 
     // Handlers
     void OnResize(WORD width, WORD height) {
         m_width = width;
         m_height = height;
-        m_sizeDispatcher.Dispatch(width, height);
+
+        ResizeWindowEvent event(width, height);
+        m_dispatcher.Dispatch(&event);
     }
 
     void OnKey(WORD vkCode, bool isPressed, bool wasPressed, WORD repeatCount, WORD scanCode) {
-        m_keyDispatcher.Dispatch(vkCode, isPressed, wasPressed, repeatCount, scanCode);
+        KeyWindowEvent event(vkCode, isPressed, wasPressed, repeatCount, scanCode);
+        m_dispatcher.Dispatch(&event);
     }
 
     void OnMouseButton(bool isLeft, bool isPressed) {
-        m_mouseButtonDispatcher.Dispatch(isLeft, isPressed);
+        MouseButtonWindowEvent event(isLeft, isPressed);
+        m_dispatcher.Dispatch(&event);
     }
 
     void OnMouseMove(int x, int y) {
-        m_mouseMoveDispatcher.Dispatch(x, y);
+        MouseMoveWindowEvent event(x, y);
+        m_dispatcher.Dispatch(&event);
     }
 
 private:
     HWND m_hWnd;
     size_t m_width;
     size_t m_height;
-
-    // TODO Replace with event classes and one dispatcher, because there will be fewer subscribers than events
-    SizeDispatcher m_sizeDispatcher;
-    KeyDispatcher m_keyDispatcher;
-    MouseButtonDispatcher m_mouseButtonDispatcher;
-    MouseMoveDispatcher m_mouseMoveDispatcher;
+    EventDispatcher<WindowEvent> m_dispatcher;
+    const wchar_t* m_title;
     inline const static wchar_t* kClassName = L"DlRaycasterWindow";
 
     static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
