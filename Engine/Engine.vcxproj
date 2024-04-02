@@ -141,18 +141,23 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="source\math\HitableList.h" />
     <ClInclude Include="source\math\IHitable.h" />
     <ClInclude Include="source\math\HitRecord.h" />
     <ClInclude Include="source\math\Ray3.h" />
     <ClInclude Include="source\math\Sphere.h" />
     <ClInclude Include="source\math\Vec4.h" />
     <ClInclude Include="source\math\Vector.h" />
+    <ClInclude Include="source\render\AlbedoMaterial.h" />
+    <ClInclude Include="source\render\LambertianMaterial.h" />
     <ClInclude Include="source\render\Camera.h" />
     <ClInclude Include="source\render\Framebuffer.h" />
+    <ClInclude Include="source\render\IMaterial.h" />
+    <ClInclude Include="source\render\MetalMaterial.h" />
     <ClInclude Include="source\render\Scene.h" />
     <ClInclude Include="source\utils\FpsTimer.h" />
     <ClInclude Include="source\math\Vec3.h" />
-    <ClInclude Include="source\utils\TDispatcher.h" />
+    <ClInclude Include="source\utils\EventDispatcher.h" />
     <ClInclude Include="source\window\Window.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -219,6 +219,15 @@ struct Vec3 final {
     Vec3 Reflect(const Vec3<U>& normal) const {
         return *this - 2 * Dot(normal) * normal;
     }
+
+    static Vec3 RandomInUnitSphere(std::uniform_real_distribution<float>& rand, std::mt19937& gen) {
+        Vec3 v;
+        do {
+            v = 2.0 * Vec3(rand(gen), rand(gen), rand(gen)) - Vec3(1.0);
+        } while (v.SquaredLength() > 1.0);
+
+        return v;
+    }
 };
 
 // Binary arithmetic operators

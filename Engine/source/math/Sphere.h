@@ -7,15 +7,19 @@
 #include "Vec3.h"
 
 template <typename T>
+struct IMaterial;
+
+template <typename T>
 struct Sphere final : IHitable<T> {
     Vec3<T> center;
     T radius;
+    std::unique_ptr<IMaterial<T>> m_material;
 
-    explicit Sphere(const Vec3<T>& center, const T& radius)
-    : center(center), radius(radius) {
+    explicit Sphere(const Vec3<T>& center, const T& radius, std::unique_ptr<IMaterial<T>>&& material)
+    : center(center), radius(radius), m_material(std::move(material)) {
     }
 
-    bool Hit(const Ray3<T>& r, float tMin, float tMax, HitRecord<T>& record) override {
+    bool Hit(const Ray3<T>& r, T tMin, T tMax, HitRecord<T>& record) override {
         // Quadratic equation
         Vec3<T> oc = r.origin - center;
         T a = r.direction.SquaredLength();
@@ -29,6 +33,7 @@ struct Sphere final : IHitable<T> {
                 record.time = t;
                 record.point = r.AtParameter(t);
                 record.normal = (record.point - center) / radius;
+                record.material = m_material.get();
                 return true;
             }
 
@@ -37,6 +42,7 @@ struct Sphere final : IHitable<T> {
                 record.time = t;
                 record.point = r.AtParameter(t);
                 record.normal = (record.point - center) / radius;
+                record.material = m_material.get();
                 return true;
             }
         }

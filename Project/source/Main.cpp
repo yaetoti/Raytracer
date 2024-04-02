@@ -1,7 +1,6 @@
 #define NOMINMAX
 
 #include <random>
-#include <iostream>
 #include <Windows.h>
 #include <ConsoleLib/Console.h>
 #include <Engine/source/utils/FpsTimer.h>
@@ -9,9 +8,30 @@
 #include <Engine/source/render/Framebuffer.h>
 #include <Engine/source/window/Window.h>
 
-SphereF sphere(Vec3F(0, 0, -2), 0.5f);
-SphereF sphere1(Vec3F(0.8f, 0.2f, -1.0f), 0.4f);
-SphereF sphere2(Vec3F(0, -10.5f, -2.0f), 10.0f);
+#include "Engine/source/math/HitableList.h"
+#include "Engine/source/render/AlbedoMaterial.h"
+#include "Engine/source/render/LambertianMaterial.h"
+#include "Engine/source/render/MetalMaterial.h"
+
+std::random_device rd;
+std::mt19937 gen(rd());
+std::uniform_real_distribution<float> dis;
+
+std::shared_ptr<SphereF> sphere1 = std::make_shared<SphereF>(
+    Vec3F(0, 0, -2), 0.5f,
+    std::make_unique<MetalMaterial<float>>(
+        Vec3F(0.98f, 0.98f, 0.98f)));
+std::shared_ptr<SphereF> sphere2 = std::make_shared<SphereF>(
+    Vec3F(0.8f, 0.2f, -1.0f), 0.4f,
+    std::make_unique<AlbedoMaterial<float>>(
+        Vec3F(0.28f, 1.0f, 0.5f)));
+std::shared_ptr<SphereF> sphere3 = std::make_shared<SphereF>(
+    Vec3F(0, -10.5f, -2.0f), 10.0f,
+    std::make_unique<LambertianMaterial<float>>(
+        Vec3F(1.0f, 0.28f, 0.5f),
+        dis, gen));
+HitableList<float> hitables;
+
 Framebuffer framebuffer(800, 600);
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
@@ -45,41 +65,19 @@ bool Scatter(const Ray3F& ray, const HitRecord<float>& record, Ray3F& scattered,
 }
 
 Vec3F Color(const Ray3F& ray, int depth) {
-    Vec3F skyColor(0.5f, 0.7f, 1.0f);
-    Vec3F sphereColor(0.28f, 0.5f, 1.0f);
-    Vec3F sphere1Color(0.28f, 1.0f, 0.5f);
-    Vec3F sphere2Color(1.0f, 0.28f, 0.5f);
-
     HitRecord<float> record;
-    if (sphere1.Hit(ray, 0.01f, std::numeric_limits<float>::max(), record)) {
-        return sphere1Color * (ray.direction.y + 1) * 0.5f;
-
+    if (hitables.Hit(ray, 0.01f, std::numeric_limits<float>::max(), record)) {
         Ray3F scattered;
         Vec3F attenuation;
 
-        if (depth < 50 && Scatter(ray, record, scattered, attenuation)) {
+        if (depth < 10 && record.material->Scatter(ray, record, scattered, attenuation)) {
             return attenuation * Color(scattered, depth + 1);
         }
-        else {
-            return Vec3F(0.0f);
-        }
+        
+        return Vec3F(0.0f);
     }
 
-    //if (sphere2.Hit(ray, 0.01f, std::numeric_limits<float>::max(), record)) {
-    //    return sphere2Color * (ray.origin.x + 1) * 0.5f;
-    //}
-
-    if (sphere.Hit(ray, 0.01f, std::numeric_limits<float>::max(), record)) {
-        Ray3F scattered;
-        Vec3F attenuation;
-
-        if (depth < 50 && Scatter(ray, record, scattered, attenuation)) {
-            return attenuation * Color(scattered, depth + 1);
-        } else {
-            return Vec3F(0.0f);
-        }
-    }
-
+    Vec3F skyColor(0.5f, 0.7f, 1.0f);
     float t = (ray.direction.y + 1) * 0.5f;
     return skyColor * t + (1.0f - t) * Vec3F(1.0f);
 }
@@ -88,10 +86,14 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
     Console::GetInstance()->RedirectStdHandles();
     Console::GetInstance()->WPrintF(L"Çהאנמגא, קונעט!\n");
 
+    hitables.Add(sphere1);
+    hitables.Add(sphere2);
+    hitables.Add(sphere3);
 
-    Window window;
+    // TODO Make window name a parameter
+    Window window(800, 600);
     window.GetSizeDispatcher()->AddListener([](WORD width, WORD height) {
-        framebuffer.Resize(width / 4, height / 4);
+        framebuffer.Resize(width / 2, height / 2);
     });
 
     window.CreateResources();
@@ -109,10 +111,6 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
     int frames = 0;
     int lastFps = 0;
     double fpsElapsed = 0.0;
-
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_real_distribution<float> dis;
 
     bool wDown = false;
     bool aDown = false;
@@ -176,20 +174,20 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
         ++frames;
 
         if (aDown) {
-            sphere1.center -= Vec3F(1.0f * elapsedTime, 0, 0);
+            sphere2->center -= Vec3F(1.0f * elapsedTime, 0, 0);
         }
         if (dDown) {
-            sphere1.center -= Vec3F(-1.0f * elapsedTime, 0, 0);
+            sphere2->center -= Vec3F(-1.0f * elapsedTime, 0, 0);
         }
         if (wDown) {
-            sphere1.center -= Vec3F(0, -1.0f * elapsedTime, 0);
+            sphere2->center -= Vec3F(0, -1.0f * elapsedTime, 0);
         }
         if (sDown) {
-            sphere1.center -= Vec3F(0, 1.0f * elapsedTime, 0);
+            sphere2->center -= Vec3F(0, 1.0f * elapsedTime, 0);
         }
 
         if (rmbDown) {
-            sphere1.center -= Vec3F((lastX - x) * elapsedTime, -(lastY - y) * elapsedTime, 0);
+            sphere2->center -= Vec3F((lastX - x) * elapsedTime, -(lastY - y) * elapsedTime, 0);
             lastX = x;
             lastY = y;
         }

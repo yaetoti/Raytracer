@@ -4,7 +4,7 @@
 #include <functional>
 
 template <typename... Args>
-struct TDispatcher final {
+struct EventDispatcher final {
     using CbType = std::function<void(Args...)>;
     using CbId = typename std::list<CbType>::iterator;
 

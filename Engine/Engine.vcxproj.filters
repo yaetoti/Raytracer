@@ -42,7 +42,7 @@
     <ClInclude Include="source\render\Camera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\utils\TDispatcher.h">
+    <ClInclude Include="source\utils\EventDispatcher.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\math\HitRecord.h">
@@ -52,6 +52,21 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\render\Scene.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\math\HitableList.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\IMaterial.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\LambertianMaterial.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\MetalMaterial.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\AlbedoMaterial.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

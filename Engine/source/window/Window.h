@@ -1,17 +1,21 @@
-#pragma once
+﻿#pragma once
 
 #include <Windows.h>
 #include "../render/Framebuffer.h"
-#include "Engine/source/utils/TDispatcher.h"
+#include "Engine/source/utils/EventDispatcher.h"
 
 struct Window final {
-    using SizeDispatcher = TDispatcher<WORD, WORD>;
-    using KeyDispatcher = TDispatcher<WORD, bool, bool, WORD, WORD>;
-    using MouseButtonDispatcher = TDispatcher<bool, bool>;
-    using MouseMoveDispatcher = TDispatcher<int, int>;
+    using SizeDispatcher = EventDispatcher<WORD, WORD>;
+    using KeyDispatcher = EventDispatcher<WORD, bool, bool, WORD, WORD>;
+    using MouseButtonDispatcher = EventDispatcher<bool, bool>;
+    using MouseMoveDispatcher = EventDispatcher<int, int>;
 
     Window()
     : m_hWnd(nullptr), m_width(800), m_height(600) {
+    }
+
+    explicit Window(size_t width, size_t height)
+        : m_hWnd(nullptr), m_width(width), m_height(height) {
     }
 
     ~Window() {
@@ -42,7 +46,7 @@ struct Window final {
         m_hWnd = CreateWindowExW(
             0,
             wc.lpszClassName,
-            L"Dragons' Rays",
+            L"Flame 🔥",
             WS_OVERLAPPEDWINDOW,
             CW_USEDEFAULT, CW_USEDEFAULT, windowRect.right - windowRect.left, windowRect.bottom - windowRect.top,
             nullptr, nullptr, GetModuleHandleW(nullptr), this);
@@ -114,15 +118,12 @@ struct Window final {
         m_mouseMoveDispatcher.Dispatch(x, y);
     }
 
-    // TODO MouseLeftDown
-    // TODO MouseLeftUp
-    // TODO MouseRightDown
-    // TODO MouseRightUp
-
 private:
     HWND m_hWnd;
     size_t m_width;
     size_t m_height;
+
+    // TODO Replace with event classes and one dispatcher, because there will be fewer subscribers than events
     SizeDispatcher m_sizeDispatcher;
     KeyDispatcher m_keyDispatcher;
     MouseButtonDispatcher m_mouseButtonDispatcher;
