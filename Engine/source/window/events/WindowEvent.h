@@ -14,7 +14,5 @@ struct WindowEvent {
     WindowEventType type;
 
 protected:
-    WindowEvent(WindowEventType type)
-    : type(type) {
-    }
+    WindowEvent(WindowEventType type);
 };
