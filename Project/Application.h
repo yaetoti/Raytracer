@@ -4,8 +4,7 @@
 
 #include "Engine/source/window/events/KeyWindowEvent.h"
 #include "Engine/source/window/events/ResizeWindowEvent.h"
-#include <random>
-#include <Windows.h>
+
 #include <ConsoleLib/Console.h>
 #include <Engine/source/math/HitableList.h>
 #include <Engine/source/math/Vector.h>
@@ -18,6 +17,10 @@
 #include <Engine/source/window/Window.h>
 #include <Engine/source/window/events/WindowEvent.h>
 
+#include <Windows.h>
+#include <random>
+#include <chrono>
+
 struct Application final : EventListener<WindowEvent> {
   Application();
 
@@ -28,7 +31,6 @@ private:
   std::shared_ptr<Window> m_window;
   Framebuffer framebuffer;
 
-  std::random_device rd;
   std::mt19937 gen;
   std::uniform_real_distribution<float> dis;
 
@@ -79,7 +81,7 @@ private:
 inline Application::Application()
 : m_window(std::make_shared<Window>(L"Flame 🔥", 1366, 768))
 , framebuffer(1366, 768)
-, gen(rd()) {
+, gen(std::chrono::high_resolution_clock::now().time_since_epoch().count()) {
 }
 
 inline Vec3F Application::Color(const Ray& ray, int depth) {

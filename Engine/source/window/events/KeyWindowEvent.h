@@ -1,7 +1,7 @@
 #pragma once
 
 #include "WindowEvent.h"
-#include <WinBase.h>
+#include <Windows.h>
 
 struct KeyWindowEvent final : WindowEvent {
   KeyWindowEvent(WORD vkCode, bool isPressed, bool wasPressed, WORD repeatCount, WORD scanCode)

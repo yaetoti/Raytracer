@@ -2,9 +2,9 @@
 #define GLM_ENABLE_EXPERIMENTAL
 
 #include "Project/Application.h"
-#include <Windows.h>
 #include <ConsoleLib/Console.h>
 
+#include <Windows.h>
 #include <iostream>
 #include <GLM/glm.hpp>
 #include <GLM/gtx/string_cast.hpp>
