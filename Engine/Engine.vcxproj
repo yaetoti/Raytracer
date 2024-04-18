@@ -144,7 +144,7 @@
     <ClInclude Include="source\math\HitableList.h" />
     <ClInclude Include="source\math\IHitable.h" />
     <ClInclude Include="source\math\HitRecord.h" />
-    <ClInclude Include="source\math\Ray3.h" />
+    <ClInclude Include="source\math\Ray.h" />
     <ClInclude Include="source\math\Sphere.h" />
     <ClInclude Include="source\math\Vec4.h" />
     <ClInclude Include="source\math\Vector.h" />

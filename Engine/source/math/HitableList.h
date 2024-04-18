@@ -4,29 +4,28 @@
 
 #include "IHitable.h"
 
-template <typename T>
-struct HitableList final : IHitable<T> {
-    bool Hit(const Ray3<T>& r, T tMin, T tMax, HitRecord<T>& record) override {
-        HitRecord<T> tempRecord;
-        bool hitAnything = false;
-        T closest = tMax;
+struct HitableList final : IHitable {
+  bool Hit(const Ray& r, float tMin, float tMax, HitRecord& record) override {
+    HitRecord tempRecord;
+    bool hitAnything = false;
+    float closest = tMax;
 
-        for (auto hitable : m_hitables) {
-            if (hitable->Hit(r, tMin, closest, tempRecord)) {
-                hitAnything = true;
-                closest = tempRecord.time;
-                record = tempRecord;
-            }
-        }
-
-        return hitAnything;
+    for (auto hitable : m_hitables) {
+      if (hitable->Hit(r, tMin, closest, tempRecord)) {
+        hitAnything = true;
+        closest = tempRecord.time;
+        record = tempRecord;
+      }
     }
 
-    // TODO Handy add()/remove() regarding the scene and variability of game objects
-    void Add(std::shared_ptr<IHitable<T>> element) {
-        m_hitables.emplace_back(element);
-    }
+    return hitAnything;
+  }
+
+  // TODO Handy add()/remove() regarding the scene and variability of game objects
+  void Add(std::shared_ptr<IHitable> element) {
+    m_hitables.emplace_back(element);
+  }
 
 private:
-    std::list<std::shared_ptr<IHitable<T>>> m_hitables;
+  std::list<std::shared_ptr<IHitable>> m_hitables;
 };

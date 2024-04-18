@@ -2,13 +2,11 @@
 
 #include "Vec3.h"
 
-template <typename T>
 struct IMaterial;
 
-template <typename T>
 struct HitRecord final {
-    T time;
-    Vec3<T> point;
-    Vec3<T> normal;
-    IMaterial<T>* material;
+  float time;
+  Vec3<float> point;
+  Vec3<float> normal;
+  IMaterial* material;
 };

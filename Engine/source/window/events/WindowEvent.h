@@ -1,18 +1,18 @@
 #pragma once
 
 enum class WindowEventType {
-    RESIZE,
-    KEY,
-    MOUSE_BUTTON,
-    MOUSE_MOVE,
-    COUNT
+  RESIZE,
+  KEY,
+  MOUSE_BUTTON,
+  MOUSE_MOVE,
+  COUNT
 };
 
 struct WindowEvent {
-    virtual ~WindowEvent() = default;
+  virtual ~WindowEvent() = default;
 
-    WindowEventType type;
+  WindowEventType type;
 
 protected:
-    WindowEvent(WindowEventType type);
+  WindowEvent(WindowEventType type);
 };

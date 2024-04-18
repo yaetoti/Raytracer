@@ -1,11 +1,10 @@
 #pragma once
 
 #include "HitRecord.h"
-#include "Ray3.h"
+#include "Ray.h"
 
-template <typename T>
 struct IHitable {
-    virtual ~IHitable() = default;
+  virtual ~IHitable() = default;
 
-    virtual bool Hit(const Ray3<T>& r, T tMin, T tMax, HitRecord<T>& record) = 0;
+  virtual bool Hit(const Ray& r, float tMin, float tMax, HitRecord& record) = 0;
 };

@@ -27,7 +27,7 @@
     <ClInclude Include="source\math\Vec4.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\math\Ray3.h">
+    <ClInclude Include="source\math\Ray.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\math\Sphere.h">
