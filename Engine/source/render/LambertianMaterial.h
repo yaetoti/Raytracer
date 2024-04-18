@@ -8,9 +8,8 @@ struct LambertianMaterial final : IMaterial<T> {
     }
 
     bool Scatter(const Ray3<T>& ray, const HitRecord<T>& record, Ray3<T>& scattered, Vec3F& attenuation) override {
-        // TODO fuzzification
         Vec3<T> target = record.point + record.normal + Vec3<T>::RandomInUnitSphere(m_distribution, m_generator);
-        scattered = Ray3<T>(record.point, target - record.point);
+        scattered = Ray3<T>(record.point, (target - record.point).Normalize());
         attenuation = m_albedo;
         return true;
     }

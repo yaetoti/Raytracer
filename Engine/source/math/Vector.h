@@ -18,5 +18,3 @@ using Ray3F = Ray3<float>;
 
 using SphereD = Sphere<double>;
 using SphereF = Sphere<float>;
-
-// YTL - yaetoti___'s template library

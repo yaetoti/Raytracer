@@ -220,6 +220,7 @@ struct Vec3 final {
         return *this - 2 * Dot(normal) * normal;
     }
 
+    // TODO Fix
     static Vec3 RandomInUnitSphere(std::uniform_real_distribution<float>& rand, std::mt19937& gen) {
         Vec3 v;
         do {

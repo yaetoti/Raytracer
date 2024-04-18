@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="source\utils\FpsTimer.h">
+    <ClInclude Include="source\utils\Timer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\math\Vec3.h">
@@ -37,9 +37,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\window\Window.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\render\Camera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\utils\FunctionalDispatcher.h">

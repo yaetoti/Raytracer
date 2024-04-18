@@ -150,12 +150,11 @@
     <ClInclude Include="source\math\Vector.h" />
     <ClInclude Include="source\render\AlbedoMaterial.h" />
     <ClInclude Include="source\render\LambertianMaterial.h" />
-    <ClInclude Include="source\render\Camera.h" />
     <ClInclude Include="source\render\Framebuffer.h" />
     <ClInclude Include="source\render\IMaterial.h" />
     <ClInclude Include="source\render\MetalMaterial.h" />
     <ClInclude Include="source\utils\EventDispatcher.h" />
-    <ClInclude Include="source\utils\FpsTimer.h" />
+    <ClInclude Include="source\utils\Timer.h" />
     <ClInclude Include="source\math\Vec3.h" />
     <ClInclude Include="source\utils\FunctionalDispatcher.h" />
     <ClInclude Include="source\window\events\KeyWindowEvent.h" />

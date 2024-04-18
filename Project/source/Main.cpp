@@ -1,8 +1,14 @@
 #define NOMINMAX
+#define GLM_ENABLE_EXPERIMENTAL
 
 #include <Windows.h>
 #include <ConsoleLib/Console.h>
 #include "Project/Application.h"
+
+#include <iostream>
+#include <GLM/glm.hpp>
+#include <GLM/gtx/string_cast.hpp>
+#include <GLM/gtx/vector_angle.hpp>
 
 // WARNING: Run away, wayfarer!
 // Problems (things that take long time to think about):
@@ -11,6 +17,9 @@
 int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
     Console::GetInstance()->RedirectStdHandles();
     Console::GetInstance()->WPrintF(L"Çהאנמגא, קונעט!\n");
+
+    glm::vec3 v(1, 2, 3);
+    std::cout << glm::to_string(glm::rotate(45.0f, v)) << '\n';
 
     std::shared_ptr<Application> m_application = std::make_shared<Application>();
     return m_application->RunMainLoop();

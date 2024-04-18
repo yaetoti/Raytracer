@@ -3,7 +3,7 @@
 #include <Windows.h>
 #include <random>
 #include <ConsoleLib/Console.h>
-#include <Engine/source/utils/FpsTimer.h>
+#include <Engine/source/utils/Timer.h>
 #include <Engine/source/math/Vector.h>
 #include <Engine/source/render/Framebuffer.h>
 #include <Engine/source/window/Window.h>
@@ -99,21 +99,21 @@ inline void Application::Render() {
     float scaleY = std::min(1 / aspectRatio, 1.0f);
     Vec3F unit(1.0f / width, 1.0f / height, 0);
 
-    for (int i = 0; i < height; ++i) {
-        for (int j = 0; j < width; ++j) {
+    for (int col = 0; col < height; ++col) {
+        for (int row = 0; row < width; ++row) {
             // TODO Camera->GetRay(u, v)
-            float x = (2.0f * j / width - 1.0f) * scaleX;
-            float y = (2.0f * i / height - 1.0f) * scaleY;
+            float x = (2.0f * row / width - 1.0f) * scaleX;
+            float y = (2.0f * col / height - 1.0f) * scaleY;
 
             Vec3F resultColor;
-            for (int k = 0; k < rays; ++k) {
-                Ray3F ray(Vec3F(x, y, 0) + unit * dis(gen), Vec3F(0, 0, -1));
+            for (int i = 0; i < rays; ++i) {
+                Ray3F ray(Vec3F(x, y, 0) + unit * dis(gen), Vec3F(0, 0, -1.0));
                 resultColor += Color(ray, 0);
             }
 
             resultColor *= raysScale;
             resultColor *= 255.0f;
-            framebuffer.SetPixel(j, i, static_cast<BYTE>(resultColor.r), static_cast<BYTE>(resultColor.g), static_cast<BYTE>(resultColor.b));
+            framebuffer.SetPixel(row, col, static_cast<BYTE>(resultColor.r), static_cast<BYTE>(resultColor.g), static_cast<BYTE>(resultColor.b));
         }
     }
 }
@@ -122,7 +122,7 @@ inline int Application::RunMainLoop() {
     Init();
 
     MSG message;
-    FpsTimer timer;
+    Timer timer;
 
     // FPS limiter
     int targetFps = 120;
@@ -164,7 +164,7 @@ inline int Application::RunMainLoop() {
         m_window->Blit(framebuffer);
 
         // Sleep
-        while (FpsTimer::Duration(FpsTimer::Clock::now() - timer.GetCurrentTimePoint()).count() < renderDelta) {
+        while (Timer::Duration(Timer::Clock::now() - timer.GetCurrentTimePoint()).count() < renderDelta) {
             std::this_thread::yield();
         }
     }

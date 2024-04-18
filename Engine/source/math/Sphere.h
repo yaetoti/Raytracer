@@ -6,6 +6,8 @@
 #include "Ray3.h"
 #include "Vec3.h"
 
+#include <iostream>
+
 template <typename T>
 struct IMaterial;
 
@@ -22,13 +24,12 @@ struct Sphere final : IHitable<T> {
     bool Hit(const Ray3<T>& r, T tMin, T tMax, HitRecord<T>& record) override {
         // Quadratic equation
         Vec3<T> oc = r.origin - center;
-        T a = r.direction.SquaredLength();
-        T b = static_cast<T>(2.0 * oc.Dot(r.direction));
+        T b = oc.Dot(r.direction);
         T c = oc.SquaredLength() - radius * radius;
-        T d = b * b - 4 * a * c;
+        T d = b * b - c;
 
         if (d > 0) {
-            T t = (-b - sqrt(d)) / (2.0f * a);
+            T t = (-b - sqrt(d));
             if (t > tMin && t < tMax) {
                 record.time = t;
                 record.point = r.AtParameter(t);
@@ -37,7 +38,7 @@ struct Sphere final : IHitable<T> {
                 return true;
             }
 
-            t = (-b + sqrt(d)) / (2.0f * a);
+            t = (-b + sqrt(d));
             if (t > tMin && t < tMax) {
                 record.time = t;
                 record.point = r.AtParameter(t);

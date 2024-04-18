@@ -23,7 +23,7 @@ struct EventDispatcher final {
     }
 
     void Dispatch(const E* e) {
-        for (auto listener : m_listeners) {
+        for (const auto& listener : m_listeners) {
             listener->Handle(e);
         }
     }

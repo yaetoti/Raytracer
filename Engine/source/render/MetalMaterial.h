@@ -9,7 +9,7 @@ struct MetalMaterial final : IMaterial<T> {
     }
 
     bool Scatter(const Ray3<T>& ray, const HitRecord<T>& record, Ray3<T>& scattered, Vec3F& attenuation) override {
-        Vec3F reflected = ray.direction.Reflect(record.normal);
+        Vec3F reflected = ray.direction.Reflect(record.normal).Normalize();
         scattered = Ray3F(record.point, reflected);
         attenuation = m_albedo;
         return reflected.Dot(record.normal) > 0;

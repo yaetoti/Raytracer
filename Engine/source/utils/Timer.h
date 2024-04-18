@@ -1,12 +1,12 @@
 #pragma once
 #include <chrono>
 
-struct FpsTimer final {
+struct Timer final {
     using Clock = std::chrono::steady_clock;
     using TimePoint = std::chrono::time_point<Clock>;
     using Duration = std::chrono::duration<double>;
 
-    FpsTimer() : m_lastTime(Clock::now())
+    Timer() : m_lastTime(Clock::now())
         , m_currentTime(Clock::now())
         , m_elapsedTime(0.0f) {
     }
