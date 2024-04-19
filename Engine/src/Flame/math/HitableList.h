@@ -1,8 +1,7 @@
 #pragma once
 
-#include <list>
-
 #include "IHitable.h"
+#include <list>
 
 struct HitableList final : IHitable {
   bool Hit(const Ray& r, float tMin, float tMax, HitRecord& record) override {

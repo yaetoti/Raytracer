@@ -15,75 +15,81 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="source\utils\Timer.h">
+    <ClInclude Include="src\Flame\math\HitableList.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\math\Vec3.h">
+    <ClInclude Include="src\Flame\math\HitRecord.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\math\Vector.h">
+    <ClInclude Include="src\Flame\math\IHitable.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\math\Vec4.h">
+    <ClInclude Include="src\Flame\math\Ray.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\math\Ray.h">
+    <ClInclude Include="src\Flame\math\Sphere.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\math\Sphere.h">
+    <ClInclude Include="src\Flame\math\Vec3.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\render\Framebuffer.h">
+    <ClInclude Include="src\Flame\math\Vec4.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\window\Window.h">
+    <ClInclude Include="src\Flame\math\Vector.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\utils\FunctionalDispatcher.h">
+    <ClInclude Include="src\Flame\render\AlbedoMaterial.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\math\HitRecord.h">
+    <ClInclude Include="src\Flame\render\Framebuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\math\IHitable.h">
+    <ClInclude Include="src\Flame\render\IMaterial.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\math\HitableList.h">
+    <ClInclude Include="src\Flame\render\LambertianMaterial.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\render\IMaterial.h">
+    <ClInclude Include="src\Flame\render\MetalMaterial.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\render\LambertianMaterial.h">
+    <ClInclude Include="src\Flame\utils\EventDispatcher.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\render\MetalMaterial.h">
+    <ClInclude Include="src\Flame\utils\FunctionalDispatcher.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\render\AlbedoMaterial.h">
+    <ClInclude Include="src\Flame\utils\Timer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\utils\EventDispatcher.h">
+    <ClInclude Include="src\Flame\window\events\KeyWindowEvent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\window\events\WindowEvent.h">
+    <ClInclude Include="src\Flame\window\events\MouseButtonWindowEvent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\window\events\ResizeWindowEvent.h">
+    <ClInclude Include="src\Flame\window\events\MouseMoveWindowEvent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\window\events\KeyWindowEvent.h">
+    <ClInclude Include="src\Flame\window\events\ResizeWindowEvent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\window\events\MouseButtonWindowEvent.h">
+    <ClInclude Include="src\Flame\window\events\WindowEvent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\window\events\MouseMoveWindowEvent.h">
+    <ClInclude Include="src\Flame\window\Window.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Flame\Core.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Flame.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="source\window\events\WindowEvent.cpp">
+    <ClCompile Include="src\Flame\window\events\WindowEvent.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

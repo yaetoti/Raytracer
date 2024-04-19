@@ -3,7 +3,7 @@
 #include "IMaterial.h"
 
 struct MetalMaterial final : IMaterial {
-  MetalMaterial(const Vec3F& albedo)
+  explicit MetalMaterial(const Vec3F& albedo)
   : m_albedo(albedo) {
   }
 

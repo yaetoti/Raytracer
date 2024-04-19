@@ -1,6 +1,8 @@
 #pragma once
 
-#include "Engine/source/math/Vector.h"
+#include "Flame/math/HitRecord.h"
+#include "Flame/math/Ray.h"
+#include "Flame/math/Vector.h"
 
 struct IMaterial {
   virtual ~IMaterial() = default;

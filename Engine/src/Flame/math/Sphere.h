@@ -3,7 +3,6 @@
 #include "IHitable.h"
 #include "Ray.h"
 #include "Vec3.h"
-
 #include <iostream>
 
 struct IMaterial;
@@ -11,12 +10,12 @@ struct IMaterial;
 struct Sphere final : IHitable {
   Vec3<float> center;
   float radius;
-  std::unique_ptr<IMaterial> m_material;
+  std::unique_ptr<IMaterial> material;
 
   explicit Sphere(const Vec3<float>& center, const float& radius, std::unique_ptr<IMaterial>&& material)
   : center(center)
   , radius(radius)
-  , m_material(std::move(material)) {
+  , material(std::move(material)) {
   }
 
   bool Hit(const Ray& r, float tMin, float tMax, HitRecord& record) override {
@@ -31,7 +30,7 @@ struct Sphere final : IHitable {
         record.time = t;
         record.point = r.AtParameter(t);
         record.normal = (record.point - center) / radius;
-        record.material = m_material.get();
+        record.material = material.get();
         return true;
       }
 
@@ -40,7 +39,7 @@ struct Sphere final : IHitable {
         record.time = t;
         record.point = r.AtParameter(t);
         record.normal = (record.point - center) / radius;
-        record.material = m_material.get();
+        record.material = material.get();
         return true;
       }
     }

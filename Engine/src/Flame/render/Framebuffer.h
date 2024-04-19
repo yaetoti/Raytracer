@@ -1,9 +1,9 @@
 #pragma once
 
-#include "../math/Vector.h"
+#include "Flame/math/Vector.h"
 #include <cassert>
 #include <vector>
-#include <windef.h>
+#include <Windows.h>
 
 struct Framebuffer final {
   Framebuffer(size_t width, size_t height)

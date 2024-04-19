@@ -1,5 +1,8 @@
 #pragma once
+
 #include "IMaterial.h"
+#include "Flame/math/Vector.h"
+#include <random>
 
 struct LambertianMaterial final : IMaterial {
   LambertianMaterial(const Vec3F& albedo, std::uniform_real_distribution<float>& distribution, std::mt19937& generator)

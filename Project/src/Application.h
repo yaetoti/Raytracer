@@ -1,25 +1,11 @@
 ﻿#pragma once
 
-#include "Engine/source/math/Sphere.h"
-
-#include "Engine/source/window/events/KeyWindowEvent.h"
-#include "Engine/source/window/events/ResizeWindowEvent.h"
-
-#include <ConsoleLib/Console.h>
-#include <Engine/source/math/HitableList.h>
-#include <Engine/source/math/Vector.h>
-#include <Engine/source/render/AlbedoMaterial.h>
-#include <Engine/source/render/Framebuffer.h>
-#include <Engine/source/render/LambertianMaterial.h>
-#include <Engine/source/render/MetalMaterial.h>
-#include <Engine/source/utils/EventDispatcher.h>
-#include <Engine/source/utils/Timer.h>
-#include <Engine/source/window/Window.h>
-#include <Engine/source/window/events/WindowEvent.h>
-
-#include <Windows.h>
-#include <random>
 #include <chrono>
+#include <ConsoleLib.h>
+#include <Flame.h>
+#include <random>
+#include <thread>
+#include <Windows.h>
 
 struct Application final : EventListener<WindowEvent> {
   Application();
@@ -73,7 +59,7 @@ private:
   int lastY = 0;
 
   void Init();
-  void Update(double deltaTime);
+  void Update(float deltaTime);
   void Render();
   Vec3F Color(const Ray& ray, int depth);
 };
@@ -81,7 +67,7 @@ private:
 inline Application::Application()
 : m_window(std::make_shared<Window>(L"Flame 🔥", 1366, 768))
 , framebuffer(1366, 768)
-, gen(std::chrono::high_resolution_clock::now().time_since_epoch().count()) {
+, gen(static_cast<unsigned>(std::chrono::high_resolution_clock::now().time_since_epoch().count())) {
 }
 
 inline Vec3F Application::Color(const Ray& ray, int depth) {
@@ -140,12 +126,12 @@ inline int Application::RunMainLoop() {
 
   // FPS limiter
   int targetFps = 120;
-  double targetDeltaTime = 1.0 / targetFps;
-  double deltaTime = 0.0;
+  float targetDeltaTime = 1.0f / targetFps;
+  float deltaTime = 0.0;
   // FPS counter
   int frames = 0;
   int lastFps = 0;
-  double fpsElapsed = 0.0;
+  float fpsElapsed = 0.0;
 
   while (true) {
     deltaTime = std::max(timer.Tick(), targetDeltaTime);
@@ -241,22 +227,22 @@ inline void Application::Init() {
   m_window->Show(SW_SHOW);
 }
 
-inline void Application::Update(double deltaTime) {
+inline void Application::Update(float deltaTime) {
   if (aDown) {
-    sphere2->center -= Vec3F(1.0f * deltaTime, 0, 0);
+    sphere2->center -= Vec3F(1.0f * deltaTime, 0.0f, 0.0f);
   }
   if (dDown) {
-    sphere2->center -= Vec3F(-1.0f * deltaTime, 0, 0);
+    sphere2->center -= Vec3F(-1.0f * deltaTime, 0.0f, 0.0f);
   }
   if (wDown) {
-    sphere2->center -= Vec3F(0, -1.0f * deltaTime, 0);
+    sphere2->center -= Vec3F(0, -1.0f * deltaTime, 0.0f);
   }
   if (sDown) {
-    sphere2->center -= Vec3F(0, 1.0f * deltaTime, 0);
+    sphere2->center -= Vec3F(0, 1.0f * deltaTime, 0.0f);
   }
 
   if (rmbDown) {
-    sphere2->center -= Vec3F((lastX - x) * deltaTime, -(lastY - y) * deltaTime, 0);
+    sphere2->center -= Vec3F((lastX - x) * deltaTime, -(lastY - y) * deltaTime, 0.0f);
     lastX = x;
     lastY = y;
   }

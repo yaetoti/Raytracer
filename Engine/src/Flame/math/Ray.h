@@ -1,8 +1,7 @@
 #pragma once
 
-#include <ostream>
-
 #include "Vec3.h"
+#include <ostream>
 
 struct Ray final {
   Vec3<float> origin;

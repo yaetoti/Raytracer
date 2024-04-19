@@ -1,12 +1,12 @@
 ﻿#pragma once
 
-#include "../render/Framebuffer.h"
-#include "Engine/source/utils/EventDispatcher.h"
 #include "events/KeyWindowEvent.h"
 #include "events/MouseButtonWindowEvent.h"
 #include "events/MouseMoveWindowEvent.h"
 #include "events/ResizeWindowEvent.h"
 #include "events/WindowEvent.h"
+#include "Flame/render/Framebuffer.h"
+#include "Flame/utils/EventDispatcher.h"
 #include <Windows.h>
 
 struct Window final {

@@ -1,8 +1,9 @@
 #pragma once
+
 #include "IMaterial.h"
 
 struct AlbedoMaterial final : IMaterial {
-  AlbedoMaterial(const Vec3F& albedo)
+  explicit AlbedoMaterial(const Vec3F& albedo)
   : m_albedo(albedo) {
   }
 

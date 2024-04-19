@@ -1,4 +1,5 @@
 #pragma once
+
 #include <chrono>
 
 struct Timer final {
@@ -12,14 +13,14 @@ struct Timer final {
   , m_elapsedTime(0.0f) {
   }
 
-  double Tick() {
+  float Tick() {
     m_lastTime = m_currentTime;
     m_currentTime = Clock::now();
-    m_elapsedTime = Duration(m_currentTime - m_lastTime).count();
+    m_elapsedTime = static_cast<float>(Duration(m_currentTime - m_lastTime).count());
     return m_elapsedTime;
   }
 
-  double GetElapsedTime() const {
+  float GetElapsedTime() const {
     return m_elapsedTime;
   }
 
@@ -34,5 +35,5 @@ struct Timer final {
 private:
   TimePoint m_lastTime;
   TimePoint m_currentTime;
-  double m_elapsedTime;
+  float m_elapsedTime;
 };

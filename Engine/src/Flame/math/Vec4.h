@@ -261,9 +261,7 @@ struct Vec4 final {
 // Binary arithmetic operators
 // Sum
 template <typename T, typename U>
-Vec4<T> operator+(const Vec4<T>& v, const U& scalar) {
-  return Vec4<T>(v) += scalar;
-}
+Vec4<T> operator+(const Vec4<T>& v, const U& scalar);
 
 template <typename T, typename U>
 Vec4<T> operator+(const U& scalar, const Vec4<T>& v) {

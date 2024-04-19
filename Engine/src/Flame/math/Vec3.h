@@ -235,11 +235,10 @@ struct Vec3 final {
 
   // TODO Fix
   static Vec3 RandomInUnitSphere(std::uniform_real_distribution<float>& rand, std::mt19937& gen) {
-    return (2.0 * Vec3(rand(gen), rand(gen), rand(gen)) - Vec3(1.0)).Normalize();
+    return (T(2.0) * Vec3(rand(gen), rand(gen), rand(gen)) - Vec3(T(1.0))).Normalize();
   }
 };
 
-// Binary arithmetic operators
 // Sum
 template <typename T, typename U>
 Vec3<T> operator+(const Vec3<T>& v, const U& scalar) {

@@ -1,4 +1,5 @@
 #pragma once
+
 #include "WindowEvent.h"
 
 struct ResizeWindowEvent final : WindowEvent {
