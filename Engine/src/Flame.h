@@ -7,9 +7,6 @@
 #include "Flame/math/IHitable.h"
 #include "Flame/math/Ray.h"
 #include "Flame/math/Sphere.h"
-#include "Flame/math/Vec3.h"
-#include "Flame/math/Vec4.h"
-#include "Flame/math/Vector.h"
 
 #include "Flame/render/AlbedoMaterial.h"
 #include "Flame/render/Framebuffer.h"

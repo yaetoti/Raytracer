@@ -1,23 +1,24 @@
 #pragma once
 
-#include "Vec3.h"
 #include <ostream>
+#include <glm/ext.hpp>
+#include <glm/glm.hpp>
 
 struct Ray final {
-  Vec3<float> origin;
-  Vec3<float> direction;
+  glm::vec3 origin;
+  glm::vec3 direction;
 
   Ray()
-  : origin(Vec3<float>())
-  , direction(Vec3<float>()) {
+  : origin(glm::vec3())
+  , direction(glm::vec3()) {
   }
 
-  explicit Ray(const Vec3<float>& origin, const Vec3<float>& direction)
+  explicit Ray(const glm::vec3& origin, const glm::vec3& direction)
   : origin(origin)
   , direction(direction) {
   }
 
-  Vec3<float> AtParameter(float t) const {
+  glm::vec3 AtParameter(float t) const {
     return origin + t * direction;
   }
 

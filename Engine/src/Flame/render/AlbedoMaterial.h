@@ -3,16 +3,16 @@
 #include "IMaterial.h"
 
 struct AlbedoMaterial final : IMaterial {
-  explicit AlbedoMaterial(const Vec3F& albedo)
+  explicit AlbedoMaterial(const glm::vec3& albedo)
   : m_albedo(albedo) {
   }
 
-  bool Scatter(const Ray& ray, const HitRecord& record, Ray& scattered, Vec3F& attenuation) override {
+  bool Scatter(const Ray& ray, const HitRecord& record, Ray& scattered, glm::vec3& attenuation) override {
     scattered = Ray();
     attenuation = m_albedo;
     return true;
   }
 
 private:
-  Vec3F m_albedo;
+  glm::vec3 m_albedo;
 };

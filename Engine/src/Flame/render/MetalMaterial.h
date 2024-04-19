@@ -3,17 +3,17 @@
 #include "IMaterial.h"
 
 struct MetalMaterial final : IMaterial {
-  explicit MetalMaterial(const Vec3F& albedo)
+  explicit MetalMaterial(const glm::vec3& albedo)
   : m_albedo(albedo) {
   }
 
-  bool Scatter(const Ray& ray, const HitRecord& record, Ray& scattered, Vec3F& attenuation) override {
-    Vec3F reflected = ray.direction.Reflect(record.normal).Normalize();
+  bool Scatter(const Ray& ray, const HitRecord& record, Ray& scattered, glm::vec3& attenuation) override {
+    glm::vec3 reflected = glm::normalize(glm::reflect(ray.direction, record.normal));
     scattered = Ray(record.point, reflected);
     attenuation = m_albedo;
-    return reflected.Dot(record.normal) > 0;
+    return glm::dot(reflected, record.normal) > 0;
   }
 
 private:
-  Vec3F m_albedo;
+  glm::vec3 m_albedo;
 };

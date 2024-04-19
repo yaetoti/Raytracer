@@ -17,29 +17,29 @@ private:
   std::shared_ptr<Window> m_window;
   Framebuffer framebuffer;
 
-  std::mt19937 gen;
-  std::uniform_real_distribution<float> dis;
+  std::mt19937_64 gen;
+  std::uniform_real_distribution<float> dist;
 
   std::shared_ptr<Sphere> sphere1 = std::make_shared<Sphere>(
-    Vec3F(0, 0, -2),
+    glm::vec3(0, 0, -2),
     0.5f,
     std::make_unique<MetalMaterial>(
-      Vec3F(0.98f, 0.98f, 0.98f)
+      glm::vec3(0.98f, 0.98f, 0.98f)
     )
   );
   std::shared_ptr<Sphere> sphere2 = std::make_shared<Sphere>(
-    Vec3F(0.8f, 0.2f, -1.0f),
+    glm::vec3(0.8f, 0.2f, -1.0f),
     0.4f,
     std::make_unique<AlbedoMaterial>(
-      Vec3F(0.28f, 1.0f, 0.5f)
+      glm::vec3(0.28f, 1.0f, 0.5f)
     )
   );
   std::shared_ptr<Sphere> sphere3 = std::make_shared<Sphere>(
-    Vec3F(0, -10.5f, -2.0f),
+    glm::vec3(0, -10.5f, -2.0f),
     10.0f,
     std::make_unique<LambertianMaterial>(
-      Vec3F(1.0f, 0.28f, 0.5f),
-      dis,
+      glm::vec3(1.0f, 0.28f, 0.5f),
+      dist,
       gen
     )
   );
@@ -61,7 +61,7 @@ private:
   void Init();
   void Update(float deltaTime);
   void Render();
-  Vec3F Color(const Ray& ray, int depth);
+  glm::vec3 Color(const Ray& ray, int depth);
 };
 
 inline Application::Application()
@@ -70,22 +70,22 @@ inline Application::Application()
 , gen(static_cast<unsigned>(std::chrono::high_resolution_clock::now().time_since_epoch().count())) {
 }
 
-inline Vec3F Application::Color(const Ray& ray, int depth) {
+inline glm::vec3 Application::Color(const Ray& ray, int depth) {
   HitRecord record;
   if (hitables.Hit(ray, 0.01f, std::numeric_limits<float>::max(), record)) {
     Ray scattered;
-    Vec3F attenuation;
+    glm::vec3 attenuation;
 
     if (depth < 10 && record.material->Scatter(ray, record, scattered, attenuation)) {
       return attenuation * Color(scattered, depth + 1);
     }
 
-    return Vec3F(0.0f);
+    return glm::vec3(0.0f);
   }
 
-  Vec3F skyColor(0.5f, 0.7f, 1.0f);
+  glm::vec3 skyColor(0.5f, 0.7f, 1.0f);
   float t = (ray.direction.y + 1) * 0.5f;
-  return skyColor * t + (1.0f - t) * Vec3F(1.0f);
+  return skyColor * t + (1.0f - t) * glm::vec3(1.0f);
 }
 
 inline void Application::Render() {
@@ -97,7 +97,7 @@ inline void Application::Render() {
   float aspectRatio = static_cast<float>(width) / static_cast<float>(height);
   float scaleX = std::min(aspectRatio, 1.0f);
   float scaleY = std::min(1 / aspectRatio, 1.0f);
-  Vec3F unit(1.0f / width, 1.0f / height, 0);
+  glm::vec3 unit(1.0f / width, 1.0f / height, 0);
 
   for (int col = 0; col < height; ++col) {
     for (int row = 0; row < width; ++row) {
@@ -105,9 +105,9 @@ inline void Application::Render() {
       float x = (2.0f * row / width - 1.0f) * scaleX;
       float y = (2.0f * col / height - 1.0f) * scaleY;
 
-      Vec3F resultColor;
+      glm::vec3 resultColor(0);
       for (int i = 0; i < rays; ++i) {
-        Ray ray(Vec3F(x, y, 0) + unit * dis(gen), Vec3F(0, 0, -1.0));
+        Ray ray(glm::vec3(x, y, 0) + unit * dist(gen), glm::vec3(0, 0, -1));
         resultColor += Color(ray, 0);
       }
 
@@ -125,7 +125,7 @@ inline int Application::RunMainLoop() {
   Timer timer;
 
   // FPS limiter
-  int targetFps = 120;
+  int targetFps = 60;
   float targetDeltaTime = 1.0f / targetFps;
   float deltaTime = 0.0;
   // FPS counter
@@ -229,20 +229,20 @@ inline void Application::Init() {
 
 inline void Application::Update(float deltaTime) {
   if (aDown) {
-    sphere2->center -= Vec3F(1.0f * deltaTime, 0.0f, 0.0f);
+    sphere2->center -= glm::vec3(1.0f * deltaTime, 0.0f, 0.0f);
   }
   if (dDown) {
-    sphere2->center -= Vec3F(-1.0f * deltaTime, 0.0f, 0.0f);
+    sphere2->center -= glm::vec3(-1.0f * deltaTime, 0.0f, 0.0f);
   }
   if (wDown) {
-    sphere2->center -= Vec3F(0, -1.0f * deltaTime, 0.0f);
+    sphere2->center -= glm::vec3(0, -1.0f * deltaTime, 0.0f);
   }
   if (sDown) {
-    sphere2->center -= Vec3F(0, 1.0f * deltaTime, 0.0f);
+    sphere2->center -= glm::vec3(0, 1.0f * deltaTime, 0.0f);
   }
 
   if (rmbDown) {
-    sphere2->center -= Vec3F((lastX - x) * deltaTime, -(lastY - y) * deltaTime, 0.0f);
+    sphere2->center -= glm::vec3((lastX - x) * deltaTime, -(lastY - y) * deltaTime, 0.0f);
     lastX = x;
     lastY = y;
   }

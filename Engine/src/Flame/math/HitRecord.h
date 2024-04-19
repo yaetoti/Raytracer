@@ -1,12 +1,12 @@
 #pragma once
 
-#include "Vec3.h"
+#include <glm/glm.hpp>
 
 struct IMaterial;
 
 struct HitRecord final {
   float time;
-  Vec3<float> point;
-  Vec3<float> normal;
+  glm::vec3 point;
+  glm::vec3 normal;
   IMaterial* material;
 };

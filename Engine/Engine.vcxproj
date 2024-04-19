@@ -16,11 +16,9 @@
     <ClInclude Include="src\Flame\math\HitableList.h" />
     <ClInclude Include="src\Flame\math\HitRecord.h" />
     <ClInclude Include="src\Flame\math\IHitable.h" />
+    <ClInclude Include="src\Flame\math\MathUtils.h" />
     <ClInclude Include="src\Flame\math\Ray.h" />
     <ClInclude Include="src\Flame\math\Sphere.h" />
-    <ClInclude Include="src\Flame\math\Vec3.h" />
-    <ClInclude Include="src\Flame\math\Vec4.h" />
-    <ClInclude Include="src\Flame\math\Vector.h" />
     <ClInclude Include="src\Flame\render\AlbedoMaterial.h" />
     <ClInclude Include="src\Flame\render\Framebuffer.h" />
     <ClInclude Include="src\Flame\render\IMaterial.h" />
@@ -90,7 +88,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
-      <AdditionalIncludeDirectories>$(SolutionDir)ConsoleLib\src;$(SolutionDir)Engine\src;$(SolutionDir)Engine\vendor;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Engine\src;$(SolutionDir)Engine\vendor;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -110,7 +108,7 @@
       <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
-      <AdditionalIncludeDirectories>$(SolutionDir)ConsoleLib\src;$(SolutionDir)Engine\src;$(SolutionDir)Engine\vendor;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Engine\src;$(SolutionDir)Engine\vendor;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

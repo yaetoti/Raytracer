@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Flame/math/Vector.h"
 #include <cassert>
 #include <vector>
 #include <Windows.h>
+#include <glm/glm.hpp>
 
 struct Framebuffer final {
   Framebuffer(size_t width, size_t height)
@@ -25,9 +25,9 @@ struct Framebuffer final {
     m_buffer[(y * m_width + x) * 4 + 2] = r;
   }
 
-  Vec3I GetPixel(size_t x, size_t y) {
+  glm::ivec3 GetPixel(size_t x, size_t y) {
     assert(x < m_width && y < m_height);
-    return Vec3I(
+    return glm::ivec3(
       m_buffer[(y * m_width + x) * 4 + 2],
       m_buffer[(y * m_width + x) * 4 + 1],
       m_buffer[(y * m_width + x) * 4 + 0]
