@@ -1,19 +1,15 @@
 #pragma once
 
 #include "IMaterial.h"
-#include "Flame/math/MathUtils.h"
-
-#include <random>
+#include "Flame/utils/Random.h"
 
 struct LambertianMaterial final : IMaterial {
-  LambertianMaterial(const glm::vec3& albedo, std::uniform_real_distribution<float>& distribution, std::mt19937_64& generator)
-  : m_albedo(albedo)
-  , m_distribution(distribution)
-  , m_generator(generator) {
+  LambertianMaterial(const glm::vec3& albedo)
+  : m_albedo(albedo) {
   }
 
   bool Scatter(const Ray& ray, const HitRecord& record, Ray& scattered, glm::vec3& attenuation) override {
-    glm::vec3 target = record.point + record.normal + MathUtils::RandomUnitVector<3, float>(m_generator, m_distribution);
+    glm::vec3 target = record.point + record.normal + Random::UnitVector<3, float>();
     scattered = Ray(record.point, glm::normalize(target - record.point));
     attenuation = m_albedo;
     return true;
@@ -21,6 +17,4 @@ struct LambertianMaterial final : IMaterial {
 
 private:
   glm::vec3 m_albedo;
-  std::uniform_real_distribution<float>& m_distribution;
-  std::mt19937_64& m_generator;
 };

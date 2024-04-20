@@ -72,13 +72,13 @@
     <ClInclude Include="src\Flame\window\Window.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Flame\Core.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\Flame.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Flame\math\MathUtils.h">
+    <ClInclude Include="src\Flame\window\InputSystem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Flame\utils\Random.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

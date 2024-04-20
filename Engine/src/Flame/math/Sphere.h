@@ -19,12 +19,13 @@ struct Sphere final : IHitable {
 
   bool Hit(const Ray& r, float tMin, float tMax, HitRecord& record) override {
     glm::vec3 oc = r.origin - center;
+
     float b = glm::dot(oc, r.direction);
-    float c = glm::length2(oc) - radius * radius;
+    float c = glm::dot(oc, oc) - radius * radius;
     float d = b * b - c;
 
     if (d > 0) {
-      float t = (-b - sqrt(d));
+      float t = -b - sqrt(d);
       if (t > tMin && t < tMax) {
         record.time = t;
         record.point = r.AtParameter(t);
@@ -33,7 +34,7 @@ struct Sphere final : IHitable {
         return true;
       }
 
-      t = (-b + sqrt(d));
+      t = -b + sqrt(d);
       if (t > tMin && t < tMax) {
         record.time = t;
         record.point = r.AtParameter(t);

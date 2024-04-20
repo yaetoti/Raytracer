@@ -1,8 +1,6 @@
 #pragma once
 
-#include "Flame/Core.h"
-
-enum class FLAME_API WindowEventType {
+enum class WindowEventType {
   RESIZE,
   KEY,
   MOUSE_BUTTON,
@@ -10,7 +8,7 @@ enum class FLAME_API WindowEventType {
   COUNT
 };
 
-struct FLAME_API WindowEvent {
+struct WindowEvent {
   virtual ~WindowEvent() = default;
 
   WindowEventType type;

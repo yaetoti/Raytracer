@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Flame/Core.h"
-
 #include "Flame/math/HitableList.h"
 #include "Flame/math/HitRecord.h"
 #include "Flame/math/IHitable.h"
