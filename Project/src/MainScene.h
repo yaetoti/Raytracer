@@ -23,7 +23,6 @@ private:
   Flame::InputSystem& m_input;
 
   // TODO Not here
-  std::vector<std::unique_ptr<Flame::IHitable>> m_hitables;
   std::vector<std::unique_ptr<Flame::IMaterial>> m_materials;
 
   Flame::Sphere* m_sphere2 = nullptr;

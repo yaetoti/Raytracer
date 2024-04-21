@@ -1,5 +1,6 @@
 #include "Scene3D.h"
 
+#include "Flame/math/MathUtils.h"
 #include "Flame/math/Ray.h"
 #include "Flame/utils/Random.h"
 
@@ -28,7 +29,7 @@ namespace Flame {
         glm::vec3 resultColor(0);
         for (int i = 0; i < rays; ++i) {
           Ray ray(glm::vec3(x, y, 0) + unit * Random::Float(), glm::vec3(0, 0, -1));
-          resultColor += Color(m_hitableList, ray, 0);
+          resultColor += Color(ray, 0);
         }
 
         resultColor *= raysScale;
@@ -38,14 +39,14 @@ namespace Flame {
     }
   }
 
-  glm::vec3 Scene3D::Color(const HitableList& hitaleList, const Ray& ray, int depth) {
+  glm::vec3 Scene3D::Color(const Ray& ray, int depth) {
     HitRecord record;
-    if (hitaleList.Hit(ray, 0.01f, std::numeric_limits<float>::max(), record)) {
+    if (MathUtils::HitClosest(m_hitables.begin(), m_hitables.end(), ray, 0.01f, std::numeric_limits<float>::max(), record)) {
       Ray scattered;
       glm::vec3 attenuation;
 
       if (depth < 10 && record.material->Scatter(ray, record, scattered, attenuation)) {
-        return attenuation * Color(hitaleList, scattered, depth + 1);
+        return attenuation * Color(scattered, depth + 1);
       }
 
       return glm::vec3(0.0f);

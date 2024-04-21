@@ -47,10 +47,6 @@ void MainScene::Initialize() {
    )
   );
 
-  for (auto& hitable : m_hitables) {
-    m_hitableList.Add(hitable.get());
-  }
-
   m_sphere2 = dynamic_cast<Flame::Sphere*>(m_hitables[1].get());
 }
 

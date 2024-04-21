@@ -13,9 +13,9 @@
   <ItemGroup>
     <ClInclude Include="src\Flame\layers\Scene3D.h" />
     <ClInclude Include="src\Flame.h" />
-    <ClInclude Include="src\Flame\math\HitableList.h" />
     <ClInclude Include="src\Flame\math\HitRecord.h" />
     <ClInclude Include="src\Flame\math\IHitable.h" />
+    <ClInclude Include="src\Flame\math\MathUtils.h" />
     <ClInclude Include="src\Flame\math\Ray.h" />
     <ClInclude Include="src\Flame\math\Sphere.h" />
     <ClInclude Include="src\Flame\render\AlbedoMaterial.h" />
@@ -40,7 +40,6 @@
     <ClCompile Include="src\Flame\layers\Scene3D.cpp" />
     <ClCompile Include="src\Flame\layers\LayerStack.cpp" />
     <ClCompile Include="src\Flame\layers\LayerStack.h" />
-    <ClCompile Include="src\Flame\math\HitableList.cpp" />
     <ClCompile Include="src\Flame\window\InputSystem.cpp" />
     <ClCompile Include="src\Flame\window\Window.cpp" />
   </ItemGroup>
@@ -96,6 +95,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <AdditionalIncludeDirectories>$(SolutionDir)Engine\src;$(SolutionDir)Engine\vendor;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -116,6 +116,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <AdditionalIncludeDirectories>$(SolutionDir)Engine\src;$(SolutionDir)Engine\vendor;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

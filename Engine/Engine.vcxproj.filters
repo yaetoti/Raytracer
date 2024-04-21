@@ -15,9 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\Flame\math\HitableList.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\Flame\math\HitRecord.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -87,6 +84,9 @@
     <ClInclude Include="src\Flame\layers\Scene3D.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\Flame\math\MathUtils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Flame\window\Window.cpp">
@@ -99,9 +99,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Flame\layers\LayerStack.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Flame\math\HitableList.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Flame\layers\Scene3D.cpp">
