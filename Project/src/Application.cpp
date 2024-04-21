@@ -87,7 +87,7 @@ void Application::HandleEvent(const Flame::WindowEvent& e) {
   switch (e.type) {
   case Flame::WindowEventType::RESIZE: {
     auto evt = dynamic_cast<const Flame::ResizeWindowEvent*>(&e);
-    m_framebuffer.Resize(evt->width / 4, evt->height / 4);
+    m_framebuffer.Resize(evt->width / 2, evt->height / 2);
     return;
   }
   default:
