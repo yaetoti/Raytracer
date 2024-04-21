@@ -16,7 +16,7 @@ void MainScene::Initialize() {
 
     // Create materials
   m_materials.emplace_back(
-   std::make_unique<Flame::MetalMaterial>(glm::vec3(0.98f, 0.98f, 0.98f))
+   std::make_unique<Flame::MetalMaterial>(glm::vec3(0.90f, 0.90f, 0.90f))
   );
   m_materials.emplace_back(
    std::make_unique<Flame::AlbedoMaterial>(glm::vec3(0.28f, 1.0f, 0.5f))
