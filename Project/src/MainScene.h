@@ -3,7 +3,6 @@
 #include <memory>
 
 #include "Flame/layers/Scene3D.h"
-#include "Flame/math/HitableList.h"
 #include "Flame/math/IHitable.h"
 #include "Flame/math/Sphere.h"
 #include "Flame/window/InputSystem.h"
