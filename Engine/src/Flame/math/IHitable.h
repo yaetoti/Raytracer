@@ -6,5 +6,5 @@
 struct IHitable {
   virtual ~IHitable() = default;
 
-  virtual bool Hit(const Ray& r, float tMin, float tMax, HitRecord& record) = 0;
+  virtual bool Hit(const Ray& r, float tMin, float tMax, HitRecord& record) const = 0;
 };

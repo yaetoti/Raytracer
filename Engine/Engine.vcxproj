@@ -11,6 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Flame\layers\Scene3D.h" />
     <ClInclude Include="src\Flame.h" />
     <ClInclude Include="src\Flame\math\HitableList.h" />
     <ClInclude Include="src\Flame\math\HitRecord.h" />
@@ -22,7 +23,7 @@
     <ClInclude Include="src\Flame\render\IMaterial.h" />
     <ClInclude Include="src\Flame\render\LambertianMaterial.h" />
     <ClInclude Include="src\Flame\render\MetalMaterial.h" />
-    <ClInclude Include="src\Flame\Layer.h" />
+    <ClInclude Include="src\Flame\layers\Layer.h" />
     <ClInclude Include="src\Flame\utils\EventDispatcher.h" />
     <ClInclude Include="src\Flame\utils\FunctionalDispatcher.h" />
     <ClInclude Include="src\Flame\utils\Random.h" />
@@ -36,8 +37,10 @@
     <ClInclude Include="src\Flame\window\Window.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\Flame\LayerStack.cpp" />
-    <ClCompile Include="src\Flame\LayerStack.h" />
+    <ClCompile Include="src\Flame\layers\Scene3D.cpp" />
+    <ClCompile Include="src\Flame\layers\LayerStack.cpp" />
+    <ClCompile Include="src\Flame\layers\LayerStack.h" />
+    <ClCompile Include="src\Flame\math\HitableList.cpp" />
     <ClCompile Include="src\Flame\window\InputSystem.cpp" />
     <ClCompile Include="src\Flame\window\Window.cpp" />
   </ItemGroup>
@@ -88,7 +91,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NOMINMAX;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>GLM_ENABLE_EXPERIMENTAL;NOMINMAX;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
@@ -107,7 +110,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NOMINMAX;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>GLM_ENABLE_EXPERIMENTAL;NOMINMAX;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
       <LanguageStandard>stdcpp20</LanguageStandard>

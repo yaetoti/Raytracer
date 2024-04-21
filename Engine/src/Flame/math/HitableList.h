@@ -4,26 +4,8 @@
 #include <list>
 
 struct HitableList final : IHitable {
-  bool Hit(const Ray& r, float tMin, float tMax, HitRecord& record) override {
-    HitRecord tempRecord;
-    bool hitAnything = false;
-    float closest = tMax;
-
-    for (auto hitable : m_hitables) {
-      if (hitable->Hit(r, tMin, closest, tempRecord)) {
-        hitAnything = true;
-        closest = tempRecord.time;
-        record = tempRecord;
-      }
-    }
-
-    return hitAnything;
-  }
-
-  // TODO Handy add()/remove() regarding the scene and variability of game objects
-  void Add(IHitable* element) {
-    m_hitables.emplace_back(element);
-  }
+  bool Hit(const Ray& r, float tMin, float tMax, HitRecord& record) const override;
+  void Add(IHitable* element);
 
 private:
   std::list<IHitable*> m_hitables;

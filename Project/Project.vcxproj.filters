@@ -21,10 +21,10 @@
     <ClCompile Include="src\Main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\MainLayer.h">
+    <ClCompile Include="src\MainScene.h">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\MainLayer.cpp">
+    <ClCompile Include="src\MainScene.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

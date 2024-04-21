@@ -17,7 +17,7 @@ struct Sphere final : IHitable {
   , material(std::move(material)) {
   }
 
-  bool Hit(const Ray& r, float tMin, float tMax, HitRecord& record) override {
+  bool Hit(const Ray& r, float tMin, float tMax, HitRecord& record) const override {
     glm::vec3 oc = r.origin - center;
 
     float b = glm::dot(oc, r.direction);
