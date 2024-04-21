@@ -6,7 +6,7 @@ template <typename E>
 struct EventListener {
   virtual ~EventListener() = default;
 
-  virtual void Handle(const E* e) = 0;
+  virtual void HandleEvent(const E& e) = 0;
 };
 
 template <typename E>
@@ -22,9 +22,9 @@ struct EventDispatcher final {
     m_listeners.erase(id);
   }
 
-  void Dispatch(const E* e) {
+  void Dispatch(const E& e) {
     for (const auto& listener : m_listeners) {
-      listener->Handle(e);
+      listener->HandleEvent(e);
     }
   }
 

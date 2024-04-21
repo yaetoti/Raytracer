@@ -8,7 +8,7 @@ struct LambertianMaterial final : IMaterial {
   : m_albedo(albedo) {
   }
 
-  bool Scatter(const Ray& ray, const HitRecord& record, Ray& scattered, glm::vec3& attenuation) override {
+  bool Scatter(const Ray& ray, const HitRecord& record, Ray& scattered, glm::vec3& attenuation) const override {
     glm::vec3 target = record.point + record.normal + Random::UnitVector<3, float>();
     scattered = Ray(record.point, glm::normalize(target - record.point));
     attenuation = m_albedo;

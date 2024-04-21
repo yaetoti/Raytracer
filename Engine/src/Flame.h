@@ -7,7 +7,7 @@
 #include "Flame/math/Sphere.h"
 
 #include "Flame/render/AlbedoMaterial.h"
-#include "Flame/render/Framebuffer.h"
+#include "Flame/render/RenderSurface.h"
 #include "Flame/render/IMaterial.h"
 #include "Flame/render/LambertianMaterial.h"
 #include "Flame/render/MetalMaterial.h"

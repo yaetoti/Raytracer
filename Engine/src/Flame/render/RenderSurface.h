@@ -5,8 +5,13 @@
 #include <Windows.h>
 #include <glm/glm.hpp>
 
-struct Framebuffer final {
-  Framebuffer(size_t width, size_t height)
+struct RenderSurface final {
+  RenderSurface()
+  : m_width(0)
+  , m_height(0) {
+  }
+
+  RenderSurface(size_t width, size_t height)
   : m_buffer(width * height * 4)
   , m_width(width)
   , m_height(height) {

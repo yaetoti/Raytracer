@@ -7,7 +7,7 @@ struct AlbedoMaterial final : IMaterial {
   : m_albedo(albedo) {
   }
 
-  bool Scatter(const Ray& ray, const HitRecord& record, Ray& scattered, glm::vec3& attenuation) override {
+  bool Scatter(const Ray& ray, const HitRecord& record, Ray& scattered, glm::vec3& attenuation) const override {
     scattered = Ray();
     attenuation = m_albedo;
     return true;

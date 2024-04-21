@@ -14,5 +14,7 @@ struct WindowEvent {
   WindowEventType type;
 
 protected:
-  explicit WindowEvent(WindowEventType type);
+  explicit WindowEvent(WindowEventType type)
+  : type(type) {
+  }
 };

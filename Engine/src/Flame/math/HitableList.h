@@ -21,10 +21,10 @@ struct HitableList final : IHitable {
   }
 
   // TODO Handy add()/remove() regarding the scene and variability of game objects
-  void Add(std::shared_ptr<IHitable> element) {
+  void Add(IHitable* element) {
     m_hitables.emplace_back(element);
   }
 
 private:
-  std::list<std::shared_ptr<IHitable>> m_hitables;
+  std::list<IHitable*> m_hitables;
 };

@@ -18,10 +18,11 @@
     <ClInclude Include="src\Flame\math\Ray.h" />
     <ClInclude Include="src\Flame\math\Sphere.h" />
     <ClInclude Include="src\Flame\render\AlbedoMaterial.h" />
-    <ClInclude Include="src\Flame\render\Framebuffer.h" />
+    <ClInclude Include="src\Flame\render\RenderSurface.h" />
     <ClInclude Include="src\Flame\render\IMaterial.h" />
     <ClInclude Include="src\Flame\render\LambertianMaterial.h" />
     <ClInclude Include="src\Flame\render\MetalMaterial.h" />
+    <ClInclude Include="src\Flame\Layer.h" />
     <ClInclude Include="src\Flame\utils\EventDispatcher.h" />
     <ClInclude Include="src\Flame\utils\FunctionalDispatcher.h" />
     <ClInclude Include="src\Flame\utils\Random.h" />
@@ -35,7 +36,10 @@
     <ClInclude Include="src\Flame\window\Window.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\Flame\window\events\WindowEvent.cpp" />
+    <ClCompile Include="src\Flame\LayerStack.cpp" />
+    <ClCompile Include="src\Flame\LayerStack.h" />
+    <ClCompile Include="src\Flame\window\InputSystem.cpp" />
+    <ClCompile Include="src\Flame\window\Window.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>

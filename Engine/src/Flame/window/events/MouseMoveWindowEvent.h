@@ -3,12 +3,12 @@
 #include "WindowEvent.h"
 
 struct MouseMoveWindowEvent final : WindowEvent {
-  MouseMoveWindowEvent(int deltaX, int deltaY)
+  MouseMoveWindowEvent(float xCursor, float yCursor)
   : WindowEvent(WindowEventType::MOUSE_MOVE)
-  , deltaX(deltaX)
-  , deltaY(deltaY) {
+  , xCursor(xCursor)
+  , yCursor(yCursor) {
   }
 
-  int deltaX;
-  int deltaY;
+  float xCursor;
+  float yCursor;
 };

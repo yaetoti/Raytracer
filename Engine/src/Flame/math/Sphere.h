@@ -9,9 +9,9 @@ struct IMaterial;
 struct Sphere final : IHitable {
   glm::vec3 center;
   float radius;
-  std::unique_ptr<IMaterial> material;
+  const IMaterial& material;
 
-  explicit Sphere(const glm::vec3& center, const float& radius, std::unique_ptr<IMaterial>&& material)
+  explicit Sphere(const glm::vec3& center, const float& radius, const IMaterial& material)
   : center(center)
   , radius(radius)
   , material(std::move(material)) {
@@ -25,21 +25,21 @@ struct Sphere final : IHitable {
     float d = b * b - c;
 
     if (d > 0) {
-      float t = -b - sqrt(d);
+      float t = -b - sqrtf(d);
       if (t > tMin && t < tMax) {
         record.time = t;
         record.point = r.AtParameter(t);
         record.normal = (record.point - center) / radius;
-        record.material = material.get();
+        record.material = &material;
         return true;
       }
 
-      t = -b + sqrt(d);
+      t = -b + sqrtf(d);
       if (t > tMin && t < tMax) {
         record.time = t;
         record.point = r.AtParameter(t);
         record.normal = (record.point - center) / radius;
-        record.material = material.get();
+        record.material = &material;
         return true;
       }
     }
