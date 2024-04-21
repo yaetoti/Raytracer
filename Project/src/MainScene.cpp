@@ -1,5 +1,6 @@
 #include "MainScene.h"
 
+#include "Flame/math/Plane.h"
 #include "Flame/render/AlbedoMaterial.h"
 #include "Flame/render/LambertianMaterial.h"
 #include "Flame/render/MetalMaterial.h"
@@ -23,6 +24,9 @@ void MainScene::Initialize() {
   m_materials.emplace_back(
    std::make_unique<Flame::LambertianMaterial>(glm::vec3(1.0f, 0.28f, 0.5f))
   );
+  m_materials.emplace_back(
+   std::make_unique<Flame::AlbedoMaterial>(glm::vec3(0.16f, 0.10f, 0.22f))
+  );
 
   // Create spheres
   m_hitables.emplace_back(
@@ -44,6 +48,13 @@ void MainScene::Initialize() {
      glm::vec3(0, -50.5, -1),
      50.0f,
      *m_materials[2]
+   )
+  );
+  m_hitables.emplace_back(
+   std::make_unique<Flame::Plane>(
+     glm::vec3(0, 0, -5),
+     glm::normalize(glm::vec3(1, 0, 1)),
+     *m_materials[3]
    )
   );
 

@@ -1,7 +1,15 @@
 #pragma once
 
+#include "Flame/window/Window.h"
+#include "Flame/window/InputSystem.h"
+
+#include "Flame/layers/Layer.h"
+#include "Flame/layers/LayerStack.h"
+#include "Flame/layers/Scene3D.h"
+
 #include "Flame/math/HitRecord.h"
 #include "Flame/math/IHitable.h"
+#include "Flame/math/MathUtils.h"
 #include "Flame/math/Ray.h"
 #include "Flame/math/Sphere.h"
 
@@ -14,8 +22,6 @@
 #include "Flame/utils/EventDispatcher.h"
 #include "Flame/utils/FunctionalDispatcher.h"
 #include "Flame/utils/Timer.h"
-
-#include "Flame/window/Window.h"
 
 #include "Flame/window/events/KeyWindowEvent.h"
 #include "Flame/window/events/MouseButtonWindowEvent.h"

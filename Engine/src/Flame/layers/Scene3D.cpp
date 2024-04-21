@@ -10,7 +10,7 @@ namespace Flame {
 
     // TODO Pass application
     // TODO Add parameters
-    int rays = 3;
+    int rays = 50;
     float raysScale = 1.0f / rays;
 
     int width = static_cast<int>(surface.GetWidth());
