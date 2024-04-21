@@ -3,7 +3,7 @@
 Application::Application()
 // TODO MoveIntoWindow
 : m_framebuffer(1366, 768) {
-  m_window = std::make_shared<Window>(L"Flame 🔥", 1366, 768);
+  m_window = std::make_shared<Flame::Window>(L"Flame 🔥", 1366, 768);
   m_input = &m_window->GetInput();
 }
 
@@ -22,7 +22,7 @@ void Application::Run() {
 
   // Main loop
   MSG message;
-  Timer timer;
+  Flame::Timer timer;
   while (true) {
     float deltaTime = std::max(timer.Tick(), targetDeltaTime);
 
@@ -50,7 +50,7 @@ void Application::Run() {
     // TODO Scene->Render()
     m_window->Blit(m_framebuffer);
 
-    while (Timer::Duration(Timer::Clock::now() - timer.GetCurrentTimePoint()).count() < targetDeltaTime) {
+    while (timer.GetTimeSinceTick() < targetDeltaTime) {
       std::this_thread::yield();
     }
   }
@@ -83,10 +83,10 @@ void Application::Render() {
   }
 }
 
-void Application::HandleEvent(const WindowEvent& e) {
+void Application::HandleEvent(const Flame::WindowEvent& e) {
   switch (e.type) {
-  case WindowEventType::RESIZE: {
-    auto evt = dynamic_cast<const ResizeWindowEvent*>(&e);
+  case Flame::WindowEventType::RESIZE: {
+    auto evt = dynamic_cast<const Flame::ResizeWindowEvent*>(&e);
     m_framebuffer.Resize(evt->width / 4, evt->height / 4);
     return;
   }

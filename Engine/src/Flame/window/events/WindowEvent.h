@@ -1,20 +1,22 @@
 #pragma once
 
-enum class WindowEventType {
-  RESIZE,
-  KEY,
-  MOUSE_BUTTON,
-  MOUSE_MOVE,
-  COUNT
-};
+namespace Flame {
+  enum class WindowEventType {
+    RESIZE,
+    KEY,
+    MOUSE_BUTTON,
+    MOUSE_MOVE,
+    COUNT
+  };
 
-struct WindowEvent {
-  virtual ~WindowEvent() = default;
+  struct WindowEvent {
+    virtual ~WindowEvent() = default;
 
-  WindowEventType type;
+    WindowEventType type;
 
-protected:
-  explicit WindowEvent(WindowEventType type)
-  : type(type) {
-  }
-};
+  protected:
+    explicit WindowEvent(WindowEventType type)
+    : type(type) {
+    }
+  };
+}

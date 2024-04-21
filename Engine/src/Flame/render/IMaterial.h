@@ -2,10 +2,12 @@
 
 #include "Flame/math/Ray.h"
 
-struct HitRecord;
+namespace Flame {
+  struct HitRecord;
 
-struct IMaterial {
-  virtual ~IMaterial() = default;
+  struct IMaterial {
+    virtual ~IMaterial() = default;
 
-  virtual bool Scatter(const Ray& ray, const HitRecord& record, Ray& scattered, glm::vec3& attenuation) const = 0;
-};
+    virtual bool Scatter(const Ray& ray, const HitRecord& record, Ray& scattered, glm::vec3& attenuation) const = 0;
+  };
+}

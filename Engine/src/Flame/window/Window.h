@@ -1,52 +1,53 @@
 ﻿#pragma once
 
-#include <functional>
-#include <unordered_map>
-
 #include "events/WindowEvent.h"
 #include "Flame/render/RenderSurface.h"
 #include "Flame/utils/EventDispatcher.h"
-#include <Windows.h>
-
 #include "InputSystem.h"
 
-struct Window final {
-  explicit Window(const wchar_t* title, size_t width, size_t height);
-  ~Window();
+#include <functional>
+#include <unordered_map>
+#include <Windows.h>
 
-  bool CreateResources();
-  void DiscardResources();
+namespace Flame {
+  struct Window final {
+    explicit Window(const wchar_t* title, size_t width, size_t height);
+    ~Window();
 
-  void Show(int nCmdShow) const;
-  void Blit(const RenderSurface& surface) const;
+    bool CreateResources();
+    void DiscardResources();
 
-  // Dispatchers
-  InputSystem& GetInput();
-  EventDispatcher<WindowEvent>* GetDispatcher();
-  size_t GetWidth() const;
-  size_t GetHeight() const;
+    void Show(int nCmdShow) const;
+    void Blit(const RenderSurface& surface) const;
 
-  bool DispatchEvents();
-  bool HandleWindowMessage(UINT msg, WPARAM wParam, LPARAM lParam) const;
+    // Dispatchers
+    InputSystem& GetInput();
+    EventDispatcher<WindowEvent>* GetDispatcher();
+    size_t GetWidth() const;
+    size_t GetHeight() const;
 
-private:
-  void InitHandlers();
-  void HandleResizeMessage(UINT msg, WPARAM wParam, LPARAM lParam);
-  void HandleKeyMessage(UINT msg, WPARAM wParam, LPARAM lParam);
-  void HandleMouseButtonMessage(UINT msg, WPARAM wParam, LPARAM lParam);
-  void HandleMouseMoveMessage(UINT msg, WPARAM wParam, LPARAM lParam);
+    bool DispatchEvents();
+    bool HandleWindowMessage(UINT msg, WPARAM wParam, LPARAM lParam) const;
 
-  static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+  private:
+    void InitHandlers();
+    void HandleResizeMessage(UINT msg, WPARAM wParam, LPARAM lParam);
+    void HandleKeyMessage(UINT msg, WPARAM wParam, LPARAM lParam);
+    void HandleMouseButtonMessage(UINT msg, WPARAM wParam, LPARAM lParam);
+    void HandleMouseMoveMessage(UINT msg, WPARAM wParam, LPARAM lParam);
 
-private:
-  HWND m_hWnd;
-  size_t m_width;
-  size_t m_height;
-  const wchar_t* m_title;
+    static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-  EventDispatcher<WindowEvent> m_dispatcher;
-  std::unordered_map<UINT, std::function<void(UINT, WPARAM, LPARAM)>> m_messageHandlers;
-  InputSystem m_input;
+  private:
+    HWND m_hWnd;
+    size_t m_width;
+    size_t m_height;
+    const wchar_t* m_title;
 
-  inline const static wchar_t* kClassName = L"DlRaytracerWindow";
-};
+    EventDispatcher<WindowEvent> m_dispatcher;
+    std::unordered_map<UINT, std::function<void(UINT, WPARAM, LPARAM)>> m_messageHandlers;
+    InputSystem m_input;
+
+    inline const static wchar_t* kClassName = L"DlRaytracerWindow";
+  };
+}

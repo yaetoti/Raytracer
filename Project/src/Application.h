@@ -10,11 +10,11 @@
 #include <thread>
 #include <Windows.h>
 
-struct Application final : EventListener<WindowEvent> {
+struct Application final : Flame::EventListener<Flame::WindowEvent> {
   Application();
 
   void Run();
-  void HandleEvent(const WindowEvent& e) override;
+  void HandleEvent(const Flame::WindowEvent& e) override;
 
 private:
   void Init();
@@ -24,7 +24,7 @@ private:
 private:
   Flame::LayerStack m_layerStack;
 
-  std::shared_ptr<Window> m_window;
-  InputSystem* m_input;
-  RenderSurface m_framebuffer;
+  std::shared_ptr<Flame::Window> m_window;
+  Flame::InputSystem* m_input;
+  Flame::RenderSurface m_framebuffer;
 };
