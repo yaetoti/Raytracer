@@ -1,10 +1,10 @@
 ﻿#include "Application.h"
 
-Application::Application()
-// TODO MoveIntoWindow
-: m_framebuffer(1366, 768) {
+Application::Application() {
   m_window = std::make_shared<Flame::Window>(L"Flame 🔥", 1366, 768);
   m_input = &m_window->GetInput();
+  // TODO MoveIntoWindow
+  m_framebuffer = std::make_shared<Flame::RenderSurface>(m_window->GetWidth(), m_window->GetHeight());
 }
 
 void Application::Run() {
@@ -48,7 +48,7 @@ void Application::Run() {
     Update(deltaTime);
     Render();
     // TODO Scene->Render()
-    m_window->Blit(m_framebuffer);
+    m_window->Blit(*m_framebuffer);
 
     while (timer.GetTimeSinceTick() < targetDeltaTime) {
       std::this_thread::yield();
@@ -57,37 +57,36 @@ void Application::Run() {
 }
 
 void Application::Init() {
-  // TODO Move somewhere
-  m_layerStack.PushLayer(std::make_unique<MainScene>(*m_window));
-
-  for (auto& layer : m_layerStack) {
-    layer->Initialize();
-  }
-
   m_window->GetDispatcher()->AddListener(this);
   m_window->CreateResources();
   m_window->Show(SW_SHOW);
+
+  m_scene = std::make_shared<MainScene>(*m_window);
+  m_scene->Initialize();
+  // TODO Pass width and height = mistake
+  m_camera = std::make_shared<Flame::Camera>(m_framebuffer->GetWidth(), m_framebuffer->GetHeight(), 90.0f, 0.1f, 1000.0f);
 }
 
 void Application::Update(float deltaTime) {
-  for (auto& layer : m_layerStack) {
-    layer->Update(deltaTime);
-  }
+  static float x = 0.0f;
+  x += 1.0f * deltaTime;
+  //camera.Rotate(glm::eulerAngleXZ(0.02f, 0.05f));
+  m_camera->SetPosition(glm::vec3(0.0f, 0.0f, -glm::sin(x) * 0.5f));
+
+  m_scene->Update(deltaTime);
 
   m_input->Update();
 }
 
 void Application::Render() {
-  for (auto& layer : m_layerStack) {
-    layer->Render(m_framebuffer);
-  }
+  m_scene->Render(*m_framebuffer, *m_camera);
 }
 
 void Application::HandleEvent(const Flame::WindowEvent& e) {
   switch (e.type) {
   case Flame::WindowEventType::RESIZE: {
     auto evt = dynamic_cast<const Flame::ResizeWindowEvent*>(&e);
-    m_framebuffer.Resize(evt->width / 2, evt->height / 2);
+    m_framebuffer->Resize(evt->width / 2, evt->height / 2);
     return;
   }
   default:

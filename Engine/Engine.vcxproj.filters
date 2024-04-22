@@ -78,10 +78,7 @@
     <ClInclude Include="src\Flame\utils\Random.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Flame\layers\Layer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Flame\layers\Scene3D.h">
+    <ClInclude Include="src\Flame\layers\Scene.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Flame\math\MathUtils.h">
@@ -101,13 +98,7 @@
     <ClCompile Include="src\Flame\window\InputSystem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Flame\layers\LayerStack.h">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Flame\layers\LayerStack.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Flame\layers\Scene3D.cpp">
+    <ClCompile Include="src\Flame\layers\Scene.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Flame\math\Sphere.cpp">

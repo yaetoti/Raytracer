@@ -6,7 +6,7 @@
 #include <windowsx.h>
 
 namespace Flame {
-  Window::Window(const wchar_t* title, size_t width, size_t height)
+  Window::Window(const wchar_t* title, uint32_t width, uint32_t height)
   : m_hWnd(nullptr)
   , m_width(width)
   , m_height(height)
@@ -107,11 +107,11 @@ namespace Flame {
     return &m_dispatcher;
   }
 
-  size_t Window::GetWidth() const {
+  uint32_t Window::GetWidth() const {
     return m_width;
   }
 
-  size_t Window::GetHeight() const {
+  uint32_t Window::GetHeight() const {
     return m_height;
   }
 

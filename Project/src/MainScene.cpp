@@ -12,8 +12,6 @@ MainScene::MainScene(Flame::Window& window)
 }
 
 void MainScene::Initialize() {
-  Layer::Initialize();
-
     // Create materials
   m_materials.emplace_back(
    std::make_unique<Flame::MetalMaterial>(glm::vec3(0.90f, 0.90f, 0.90f))
@@ -25,7 +23,7 @@ void MainScene::Initialize() {
    std::make_unique<Flame::LambertianMaterial>(glm::vec3(1.0f, 0.28f, 0.5f))
   );
   m_materials.emplace_back(
-   std::make_unique<Flame::AlbedoMaterial>(glm::vec3(0.16f, 0.10f, 0.22f))
+   std::make_unique<Flame::LambertianMaterial>(glm::vec3(0.26f, 0.30f, 0.32f))
   );
 
   // Create spheres
@@ -53,7 +51,7 @@ void MainScene::Initialize() {
   m_hitables.emplace_back(
    std::make_unique<Flame::Plane>(
      glm::vec3(0, 0, -5),
-     glm::normalize(glm::vec3(1, 0, 1)),
+     glm::normalize(glm::vec3(1, 0.2, 1)),
      *m_materials[3]
    )
   );
@@ -62,8 +60,6 @@ void MainScene::Initialize() {
 }
 
 void MainScene::Update(float deltaTime) {
-  Layer::Update(deltaTime);
-
   if (m_input.IsKeyPressed('A')) {
     m_sphere2->center -= glm::vec3(1.0f * deltaTime, 0.0f, 0.0f);
   }
@@ -115,9 +111,7 @@ void MainScene::Update(float deltaTime) {
 }
 
 void MainScene::Cleanup() {
-  Layer::Cleanup();
 }
 
 void MainScene::HandleEvent(const Flame::WindowEvent& e) {
-  Layer::HandleEvent(e);
 }

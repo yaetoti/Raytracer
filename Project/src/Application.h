@@ -1,6 +1,5 @@
 ﻿#pragma once
 
-#include "Flame/layers/LayerStack.h"
 #include "MainScene.h"
 
 #include <chrono>
@@ -22,9 +21,10 @@ private:
   void Render();
 
 private:
-  Flame::LayerStack m_layerStack;
+  std::shared_ptr<Flame::Scene> m_scene;
+  std::shared_ptr<Flame::Camera> m_camera;
 
   std::shared_ptr<Flame::Window> m_window;
   Flame::InputSystem* m_input;
-  Flame::RenderSurface m_framebuffer;
+  std::shared_ptr<Flame::RenderSurface> m_framebuffer;
 };

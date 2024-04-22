@@ -12,7 +12,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Flame\camera\Camera.h" />
-    <ClInclude Include="src\Flame\layers\Scene3D.h" />
+    <ClInclude Include="src\Flame\layers\Scene.h" />
     <ClInclude Include="src\Flame.h" />
     <ClInclude Include="src\Flame\math\HitRecord.h" />
     <ClInclude Include="src\Flame\math\IHitable.h" />
@@ -25,7 +25,6 @@
     <ClInclude Include="src\Flame\render\IMaterial.h" />
     <ClInclude Include="src\Flame\render\LambertianMaterial.h" />
     <ClInclude Include="src\Flame\render\MetalMaterial.h" />
-    <ClInclude Include="src\Flame\layers\Layer.h" />
     <ClInclude Include="src\Flame\utils\EventDispatcher.h" />
     <ClInclude Include="src\Flame\utils\FunctionalDispatcher.h" />
     <ClInclude Include="src\Flame\utils\Random.h" />
@@ -40,9 +39,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Flame\camera\Camera.cpp" />
-    <ClCompile Include="src\Flame\layers\Scene3D.cpp" />
-    <ClCompile Include="src\Flame\layers\LayerStack.cpp" />
-    <ClCompile Include="src\Flame\layers\LayerStack.h" />
+    <ClCompile Include="src\Flame\layers\Scene.cpp" />
     <ClCompile Include="src\Flame\math\Sphere.cpp" />
     <ClCompile Include="src\Flame\window\InputSystem.cpp" />
     <ClCompile Include="src\Flame\window\Window.cpp" />

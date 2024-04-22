@@ -2,13 +2,13 @@
 
 #include <memory>
 
-#include "Flame/layers/Scene3D.h"
+#include "Flame/layers/Scene.h"
 #include "Flame/math/IHitable.h"
 #include "Flame/math/Sphere.h"
 #include "Flame/window/InputSystem.h"
 #include "Flame/window/Window.h"
 
-struct MainScene : Flame::Scene3D {
+struct MainScene : Flame::Scene {
   explicit MainScene(Flame::Window& window);
   ~MainScene() override = default;
 

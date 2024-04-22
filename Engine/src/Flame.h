@@ -3,9 +3,7 @@
 #include "Flame/window/Window.h"
 #include "Flame/window/InputSystem.h"
 
-#include "Flame/layers/Layer.h"
-#include "Flame/layers/LayerStack.h"
-#include "Flame/layers/Scene3D.h"
+#include "Flame/layers/Scene.h"
 
 #include "Flame/math/HitRecord.h"
 #include "Flame/math/IHitable.h"

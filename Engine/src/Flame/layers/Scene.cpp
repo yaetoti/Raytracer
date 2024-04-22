@@ -1,4 +1,4 @@
-#include "Scene3D.h"
+#include "Scene.h"
 
 #include <execution>
 #include <numeric>
@@ -10,8 +10,7 @@
 #include "Flame/window/events/KeyWindowEvent.h"
 
 namespace Flame {
-  void Scene3D::Render(RenderSurface& surface) {
-    Layer::Render(surface);
+  void Scene::Render(RenderSurface& surface, Camera& camera) {
 
     // TODO Pass application
     // TODO Add parameters
@@ -28,13 +27,6 @@ namespace Flame {
     verticalIter.resize(width);
     std::iota(verticalIter.begin(), verticalIter.end(), 0);
 
-    // TODO DONT Move to scene (Pass as an argument)
-    static Camera camera(width, height, 90.0f, 0.1f, 1000.0f);
-    static float x = 0.0f;
-    x += 0.05f;
-    camera.Rotate(glm::eulerAngleXZ(0.02f, 0.05f));
-    camera.SetPosition(glm::vec3(0.0f, 0.0f, -glm::sin(x) * 0.5f));
-
     std::for_each(std::execution::par, verticalIter.begin(), verticalIter.end(), [&](uint32_t row) {
       std::for_each(std::execution::par, horizontalIter.begin(), horizontalIter.end(), [&](uint32_t col) {
         glm::vec3 resultColor(0);
@@ -49,7 +41,7 @@ namespace Flame {
     });
   }
 
-  glm::vec3 Scene3D::Color(const Ray& ray, int depth) {
+  glm::vec3 Scene::Color(const Ray& ray, int depth) {
     // TODO Lighting, Materials, Meshes and Ray to ModelSpace
     HitRecord record;
     if (MathUtils::HitClosest(m_hitables.begin(), m_hitables.end(), ray, 0.01f, std::numeric_limits<float>::max(), record)) {
@@ -57,7 +49,7 @@ namespace Flame {
       glm::vec3 attenuation;
 
       if (depth < 10 && record.material->Scatter(ray, record, scattered, attenuation)) {
-        return attenuation * Color(scattered, depth + 1);
+        return attenuation * Color(scattered, depth + 1) * glm::max(glm::normalizeDot(record.normal, glm::vec3(1, 1, 1)), 0.1f);
       }
 
       return glm::vec3(0.0f);

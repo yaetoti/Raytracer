@@ -4,13 +4,13 @@
 
 namespace Flame {
   struct ResizeWindowEvent final : WindowEvent {
-    ResizeWindowEvent(size_t width, size_t height)
+    ResizeWindowEvent(uint32_t width, uint32_t height)
     : WindowEvent(WindowEventType::RESIZE)
     , width(width)
     , height(height) {
     }
 
-    size_t width;
-    size_t height;
+    uint32_t width;
+    uint32_t height;
   };
 }

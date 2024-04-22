@@ -11,7 +11,7 @@
 
 namespace Flame {
   struct Window final {
-    explicit Window(const wchar_t* title, size_t width, size_t height);
+    explicit Window(const wchar_t* title, uint32_t width, uint32_t height);
     ~Window();
 
     bool CreateResources();
@@ -23,8 +23,8 @@ namespace Flame {
     // Dispatchers
     InputSystem& GetInput();
     EventDispatcher<WindowEvent>* GetDispatcher();
-    size_t GetWidth() const;
-    size_t GetHeight() const;
+    uint32_t GetWidth() const;
+    uint32_t GetHeight() const;
 
     bool DispatchEvents();
     bool HandleWindowMessage(UINT msg, WPARAM wParam, LPARAM lParam) const;
@@ -40,8 +40,8 @@ namespace Flame {
 
   private:
     HWND m_hWnd;
-    size_t m_width;
-    size_t m_height;
+    uint32_t m_width;
+    uint32_t m_height;
     const wchar_t* m_title;
 
     EventDispatcher<WindowEvent> m_dispatcher;
