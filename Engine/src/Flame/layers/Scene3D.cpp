@@ -1,13 +1,13 @@
 #include "Scene3D.h"
 
 #include <execution>
-#include <iostream>
 #include <numeric>
 
 #include "Flame/camera/Camera.h"
 #include "Flame/math/MathUtils.h"
 #include "Flame/math/Ray.h"
 #include "Flame/utils/Random.h"
+#include "Flame/window/events/KeyWindowEvent.h"
 
 namespace Flame {
   void Scene3D::Render(RenderSurface& surface) {
@@ -15,25 +15,28 @@ namespace Flame {
 
     // TODO Pass application
     // TODO Add parameters
-    int rays = 50;
+    int rays = 5;
     float raysScale = 1.0f / rays;
 
-    int width = static_cast<int>(surface.GetWidth());
-    int height = static_cast<int>(surface.GetHeight());
-    //glm::vec3 unit(1.0f / width, 1.0f / height, 0);
+    uint32_t width = static_cast<int>(surface.GetWidth());
+    uint32_t height = static_cast<int>(surface.GetHeight());
 
-    std::vector<int> horizontalIter;
+    std::vector<uint32_t> horizontalIter;
     horizontalIter.resize(height);
     std::iota(horizontalIter.begin(), horizontalIter.end(), 0);
-    std::vector<int> verticalIter;
+    std::vector<uint32_t> verticalIter;
     verticalIter.resize(width);
     std::iota(verticalIter.begin(), verticalIter.end(), 0);
 
-    Camera camera(width, height, 90.0f, 0.1f, 1000.0f);
-    camera.GenerateRays();
+    // TODO DONT Move to scene (Pass as an argument)
+    static Camera camera(width, height, 90.0f, 0.1f, 1000.0f);
+    static float x = 0.0f;
+    x += 0.05f;
+    camera.Rotate(glm::eulerAngleXZ(0.02f, 0.05f));
+    camera.SetPosition(glm::vec3(0.0f, 0.0f, -glm::sin(x) * 0.5f));
 
-    std::for_each(std::execution::par, verticalIter.begin(), verticalIter.end(), [&](int row) {
-      std::for_each(std::execution::par, horizontalIter.begin(), horizontalIter.end(), [&](int col) {
+    std::for_each(std::execution::par, verticalIter.begin(), verticalIter.end(), [&](uint32_t row) {
+      std::for_each(std::execution::par, horizontalIter.begin(), horizontalIter.end(), [&](uint32_t col) {
         glm::vec3 resultColor(0);
         for (int i = 0; i < rays; ++i) {
           resultColor += Color(camera.GetRay(row, col), 0);
@@ -47,6 +50,7 @@ namespace Flame {
   }
 
   glm::vec3 Scene3D::Color(const Ray& ray, int depth) {
+    // TODO Lighting, Materials, Meshes and Ray to ModelSpace
     HitRecord record;
     if (MathUtils::HitClosest(m_hitables.begin(), m_hitables.end(), ray, 0.01f, std::numeric_limits<float>::max(), record)) {
       Ray scattered;

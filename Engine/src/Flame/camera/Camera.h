@@ -5,20 +5,32 @@
 #include <glm/detail/type_quat.hpp>
 
 #include "Flame/math/Ray.h"
-#include "Flame/utils/EventDispatcher.h"
-#include "Flame/window/events/WindowEvent.h"
 
 namespace Flame {
-  struct Camera final : EventListener<WindowEvent> {
-    Camera(size_t width, size_t height, float fov, float near, float far);
+  struct Camera final {
+    /**
+     * \param fov FOV in degrees
+     */
+    Camera(uint32_t width, uint32_t height, float fov, float nearPlane, float farPlane);
 
-    const Ray& GetRay(size_t x, size_t y);
-    void GenerateRays();
-    void HandleEvent(const WindowEvent& e) override;
+    void SetRotation(glm::quat rotation);
+    void SetPosition(glm::vec3 position);
+    void Rotate(glm::quat rotation);
+
+    Ray GetRay(uint32_t x, uint32_t y) const;
 
   private:
+    void CalculateProjection();
+    void CalculateView();
+    void CalculateRays();
 
   private:
+    uint32_t m_width;
+    uint32_t m_height;
+    float m_fov;
+    float m_near;
+    float m_far;
+
     glm::vec3 m_position;
     glm::vec3 m_direction;
     glm::quat m_rotation;
@@ -28,9 +40,6 @@ namespace Flame {
     glm::mat4 m_view;
     glm::mat4 m_iView;
 
-    std::vector<Ray> m_rays;
-    size_t m_bufferWidth = 800;
-    size_t m_bufferHeight = 600;
-    bool m_dirty = false;
+    std::vector<glm::vec3> m_directions;
   };  
 }

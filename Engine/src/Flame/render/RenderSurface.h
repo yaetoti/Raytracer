@@ -12,26 +12,26 @@ namespace Flame {
     , m_height(0) {
     }
 
-    RenderSurface(size_t width, size_t height)
+    RenderSurface(uint32_t width, uint32_t height)
     : m_buffer(width * height * 4)
     , m_width(width)
     , m_height(height) {
     }
 
-    void Resize(size_t width, size_t height) {
+    void Resize(uint32_t width, uint32_t height) {
       m_buffer.resize(width * height * 4);
       m_width = width;
       m_height = height;
     }
 
-    void SetPixel(size_t x, size_t y, BYTE r, BYTE g, BYTE b) {
+    void SetPixel(uint32_t x, uint32_t y, BYTE r, BYTE g, BYTE b) {
       assert(x < m_width && y < m_height);
       m_buffer[(y * m_width + x) * 4 + 0] = b;
       m_buffer[(y * m_width + x) * 4 + 1] = g;
       m_buffer[(y * m_width + x) * 4 + 2] = r;
     }
 
-    glm::ivec3 GetPixel(size_t x, size_t y) {
+    glm::ivec3 GetPixel(uint32_t x, uint32_t y) {
       assert(x < m_width && y < m_height);
       return glm::ivec3(
         m_buffer[(y * m_width + x) * 4 + 2],
@@ -45,17 +45,17 @@ namespace Flame {
       return m_buffer.data();
     }
 
-    size_t GetWidth() const {
+    uint32_t GetWidth() const {
       return m_width;
     }
 
-    size_t GetHeight() const {
+    uint32_t GetHeight() const {
       return m_height;
     }
 
   private:
     std::vector<BYTE> m_buffer;
-    size_t m_width;
-    size_t m_height;
+    uint32_t m_width;
+    uint32_t m_height;
   };
 }
