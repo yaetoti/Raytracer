@@ -39,6 +39,7 @@
     <ClInclude Include="src\Flame\window\Window.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Flame\camera\Camera.cpp" />
     <ClCompile Include="src\Flame\layers\Scene3D.cpp" />
     <ClCompile Include="src\Flame\layers\LayerStack.cpp" />
     <ClCompile Include="src\Flame\layers\LayerStack.h" />

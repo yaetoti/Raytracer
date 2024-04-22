@@ -229,6 +229,10 @@ namespace Flame {
       SetWindowLongPtrW(hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(data->lpCreateParams));
       return 0;
     }
+    if (msg == WM_DESTROY) {
+      PostQuitMessage(0);
+      return 0;
+    }
 
     const auto& window = reinterpret_cast<Window*>(GetWindowLongPtrW(hWnd, GWLP_USERDATA));
     if (window != nullptr && window->HandleWindowMessage(msg, wParam, lParam)) {
