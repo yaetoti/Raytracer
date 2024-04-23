@@ -17,6 +17,7 @@ namespace Flame {
         record.normal = normal;
         record.time = t;
         record.material = &material;
+        record.hitable = const_cast<Plane*>(this);
         return true;
       }
 

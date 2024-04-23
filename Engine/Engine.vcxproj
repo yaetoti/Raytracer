@@ -20,6 +20,7 @@
     <ClInclude Include="src\Flame\math\Plane.h" />
     <ClInclude Include="src\Flame\math\Ray.h" />
     <ClInclude Include="src\Flame\math\Sphere.h" />
+    <ClInclude Include="src\Flame\math\Triangle.h" />
     <ClInclude Include="src\Flame\render\AlbedoMaterial.h" />
     <ClInclude Include="src\Flame\render\RenderSurface.h" />
     <ClInclude Include="src\Flame\render\IMaterial.h" />
@@ -41,6 +42,7 @@
     <ClCompile Include="src\Flame\camera\Camera.cpp" />
     <ClCompile Include="src\Flame\layers\Scene.cpp" />
     <ClCompile Include="src\Flame\math\Sphere.cpp" />
+    <ClCompile Include="src\Flame\math\Triangle.cpp" />
     <ClCompile Include="src\Flame\window\InputSystem.cpp" />
     <ClCompile Include="src\Flame\window\Window.cpp" />
   </ItemGroup>

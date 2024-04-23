@@ -21,6 +21,7 @@ namespace Flame {
         record.point = r.AtParameter(t);
         record.normal = (record.point - center) / radius;
         record.material = &material;
+        record.hitable = const_cast<Sphere*>(this);
         return true;
       }
 
@@ -30,6 +31,7 @@ namespace Flame {
         record.point = r.AtParameter(t);
         record.normal = (record.point - center) / radius;
         record.material = &material;
+        record.hitable = const_cast<Sphere*>(this);
         return true;
       }
     }

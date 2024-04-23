@@ -23,6 +23,8 @@ namespace Flame {
     void Render(RenderSurface& surface, Camera& camera);
     void HandleEvent(const WindowEvent& e) override {}
 
+    std::vector<std::unique_ptr<IHitable>>& GetHitables();
+
   private:
     glm::vec3 Color(const Ray& ray, int depth);
 

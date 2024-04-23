@@ -14,7 +14,7 @@ namespace Flame {
 
     // TODO Pass application
     // TODO Add parameters
-    int rays = 5;
+    int rays = 20;
     float raysScale = 1.0f / rays;
 
     uint32_t width = static_cast<int>(surface.GetWidth());
@@ -41,6 +41,10 @@ namespace Flame {
     });
   }
 
+  std::vector<std::unique_ptr<IHitable>>& Scene::GetHitables() {
+    return m_hitables;
+  }
+
   glm::vec3 Scene::Color(const Ray& ray, int depth) {
     // TODO Lighting, Materials, Meshes and Ray to ModelSpace
     HitRecord record;
@@ -49,7 +53,7 @@ namespace Flame {
       glm::vec3 attenuation;
 
       if (depth < 10 && record.material->Scatter(ray, record, scattered, attenuation)) {
-        return attenuation * Color(scattered, depth + 1) * glm::max(glm::normalizeDot(record.normal, glm::vec3(1, 1, 1)), 0.1f);
+        return attenuation * Color(scattered, depth + 1) * glm::max(glm::normalizeDot(record.normal, glm::vec3(1, 1, 1)), 0.5f);
       }
 
       return glm::vec3(0.0f);
