@@ -20,6 +20,7 @@ namespace Flame {
     void Rotate(glm::quat rotation);
 
     Ray GetRay(uint32_t x, uint32_t y) const;
+    Ray GetRandomizedRay(uint32_t x, uint32_t y) const;
     glm::vec3 GetPosition() const;
     glm::vec3 GetFrontUnit() const;
     glm::vec3 GetRightUnit() const;
@@ -28,9 +29,8 @@ namespace Flame {
     glm::mat4 GetProjectionMatrix() const;
     glm::mat4 GetInversedProjectionMatrix() const;
 
-  public:
+  private:
     void CalculateProjection();
-    void CalculateRays();
 
   private:
     uint32_t m_width;
@@ -46,7 +46,5 @@ namespace Flame {
     glm::mat4 m_iProjection;
     glm::mat4 m_view;
     glm::mat4 m_iView;
-
-    std::vector<glm::vec3> m_directions;
-  };  
+  };
 }

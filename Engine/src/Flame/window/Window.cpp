@@ -6,11 +6,18 @@
 #include <windowsx.h>
 
 namespace Flame {
-  Window::Window(const wchar_t* title, uint32_t width, uint32_t height)
+  Window::Window(const wchar_t* title, uint32_t width, uint32_t height, uint32_t resolutionDivisor)
   : m_hWnd(nullptr)
   , m_width(width)
   , m_height(height)
-  , m_title(title) {
+  , m_title(title)
+  , m_resolutionDivisor(resolutionDivisor)
+  , m_framebufferInfo { } {
+    m_framebufferInfo.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+    m_framebufferInfo.bmiHeader.biPlanes = 1;
+    // 4th component is used for alignment in BitBlit()
+    m_framebufferInfo.bmiHeader.biBitCount = 32;
+    m_framebufferInfo.bmiHeader.biCompression = BI_RGB;
   }
 
   Window::~Window() {
@@ -25,7 +32,7 @@ namespace Flame {
     wc.style = CS_HREDRAW | CS_VREDRAW;
     wc.lpfnWndProc = WndProc;
     wc.hInstance = GetModuleHandleW(nullptr);
-    wc.lpszClassName = L"DlRaytracer";
+    wc.lpszClassName = kClassName;
     wc.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_WINDOW + 1);
     wc.hIcon = LoadIconW(nullptr, IDI_APPLICATION);
     wc.hIconSm = LoadIconW(nullptr, IDI_APPLICATION);
@@ -35,7 +42,7 @@ namespace Flame {
       return false;
     }
 
-    RECT windowRect { 0, 0, static_cast<LONG>(m_width), static_cast<LONG>(m_height) };
+    RECT windowRect { 0, 0, m_width, m_height };
     AdjustWindowRectEx(&windowRect, WS_OVERLAPPEDWINDOW, 0, 0);
 
     m_hWnd = CreateWindowExW(
@@ -72,14 +79,7 @@ namespace Flame {
     UpdateWindow(m_hWnd);
   }
 
-  void Window::Blit(const RenderSurface& surface) const {
-    BITMAPINFO info = { };
-    info.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-    info.bmiHeader.biWidth = static_cast<LONG>(surface.GetWidth());
-    info.bmiHeader.biHeight = static_cast<LONG>(surface.GetHeight());
-    info.bmiHeader.biPlanes = 1;
-    info.bmiHeader.biBitCount = 32;
-    info.bmiHeader.biCompression = BI_RGB;
+  void Window::Blit() const {
     HDC dc = GetDC(m_hWnd);
     StretchDIBits(
       dc,
@@ -89,22 +89,26 @@ namespace Flame {
       static_cast<int>(m_height),
       0,
       0,
-      static_cast<int>(surface.GetWidth()),
-      static_cast<int>(surface.GetHeight()),
-      surface.GetData(),
-      &info,
+      static_cast<int>(m_framebuffer.GetWidth()),
+      static_cast<int>(m_framebuffer.GetHeight()),
+      m_framebuffer.GetData(),
+      &m_framebufferInfo,
       DIB_RGB_COLORS,
       SRCCOPY
     );
     ReleaseDC(m_hWnd, dc);
   }
 
-  InputSystem& Window::GetInput() {
+  Framebuffer& Window::GetFramebuffer() {
+    return m_framebuffer;
+  }
+
+  InputSystem& Window::GetInputSystem() {
     return m_input;
   }
 
-  EventDispatcher<WindowEvent>* Window::GetDispatcher() {
-    return &m_dispatcher;
+  EventDispatcher<WindowEvent>& Window::GetDispatcher() {
+    return m_dispatcher;
   }
 
   uint32_t Window::GetWidth() const {
@@ -115,9 +119,8 @@ namespace Flame {
     return m_height;
   }
 
-  bool Window::DispatchEvents() {
-    // TODO Not implemented
-    return false;
+  uint32_t Window::GetResolutionDivisor() const {
+    return m_resolutionDivisor;
   }
 
 
@@ -134,33 +137,37 @@ namespace Flame {
     return true;
   }
 
+  void Window::InvalidateFramebufferSize() {
+    m_framebuffer.Resize(m_width / m_resolutionDivisor, m_height / m_resolutionDivisor);
+    m_framebufferInfo.bmiHeader.biWidth = static_cast<LONG>(m_framebuffer.GetWidth());
+    m_framebufferInfo.bmiHeader.biHeight = static_cast<LONG>(m_framebuffer.GetHeight());
+  }
+
   void Window::InitHandlers() {
     m_messageHandlers[WM_SIZE] = [this](UINT msg, WPARAM wParam, LPARAM lParam) {
       HandleResizeMessage(msg, wParam, lParam);
     };
-    {
-      UINT messages[] = { WM_KEYDOWN, WM_KEYUP, WM_SYSKEYDOWN, WM_SYSKEYUP };
-      auto lambda = [this](UINT msg, WPARAM wParam, LPARAM lParam) {
+
+    m_messageHandlers[WM_KEYDOWN]
+    = m_messageHandlers[WM_KEYUP]
+    = m_messageHandlers[WM_SYSKEYDOWN]
+    = m_messageHandlers[WM_SYSKEYUP]
+    = [this](UINT msg, WPARAM wParam, LPARAM lParam) {
         HandleKeyMessage(msg, wParam, lParam);
       };
 
-      for (auto it = std::begin(messages), end = std::end(messages); it != end; ++it) {
-        m_messageHandlers[*it] = lambda;
-      }
-    }
-    {
-      UINT messages[] = {
-        WM_LBUTTONDOWN, WM_RBUTTONDOWN, WM_MBUTTONDOWN, WM_XBUTTONDOWN,
-        WM_LBUTTONUP, WM_RBUTTONUP, WM_MBUTTONUP, WM_XBUTTONUP
-      };
-      auto lambda = [this](UINT msg, WPARAM wParam, LPARAM lParam) {
+    m_messageHandlers[WM_LBUTTONDOWN]
+    = m_messageHandlers[WM_LBUTTONUP]
+    = m_messageHandlers[WM_RBUTTONDOWN]
+    = m_messageHandlers[WM_RBUTTONUP]
+    = m_messageHandlers[WM_MBUTTONDOWN]
+    = m_messageHandlers[WM_MBUTTONUP]
+    = m_messageHandlers[WM_XBUTTONDOWN]
+    = m_messageHandlers[WM_XBUTTONUP]
+    = [this](UINT msg, WPARAM wParam, LPARAM lParam) {
         HandleMouseButtonMessage(msg, wParam, lParam);
       };
 
-      for (auto it = std::begin(messages), end = std::end(messages); it != end; ++it) {
-        m_messageHandlers[*it] = lambda;
-      }
-    }
     m_messageHandlers[WM_MOUSEMOVE] = [this](UINT msg, WPARAM wParam, LPARAM lParam) {
       HandleMouseMoveMessage(msg, wParam, lParam);
     };
@@ -169,7 +176,8 @@ namespace Flame {
   void Window::HandleResizeMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
     m_width = LOWORD(lParam);
     m_height = HIWORD(lParam);
-    m_dispatcher.Dispatch(ResizeWindowEvent(m_width, m_height));
+    InvalidateFramebufferSize();
+    m_dispatcher.Dispatch(ResizeWindowEvent(m_width, m_height, m_framebuffer.GetWidth(), m_framebuffer.GetHeight()));
   }
 
   void Window::HandleKeyMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
@@ -218,23 +226,25 @@ namespace Flame {
   }
 
   void Window::HandleMouseMoveMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
-    float xCursor = static_cast<float>(GET_X_LPARAM(lParam));
-    float yCursor = static_cast<float>(GET_Y_LPARAM(lParam));
+    // TODO Will I need the real coordinates?
+    float xCursor = static_cast<float>(GET_X_LPARAM(lParam)) / m_resolutionDivisor;
+    float yCursor = static_cast<float>(GET_Y_LPARAM(lParam)) / m_resolutionDivisor;
     m_dispatcher.Dispatch(MouseMoveWindowEvent(xCursor, yCursor));
   }
 
   LRESULT Window::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     if (msg == WM_CREATE) {
-      const auto& data = reinterpret_cast<CREATESTRUCTW*>(lParam);
+      CREATESTRUCTW* data = reinterpret_cast<CREATESTRUCTW*>(lParam);
       SetWindowLongPtrW(hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(data->lpCreateParams));
       return 0;
     }
+
     if (msg == WM_DESTROY) {
       PostQuitMessage(0);
       return 0;
     }
 
-    const auto& window = reinterpret_cast<Window*>(GetWindowLongPtrW(hWnd, GWLP_USERDATA));
+    Window* window = reinterpret_cast<Window*>(GetWindowLongPtrW(hWnd, GWLP_USERDATA));
     if (window != nullptr && window->HandleWindowMessage(msg, wParam, lParam)) {
       return 0;
     }

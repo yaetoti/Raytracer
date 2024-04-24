@@ -1,12 +1,10 @@
 ﻿#include "Application.h"
 
 Application::Application() {
-  m_window = std::make_shared<Flame::Window>(L"Flame 🔥", 1366, 768);
-  m_input = &m_window->GetInput();
-  // TODO MoveIntoWindow
-  m_framebuffer = std::make_shared<Flame::RenderSurface>(m_window->GetWidth(), m_window->GetHeight());
+  m_window = std::make_shared<Flame::Window>(L"Flame 🔥", 1366, 768, 2);
+  m_input = &m_window->GetInputSystem();
   // TODO Pass width and height = mistake
-  m_camera = std::make_shared<Flame::Camera>(m_framebuffer->GetWidth(), m_framebuffer->GetHeight(), 90.0f, 0.1f, 1000.0f);
+  m_camera = std::make_shared<Flame::Camera>(m_window->GetFramebuffer().GetWidth(), m_window->GetFramebuffer().GetHeight(), 90.0f, 0.1f, 1000.0f);
 }
 
 void Application::Run() {
@@ -49,8 +47,7 @@ void Application::Run() {
 
     Update(deltaTime);
     Render();
-    // TODO Scene->Render()
-    m_window->Blit(*m_framebuffer);
+    m_window->Blit();
 
     while (timer.GetTimeSinceTick() < targetDeltaTime) {
       std::this_thread::yield();
@@ -59,7 +56,7 @@ void Application::Run() {
 }
 
 void Application::Init() {
-  m_window->GetDispatcher()->AddListener(this);
+  m_window->GetDispatcher().AddListener(this);
   m_window->CreateResources();
   m_window->Show(SW_SHOW);
 
@@ -72,7 +69,27 @@ void Application::Update(float deltaTime) {
     PostQuitMessage(0);
   }
 
-  // HandleCameraUpdate
+  UpdateCamera(deltaTime);
+  UpdateGrabbing(deltaTime);
+  m_scene->Update(deltaTime);
+
+  // Input update must take place at the end to properly update last cursor coordinates TODO Fix
+  m_input->Update();
+}
+
+void Application::Render() {
+  m_scene->Render(m_window->GetFramebuffer(), *m_camera);
+}
+
+void Application::HandleEvent(const Flame::WindowEvent& e) {
+  if (e.type == Flame::WindowEventType::RESIZE) {
+    // TODO Do not cuff camera to a resolution
+    m_camera->Resize(m_window->GetFramebuffer().GetWidth(), m_window->GetFramebuffer().GetHeight());
+    return;
+  }
+}
+
+void Application::UpdateCamera(float deltaTime) {
   static float speed = 4.0f;
   static float rollSpeed = glm::radians(45.0f);
   static float rotationSpeed = -glm::radians(1.0f);
@@ -112,63 +129,34 @@ void Application::Update(float deltaTime) {
     m_camera->Rotate(glm::eulerAngleY(deltaX * rotationSpeed * deltaTime));
     m_camera->Rotate(glm::eulerAngleX(deltaY * rotationSpeed * deltaTime));
   }
+}
 
-  // TODO Grabbing
-  {
-    static Flame::Sphere* grabbed = nullptr;
-    static float grabbedTime = 0.0f;
-    static glm::vec3 grabbedOffset;
-    auto[x, y] = m_input->GetCursorPos();
-    // TODO Add input mapping
-    x /= 2;
-    y /= 2;
-    // TODO Fix window inversion
-    y = m_framebuffer->GetHeight() - y;
+void Application::UpdateGrabbing(float deltaTime) {
+  static Flame::Sphere* grabbed = nullptr;
+  static float grabbedTime = 0.0f;
+  static glm::vec3 grabbedOffset;
+  auto[x, y] = m_input->GetCursorPos();
+  // TODO Fix window inversion
+  y = m_window->GetFramebuffer().GetHeight() - y;
 
-    if (m_input->IsMouseButtonPressed(Flame::MouseButton::LEFT)) {
-      if (grabbed == nullptr) {
-        Flame::HitRecord record;
-        std::vector<std::unique_ptr<Flame::IHitable>>& hitables = m_scene->GetHitables();
+  if (m_input->IsMouseButtonPressed(Flame::MouseButton::LEFT)) {
+    if (grabbed == nullptr) {
+      Flame::HitRecord record;
+      std::vector<std::unique_ptr<Flame::IHitable>>& hitables = m_scene->GetHitables();
 
-        if (Flame::MathUtils::HitClosest(hitables.begin(), hitables.end(), m_camera->GetRay(x, y), 0.0f, 1000.0f, record)) {
-          if (auto sphere = dynamic_cast<Flame::Sphere*>(record.hitable)) {
-            grabbed = sphere;
-            grabbedTime = record.time;
-            grabbedOffset = sphere->center - record.point;
-          }
+      if (Flame::MathUtils::HitClosest(hitables.begin(), hitables.end(), m_camera->GetRay(x, y), 0.0f, 1000.0f, record)) {
+        if (auto sphere = dynamic_cast<Flame::Sphere*>(record.hitable)) {
+          grabbed = sphere;
+          grabbedTime = record.time;
+          grabbedOffset = sphere->center - record.point;
         }
       }
-    } else {
-      grabbed = nullptr;
     }
-
-    if (grabbed != nullptr) {
-      grabbed->center = m_camera->GetRay(x, y).AtParameter(grabbedTime) + grabbedOffset;
-    }
+  } else {
+    grabbed = nullptr;
   }
 
-  // TODO Remove
-  m_camera->CalculateRays();
-  m_scene->Update(deltaTime);
-
-  m_input->Update();
-}
-
-void Application::Render() {
-  m_scene->Render(*m_framebuffer, *m_camera);
-}
-
-void Application::HandleEvent(const Flame::WindowEvent& e) {
-  switch (e.type) {
-  case Flame::WindowEventType::RESIZE: {
-    auto evt = dynamic_cast<const Flame::ResizeWindowEvent*>(&e);
-    uint32_t width = evt->width / 2;
-    uint32_t height = evt->height / 2;
-    m_framebuffer->Resize(width, height);
-    m_camera->Resize(width, height);
-    return;
-  }
-  default:
-    break;
+  if (grabbed != nullptr) {
+    grabbed->center = m_camera->GetRay(x, y).AtParameter(grabbedTime) + grabbedOffset;
   }
 }

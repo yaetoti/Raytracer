@@ -10,7 +10,7 @@
 #include "Flame/window/events/KeyWindowEvent.h"
 
 namespace Flame {
-  void Scene::Render(RenderSurface& surface, Camera& camera) {
+  void Scene::Render(Framebuffer& surface, Camera& camera) {
 
     // TODO Pass application
     // TODO Add parameters
@@ -31,7 +31,7 @@ namespace Flame {
       std::for_each(std::execution::par, horizontalIter.begin(), horizontalIter.end(), [&](uint32_t col) {
         glm::vec3 resultColor(0);
         for (int i = 0; i < rays; ++i) {
-          resultColor += Color(camera.GetRay(row, col), 0);
+          resultColor += Color(camera.GetRandomizedRay(row, col), 0);
         }
 
         resultColor *= raysScale;

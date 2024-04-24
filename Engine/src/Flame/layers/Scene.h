@@ -5,7 +5,7 @@
 #include <memory>
 #include <vector>
 #include <Flame/math/Ray.h>
-#include <Flame/render/RenderSurface.h>
+#include <Flame/render/Framebuffer.h>
 #include <glm/glm.hpp>
 
 #include "Flame/camera/Camera.h"
@@ -20,7 +20,7 @@ namespace Flame {
     virtual void Update(float deltaTime) {}
     virtual void Cleanup() {}
 
-    void Render(RenderSurface& surface, Camera& camera);
+    void Render(Framebuffer& surface, Camera& camera);
     void HandleEvent(const WindowEvent& e) override {}
 
     std::vector<std::unique_ptr<IHitable>>& GetHitables();

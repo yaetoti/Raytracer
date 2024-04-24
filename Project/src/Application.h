@@ -20,11 +20,13 @@ private:
   void Update(float deltaTime);
   void Render();
 
-private:
-  std::shared_ptr<Flame::Scene> m_scene;
-  std::shared_ptr<Flame::Camera> m_camera;
+  void UpdateCamera(float deltaTime);
+  void UpdateGrabbing(float deltaTime);
 
+private:
   std::shared_ptr<Flame::Window> m_window;
   Flame::InputSystem* m_input;
-  std::shared_ptr<Flame::RenderSurface> m_framebuffer;
+
+  std::shared_ptr<Flame::Scene> m_scene;
+  std::shared_ptr<Flame::Camera> m_camera;
 };

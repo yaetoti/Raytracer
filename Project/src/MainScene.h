@@ -21,11 +21,6 @@ private:
   Flame::Window& m_window;
   Flame::InputSystem& m_input;
 
-  // TODO Not here
+  // TODO Not here. ResourceManager
   std::vector<std::unique_ptr<Flame::IMaterial>> m_materials;
-
-  Flame::Sphere* m_sphere2 = nullptr;
-  Flame::Sphere* m_grabbed = nullptr;
-  float m_grabbedTime = 0.0f;
-  glm::vec3 m_grabbedOffset = glm::vec3();
 };

@@ -7,7 +7,6 @@ namespace Flame {
 
     bool Hit(const Ray& r, float tMin, float tMax, HitRecord& record) const override;
 
-    // TODO Do I really need t store points
     glm::vec3 point1;
     glm::vec3 point2;
     glm::vec3 point3;
