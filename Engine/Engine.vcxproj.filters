@@ -39,9 +39,6 @@
     <ClInclude Include="src\Flame\render\LambertianMaterial.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Flame\render\MetalMaterial.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\Flame\utils\EventDispatcher.h">
       <Filter>Header Files</Filter>
     </ClInclude>

@@ -20,15 +20,30 @@ namespace Flame {
     virtual void Update(float deltaTime) {}
     virtual void Cleanup() {}
 
-    void Render(Framebuffer& surface, Camera& camera);
-    void HandleEvent(const WindowEvent& e) override {}
+    void Render(Framebuffer& surface, const Camera& camera);
+    void HandleEvent(const WindowEvent& e) override;
 
     std::vector<std::unique_ptr<IHitable>>& GetHitables();
 
   private:
-    glm::vec3 Color(const Camera& camera, const Ray& ray, int depth);
+    glm::vec3 Color(const Camera& camera, const Ray& ray, uint32_t bounces);
 
   protected:
+    // TODO Renderer
+    uint32_t m_surfaceWidth = 0;
+    uint32_t m_surfaceHeight = 0;
+    std::vector<uint32_t> m_rowIndices;
+    std::vector<uint32_t> m_columnIndices;
+    uint32_t m_sampleCount = 10;
+    float m_raysScale = 1.0f / static_cast<float>(m_sampleCount);
+    uint32_t m_bouncesCount = 10;
+    uint32_t m_lightSampleCount = 4;
+    float m_lightSmooth = 1.0f;
+
+    // Scene
     std::vector<std::unique_ptr<IHitable>> m_hitables;
+    std::vector<DirectLight> m_directLights;
+    std::vector<PointLight> m_pointLights;
+    std::vector<SpotLight> m_spotLights;
   };
 }

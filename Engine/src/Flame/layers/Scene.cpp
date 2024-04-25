@@ -1,6 +1,7 @@
 #include "Scene.h"
 
 #include <execution>
+#include <iostream>
 #include <numeric>
 
 #include "Flame/camera/Camera.h"
@@ -8,97 +9,107 @@
 #include "Flame/math/Ray.h"
 #include "Flame/utils/Random.h"
 #include "Flame/window/events/KeyWindowEvent.h"
+#include "Flame/window/events/ResizeWindowEvent.h"
 
 namespace Flame {
-  void Scene::Render(Framebuffer& surface, Camera& camera) {
-    // TODO Pass application
-    // TODO Add parameters
-    int rays = 10;
-    float raysScale = 1.0f / rays;
-
-    uint32_t width = static_cast<int>(surface.GetWidth());
-    uint32_t height = static_cast<int>(surface.GetHeight());
-
-    std::vector<uint32_t> horizontalIter;
-    horizontalIter.resize(height);
-    std::iota(horizontalIter.begin(), horizontalIter.end(), 0);
-    std::vector<uint32_t> verticalIter;
-    verticalIter.resize(width);
-    std::iota(verticalIter.begin(), verticalIter.end(), 0);
-
-    std::for_each(std::execution::par, verticalIter.begin(), verticalIter.end(), [&](uint32_t row) {
-      std::for_each(std::execution::par, horizontalIter.begin(), horizontalIter.end(), [&](uint32_t col) {
-        glm::vec3 resultColor(0);
-        for (int i = 0; i < rays; ++i) {
-          resultColor += Color(camera, camera.GetRandomizedRay(row, col), 0);
+  void Scene::Render(Framebuffer& surface, const Camera& camera) {
+    std::for_each(std::execution::par, m_rowIndices.begin(), m_rowIndices.end(), [&](uint32_t row) {
+      std::for_each(std::execution::par, m_columnIndices.begin(), m_columnIndices.end(), [&](uint32_t col) {
+        glm::vec3 resultColor(0.0f);
+        for (uint32_t i = 0; i < m_sampleCount; ++i) {
+          resultColor += Color(camera, camera.GetRandomizedRay(col, row), 0);
         }
 
-        resultColor *= raysScale;
+        resultColor *= m_raysScale;
         resultColor *= 255.0f;
-        surface.SetPixel(row, col, static_cast<BYTE>(resultColor.r), static_cast<BYTE>(resultColor.g), static_cast<BYTE>(resultColor.b));
+        surface.SetPixel(col, row, static_cast<BYTE>(resultColor.r), static_cast<BYTE>(resultColor.g), static_cast<BYTE>(resultColor.b));
       });
     });
+  }
+
+  void Scene::HandleEvent(const WindowEvent& e) {
+    if (e.type == WindowEventType::RESIZE) {
+      auto evt = static_cast<const ResizeWindowEvent&>(e);
+      m_surfaceWidth = evt.surfaceWidth;
+      m_surfaceHeight = evt.surfaceHeight;
+      m_columnIndices.resize(m_surfaceWidth);
+      m_rowIndices.resize(m_surfaceHeight);
+      std::iota(m_columnIndices.begin(), m_columnIndices.end(), 0);
+      std::iota(m_rowIndices.begin(), m_rowIndices.end(), 0);
+      return;
+    }
   }
 
   std::vector<std::unique_ptr<IHitable>>& Scene::GetHitables() {
     return m_hitables;
   }
 
-  glm::vec3 Scene::Color(const Camera& camera, const Ray& ray, int depth) {
+  glm::vec3 Scene::Color(const Camera& camera, const Ray& ray, uint32_t bounces) {
     // Lighting
-    glm::vec3 lightColor(1.0, 0.8, 0.6);
-    glm::vec3 lightPos(1.0, 4.0, -1.0);
-    float ambientStrength = 0.2f;
-    float diffuseStrength = 2.0f;
+    // glm::vec3 lightColor(1.0f, 0.784313, 0.0f);
+    glm::vec3 lightColor(1.0f, 1.0f, 1.0f);
+    glm::vec3 lightPos(5.0, 6.0, -3.0);
+    float ambientStrength = 0.55f;
+    float diffuseStrength = 4.0f;
     float specularStrength = 1.0f;
     float specularExponent = 32;
-    // TODO model matrix
 
-    // TODO Lighting, Materials, Meshes and Ray to ModelSpace
+    // Find surface for which the color will be calculated
     HitRecord record;
     if (MathUtils::HitClosest(m_hitables.begin(), m_hitables.end(), ray, 0.01f, std::numeric_limits<float>::max(), record)) {
       Ray scattered;
       glm::vec3 attenuation;
 
-      if (depth < 10 && record.material->Scatter(ray, record, scattered, attenuation)) {
-        glm::vec3 color = attenuation * Color(camera, scattered, depth + 1);
-        // color *= glm::max(glm::normalizeDot(record.normal, glm::vec3(1, 1, 1)), 0.5f);
-
+      // Recursively bounce N times
+      // Scatter a ray 
+      if (bounces < m_bouncesCount && record.material->Scatter(ray, record, scattered, attenuation)) {
+        // TODO material handling
+        // Get color for reflected ray TODO and refracted
+        glm::vec3 color = attenuation * Color(camera, scattered, bounces + 1);
         glm::vec3 sampledLighting(0);
-        // Ambient
+
         glm::vec3 ambient = ambientStrength * lightColor;
 
-        constexpr int samples = 4;
-        constexpr float smoothSize = 1.0f;
-        for (int i = 0; i < samples; ++i) {
+        // For each light source
+        for (uint32_t lightSample = 0; lightSample < m_lightSampleCount; ++lightSample) {
           // Diffuse
-          glm::vec3 lightVec = lightPos + smoothSize * Random::UnitVector<3, float, glm::packed_highp>() - record.point;
+          // Light vector is randomized to get different results
+          glm::vec3 lightVec = lightPos + m_lightSmooth * Random::UnitVector<3, float, glm::packed_highp>() - record.point;
           glm::vec3 lightDir = glm::normalize(lightVec);
 
           Ray ray2(record.point + record.normal * 0.01, lightDir);
           HitRecord record2;
-          if (MathUtils::HitClosest(m_hitables.begin(), m_hitables.end(), ray2, 0, glm::length(lightVec), record2)) {
-            return glm::clamp(color * (ambient), glm::vec3(0), glm::vec3(1));
-          } else {
-            glm::vec3 diffuse = diffuseStrength * glm::max(glm::dot(record.normal, lightDir), 0.0f) * lightColor;
-            // Specular
-            glm::vec3 viewDir = glm::normalize(camera.GetPosition() - record.point);
-            glm::vec3 halfReflect = glm::normalize(lightDir + viewDir);
-            glm::vec3 specular = specularStrength * glm::pow(glm::max(glm::dot(record.normal, halfReflect), 0.0f), specularExponent) * lightColor;
 
-            sampledLighting += ambient + diffuse + specular;
+          // Check for objects between point and light
+          if (MathUtils::HitClosest(m_hitables.begin(), m_hitables.end(), ray2, 0, glm::length(lightVec), record2)) {
+            // No light was hit
+            return glm::clamp(color * ambient, glm::vec3(0.0f), glm::vec3(1.0f));
           }
+
+          // Hit light
+
+          glm::vec3 diffuse = diffuseStrength * glm::max(glm::dot(record.normal, lightDir), 0.0f) * lightColor;
+          // Specular
+          glm::vec3 viewDir = glm::normalize(camera.GetPosition() - record.point);
+          glm::vec3 halfReflect = glm::normalize(lightDir + viewDir);
+          glm::vec3 specular = specularStrength * glm::pow(glm::max(glm::dot(record.normal, halfReflect), 0.0f), specularExponent) * lightColor;
+
+          sampledLighting += ambient + diffuse + specular;
         }
 
-        sampledLighting /= samples;
+        // Average color among all light samples
+        sampledLighting /= m_lightSampleCount;
         return glm::clamp(color * sampledLighting, glm::vec3(0), glm::vec3(1));
       }
 
+      // Too much bounces
       return glm::vec3(0.0f);
     }
 
-    glm::vec3 skyColor(0.5f, 0.7f, 1.0f);
+    // glm::vec3 skyColor(0.5f, 0.7f, 1.0f);
+    glm::vec3 skyColor(0.066666f, 0.070588f, 0.180392f);
+    glm::vec3 skyColor2(0.262745f, 0.207843f, 0.549019f);
     float t = (ray.direction.y + 1) * 0.5f;
-    return skyColor * t + (1.0f - t) * glm::vec3(1.0f);
+    return skyColor * t + (1.0f - t) * skyColor2;
   }
 }

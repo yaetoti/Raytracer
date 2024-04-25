@@ -15,7 +15,6 @@
 #include "Flame/render/Framebuffer.h"
 #include "Flame/render/IMaterial.h"
 #include "Flame/render/LambertianMaterial.h"
-#include "Flame/render/MetalMaterial.h"
 
 #include "Flame/utils/EventDispatcher.h"
 #include "Flame/utils/FunctionalDispatcher.h"

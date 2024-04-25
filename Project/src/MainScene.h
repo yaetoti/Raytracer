@@ -15,7 +15,6 @@ struct MainScene : Flame::Scene {
   void Initialize() override;
   void Update(float deltaTime) override;
   void Cleanup() override;
-  void HandleEvent(const Flame::WindowEvent& e) override;
 
 private:
   Flame::Window& m_window;

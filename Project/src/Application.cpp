@@ -58,12 +58,14 @@ void Application::Run() {
 }
 
 void Application::Init() {
-  m_window->GetDispatcher().AddListener(this);
-  m_window->CreateResources();
-  m_window->Show(SW_SHOW);
-
   m_scene = std::make_shared<MainScene>(*m_window);
   m_scene->Initialize();
+
+  m_window->GetDispatcher().AddListener(this);
+  m_window->GetDispatcher().AddListener(m_scene.get());
+
+  m_window->CreateResources();
+  m_window->Show(SW_SHOW);
 }
 
 void Application::Update(float deltaTime) {
