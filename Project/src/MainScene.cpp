@@ -72,11 +72,11 @@ void MainScene::Initialize() {
      *m_materials[4]
    )
   );
-  //m_hitables.emplace_back(
-  // std::make_unique<Flame::Cube>(
-  //   *m_materials[5]
-  // )
-  //);
+  m_hitables.emplace_back(
+   std::make_unique<Flame::Cube>(
+     *m_materials[5]
+   )
+  );
 }
 
 void MainScene::Update(float deltaTime) {

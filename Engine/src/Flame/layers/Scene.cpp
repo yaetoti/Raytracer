@@ -92,28 +92,6 @@ namespace Flame {
 
         sampledLighting /= samples;
         return glm::clamp(color * sampledLighting, glm::vec3(0), glm::vec3(1));
-
-#if 0
-        // Diffuse
-        glm::vec3 lightVec = lightPos - record.point;
-        glm::vec3 lightDir = glm::normalize(lightVec);
-
-        Ray ray2(record.point + record.normal * 0.01, lightDir);
-        HitRecord record2;
-        if (MathUtils::HitClosest(m_hitables.begin(), m_hitables.end(), ray2, 0, glm::length(lightVec), record2)) {
-          return glm::clamp(color * (ambient), glm::vec3(0), glm::vec3(1));
-        } else {
-          glm::vec3 diffuse = diffuseStrength * glm::max(glm::dot(record.normal, lightDir), 0.0f) * lightColor;
-          // Specular
-          glm::vec3 viewDir = glm::normalize(camera.GetPosition() - record.point);
-          glm::vec3 halfReflect = glm::normalize(lightDir + viewDir);
-          glm::vec3 specular = specularStrength * glm::pow(glm::max(glm::dot(record.normal, halfReflect), 0.0f), specularExponent) * lightColor;
-
-          color = glm::clamp(color * (ambient + diffuse + specular), glm::vec3(0), glm::vec3(1));
-
-          return color;
-        }
-#endif
       }
 
       return glm::vec3(0.0f);

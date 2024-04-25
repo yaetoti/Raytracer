@@ -1,7 +1,9 @@
 ﻿#include "Application.h"
 
 Application::Application() {
-  m_window = std::make_shared<Flame::Window>(L"Flame 🔥", 1366, 768, 2);
+  // m_window = std::make_shared<Flame::Window>(L"Flame 🔥", 1366, 768, 2);
+  // High performance mode
+  m_window = std::make_shared<Flame::Window>(L"Flame 🔥", 160, 90, 2);
   m_input = &m_window->GetInputSystem();
   // TODO Pass width and height = mistake
   m_camera = std::make_shared<Flame::Camera>(m_window->GetFramebuffer().GetWidth(), m_window->GetFramebuffer().GetHeight(), 90.0f, 0.1f, 1000.0f);
