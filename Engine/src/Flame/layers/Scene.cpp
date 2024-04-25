@@ -13,7 +13,7 @@ namespace Flame {
   void Scene::Render(Framebuffer& surface, Camera& camera) {
     // TODO Pass application
     // TODO Add parameters
-    int rays = 20;
+    int rays = 10;
     float raysScale = 1.0f / rays;
 
     uint32_t width = static_cast<int>(surface.GetWidth());
@@ -64,8 +64,36 @@ namespace Flame {
         glm::vec3 color = attenuation * Color(camera, scattered, depth + 1);
         // color *= glm::max(glm::normalizeDot(record.normal, glm::vec3(1, 1, 1)), 0.5f);
 
+        glm::vec3 sampledLighting(0);
         // Ambient
         glm::vec3 ambient = ambientStrength * lightColor;
+
+        constexpr int samples = 4;
+        constexpr float smoothSize = 1.0f;
+        for (int i = 0; i < samples; ++i) {
+          // Diffuse
+          glm::vec3 lightVec = lightPos + smoothSize * Random::UnitVector<3, float, glm::packed_highp>() - record.point;
+          glm::vec3 lightDir = glm::normalize(lightVec);
+
+          Ray ray2(record.point + record.normal * 0.01, lightDir);
+          HitRecord record2;
+          if (MathUtils::HitClosest(m_hitables.begin(), m_hitables.end(), ray2, 0, glm::length(lightVec), record2)) {
+            return glm::clamp(color * (ambient), glm::vec3(0), glm::vec3(1));
+          } else {
+            glm::vec3 diffuse = diffuseStrength * glm::max(glm::dot(record.normal, lightDir), 0.0f) * lightColor;
+            // Specular
+            glm::vec3 viewDir = glm::normalize(camera.GetPosition() - record.point);
+            glm::vec3 halfReflect = glm::normalize(lightDir + viewDir);
+            glm::vec3 specular = specularStrength * glm::pow(glm::max(glm::dot(record.normal, halfReflect), 0.0f), specularExponent) * lightColor;
+
+            sampledLighting += ambient + diffuse + specular;
+          }
+        }
+
+        sampledLighting /= samples;
+        return glm::clamp(color * sampledLighting, glm::vec3(0), glm::vec3(1));
+
+#if 0
         // Diffuse
         glm::vec3 lightVec = lightPos - record.point;
         glm::vec3 lightDir = glm::normalize(lightVec);
@@ -85,6 +113,7 @@ namespace Flame {
 
           return color;
         }
+#endif
       }
 
       return glm::vec3(0.0f);
