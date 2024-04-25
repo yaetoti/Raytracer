@@ -26,7 +26,7 @@ namespace Flame {
     std::vector<std::unique_ptr<IHitable>>& GetHitables();
 
   private:
-    glm::vec3 Color(const Ray& ray, int depth);
+    glm::vec3 Color(const Camera& camera, const Ray& ray, int depth);
 
   protected:
     std::vector<std::unique_ptr<IHitable>> m_hitables;

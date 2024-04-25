@@ -121,12 +121,12 @@ void Application::UpdateCamera(float deltaTime) {
     m_camera->Rotate(glm::eulerAngleZ(-rollSpeed * deltaTime));
   }
   // Rotation
-  if (m_input->IsMouseButtonPressed(Flame::MouseButton::RIGHT)) {
-    constexpr float sensitivity = 1000.0f;
+  if (m_input->IsMouseButtonPressed(Flame::MouseButton::LEFT)) {
+    constexpr float sensitivity = 5000.0f;
     auto[x, y] = m_input->GetCursorPos();
     auto[lastX, lastY] = m_input->GetLastCursorPos();
-    float deltaX = (x - lastX) * sensitivity / m_window->GetFramebuffer().GetWidth();
-    float deltaY = (y - lastY) * sensitivity/ m_window->GetFramebuffer().GetHeight();
+    float deltaX = ((x - lastX) / m_window->GetFramebuffer().GetWidth()) * sensitivity;
+    float deltaY = ((y - lastY) / m_window->GetFramebuffer().GetHeight()) * sensitivity;
     m_camera->Rotate(glm::eulerAngleY(deltaX * rotationSpeed * deltaTime));
     m_camera->Rotate(glm::eulerAngleX(deltaY * rotationSpeed * deltaTime));
   }
@@ -140,7 +140,7 @@ void Application::UpdateGrabbing(float deltaTime) {
   // TODO Fix window inversion
   y = m_window->GetFramebuffer().GetHeight() - y;
 
-  if (m_input->IsMouseButtonPressed(Flame::MouseButton::LEFT)) {
+  if (m_input->IsMouseButtonPressed(Flame::MouseButton::RIGHT)) {
     if (grabbed == nullptr) {
       Flame::HitRecord record;
       std::vector<std::unique_ptr<Flame::IHitable>>& hitables = m_scene->GetHitables();
