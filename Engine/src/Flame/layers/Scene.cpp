@@ -15,15 +15,9 @@ namespace Flame {
   void Scene::Render(Framebuffer& surface, const Camera& camera) {
     std::for_each(std::execution::par, m_rowIndices.begin(), m_rowIndices.end(), [&](uint32_t row) {
       std::for_each(std::execution::par, m_columnIndices.begin(), m_columnIndices.end(), [&](uint32_t col) {
-        glm::vec3 color(0.0f);
-        // TODO replace with accumulation
-        for (uint32_t sample = 0; sample < m_samples; ++sample) {
-          glm::vec3 light(0.0f);
-          glm::vec3 resultColor = ColorPerRay(camera, camera.GetRandomizedRay(col, row), 0, light);
-          color += resultColor;
-        }
-
-        color = glm::clamp(color * m_sampleCountInv, glm::vec3(0), glm::vec3(1));
+        glm::vec3 light(0.0f);
+        glm::vec3 color = ColorPerRay(camera, camera.GetRandomizedRay(col, row), 0, light);
+        color = glm::clamp(color, glm::vec3(0), glm::vec3(1));
 
         // Accumulate color
         color.r = m_accumulatedData[(row * m_surfaceWidth + col) * 3 + 0] += color.r;
@@ -37,7 +31,6 @@ namespace Flame {
           static_cast<BYTE>(color.g),
           static_cast<BYTE>(color.b)
         );
-
       });
     });
 
@@ -81,19 +74,22 @@ namespace Flame {
       return glm::mix(skyColorTop, skyColorBottom, (ray.direction.y + 1) * 0.5f);
     }
 
-    glm::vec3 color = record.material->albedo + record.material->emissionStrength * record.material->emissionColor;
+    // glm::vec3 color = record.material->albedo;
+    glm::vec3 color = record.material->albedo;
     glm::vec3 colorReflected(0.0f);
 
     // Lighting
-    glm::vec3 lightSurface = LightPerPoint(camera, record);
-    // color *= lightSurface;
+    glm::vec3 lightSurface = CalculatePointLightPerPoint(camera, record);
+    lightSurface += CalculateSpotLightPerPoint(camera, record);
 
     // TODO In Blender works differently
-    // Calculate reflected lightTotal for metallic objects
+    // Calculate reflected color and light for metallic objects
     if (bounce < m_bounces) {
       // TODO perform for emission
+
       // Don't perform calculations for non-reflective materials
-      // if (record.material->metallic > std::numeric_limits<float>::epsilon()) {
+      // if (record.material->metallic > std::numeric_limits<float>::epsilon())
+      {
         glm::vec3 normal = record.normal;
         // Don't perform calculations for smooth materials
         if (record.material->roughness > std::numeric_limits<float>::epsilon()) {
@@ -102,10 +98,7 @@ namespace Flame {
 
         Ray rayReflected(record.point, glm::normalize(glm::reflect(ray.direction, normal)));
         colorReflected = ColorPerRay(camera, rayReflected, bounce + 1, lightSurface);
-
-        // Mix colors
-        // color = glm::mix(color, colorReflected, record.material->metallic);
-      // }
+      }
     } else {
       // I'm in too deep (Too much bounces)
       return glm::vec3(0.0f);
@@ -121,41 +114,93 @@ namespace Flame {
     return color;
   }
 
-  glm::vec3 Scene::LightPerPoint(const Camera& camera, const HitRecord& record) {
+  glm::vec3 Scene::CalculatePointLightPerPoint(const Camera& camera, const HitRecord& record) {
     glm::vec3 light(0.0f);
 
-    for (uint32_t lightSample = 0; lightSample < m_lightSamples; ++lightSample) {
-      for (const PointLight& pointLight : m_pointLights) {
-        glm::vec3 lightVec = pointLight.position - record.point;
-        if (m_lightSmooth > std::numeric_limits<float>::epsilon()) {
-          // Light vector is randomized to get different results
-          lightVec += m_lightSmooth * Random::UnitVector<3, float, glm::packed_highp>();
-        }
-
-        glm::vec3 lightDir = glm::normalize(lightVec);
-
-        Ray rayLight(record.point + record.normal * 0.01f, lightDir);
-        HitRecord recordLight;
-        // Check for objects between point and light
-        if (MathUtils::HitClosest(m_hitables.begin(), m_hitables.end(), rayLight, 0.0f, glm::length(lightVec), recordLight)) {
-          // TODO Global Illumination. Try #1 (failed)
-          // light += LightPerPoint(camera, recordLight, bounce + 1);
-          continue;
-        }
-
-        // Diffuse
-        glm::vec3 diffuse = record.material->diffuse * glm::max(glm::dot(record.normal, lightDir), 0.0f) * pointLight.color;
-        // Specular
-        glm::vec3 viewDir = glm::normalize(camera.GetPosition() - record.point);
-        glm::vec3 halfReflect = glm::normalize(lightDir + viewDir);
-        glm::vec3 specular = record.material->specular * glm::pow(glm::max(glm::dot(record.normal, halfReflect), 0.0f), record.material->specularExponent) * pointLight.color;
-
-        // Accumulate light
-        light += (diffuse + specular) * pointLight.intensity;
+    for (const PointLight& pointLight : m_pointLights) {
+      glm::vec3 lightVec = pointLight.position - record.point;
+      if (m_lightSmooth > std::numeric_limits<float>::epsilon()) {
+        // Light vector is randomized to get different results
+        lightVec += m_lightSmooth * Random::UnitVector<3, float, glm::packed_highp>();
       }
+
+      float lightDistance = glm::length(lightVec);
+      glm::vec3 lightDir = glm::normalize(lightVec);
+      Ray rayLight(record.point + record.normal * 0.01f, lightDir);
+      HitRecord recordLight;
+
+      // Check for objects between point and light
+      if (MathUtils::HitClosest(m_hitables.begin(), m_hitables.end(), rayLight, 0.0f, lightDistance, recordLight)) {
+        // TODO Global Illumination. Try #1 (failed)
+        // light += CalculatePointLightPerPoint(camera, recordLight, bounce + 1);
+        // light += recordLight.material->emissionStrength * recordLight.material->emissionColor;
+        continue;
+      }
+
+      // Attenuation
+      float attenuation = 1.0f / (pointLight.constantFadeoff
+                                  + pointLight.linearFadeoff * lightDistance
+                                  + pointLight.quadraticFadeoff * lightDistance * lightDistance);
+      // Diffuse
+      glm::vec3 diffuse = record.material->diffuse * glm::max(glm::dot(record.normal, lightDir), 0.0f) * pointLight.color;
+      // Specular
+      glm::vec3 viewDir = glm::normalize(camera.GetPosition() - record.point);
+      glm::vec3 halfReflect = glm::normalize(lightDir + viewDir);
+      glm::vec3 specular = record.material->specular * glm::pow(glm::max(glm::dot(record.normal, halfReflect), 0.0f), record.material->specularExponent) * pointLight.color;
+
+      // Accumulate light
+      light += attenuation * (diffuse + specular) * pointLight.intensity;
     }
 
-    light *= 1.0f / m_lightSamples;
+    return light;
+  }
+
+  glm::vec3 Scene::CalculateSpotLightPerPoint(const Camera& camera, const HitRecord& record) {
+    glm::vec3 light(0.0f);
+
+    for (const SpotLight& spotLight : m_spotLights) {
+      glm::vec3 lightVec = spotLight.position - record.point;
+      if (m_lightSmooth > std::numeric_limits<float>::epsilon()) {
+        // Light vector is randomized to get different results
+        lightVec += m_lightSmooth * Random::UnitVector<3, float, glm::packed_highp>();
+      }
+
+      float lightDistance = glm::length(lightVec);
+      glm::vec3 lightDir = glm::normalize(lightVec);
+
+      float theta = glm::dot(lightDir, -spotLight.direction);
+      float epsilon = spotLight.cutoffCosineInner - spotLight.cutoffCosineOuter;
+      float intensity = glm::clamp((theta - spotLight.cutoffCosineOuter) / epsilon, 0.0f, 1.0f);
+      if (intensity <= 0.001f) {
+        return light;
+      }
+
+      Ray rayLight(record.point + record.normal * 0.01f, lightDir);
+      HitRecord recordLight;
+
+      // Check for objects between point and light
+      if (MathUtils::HitClosest(m_hitables.begin(), m_hitables.end(), rayLight, 0.0f, lightDistance, recordLight)) {
+        // TODO Global Illumination. Try #1 (failed)
+        // light += CalculatePointLightPerPoint(camera, recordLight, bounce + 1);
+        // light += recordLight.material->emissionStrength * recordLight.material->emissionColor;
+        continue;
+      }
+
+      // Attenuation
+      float attenuation = 1.0f / (spotLight.constantFadeoff
+                                  + spotLight.linearFadeoff * lightDistance
+                                  + spotLight.quadraticFadeoff * lightDistance * lightDistance);
+      // Diffuse
+      glm::vec3 diffuse = record.material->diffuse * glm::max(glm::dot(record.normal, lightDir), 0.0f) * spotLight.color;
+      // Specular
+      glm::vec3 viewDir = glm::normalize(camera.GetPosition() - record.point);
+      glm::vec3 halfReflect = glm::normalize(lightDir + viewDir);
+      glm::vec3 specular = record.material->specular * glm::pow(glm::max(glm::dot(record.normal, halfReflect), 0.0f), record.material->specularExponent) * spotLight.color;
+
+      // Accumulate light
+      light += attenuation * (diffuse + specular) * spotLight.intensity * intensity;
+    }
+
     return light;
   }
 }

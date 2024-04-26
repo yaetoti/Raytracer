@@ -51,32 +51,48 @@ void MainScene::Initialize() {
      &m_materials[4]
    )
   );
-  //m_hitables.emplace_back(
-  // std::make_unique<Flame::Cube>(
-  //   &m_materials[5]
-  // )
-  //);
+  m_hitables.emplace_back(
+   std::make_unique<Flame::Cube>(
+     &m_materials[5]
+   )
+  );
 
   // Point lights
   {
     Flame::PointLight light;
     light.position = glm::vec3(5.0f, 6.0f, -3.0f);
     light.color = Flame::MathUtils::ColorFromHex(0xFA3120);
-    light.intensity = 2.0f;
-    light.constantFadeoff = 1.0f;
-    light.linearFadeoff = 1.0f;
-    light.quadraticFadeoff = 1.0f;
+    light.intensity = 14.0f;
+    light.constantFadeoff = 0.0f;
+    light.linearFadeoff = 1.2f;
+    light.quadraticFadeoff = 0.18f;
     m_pointLights.emplace_back(light);
   }
   {
     Flame::PointLight light;
     light.position = glm::vec3(3.0f, 3.0f, 1.0f);
     light.color = Flame::MathUtils::ColorFromHex(0x2C1EF7);
-    light.intensity = 1.0f;
-    light.constantFadeoff = 1.0f;
-    light.linearFadeoff = 1.0f;
-    light.quadraticFadeoff = 1.0f;
+    light.intensity = 12.0f;
+    light.constantFadeoff = 0.0f;
+    light.linearFadeoff = 0.7f;
+    light.quadraticFadeoff = 0.18f;
     m_pointLights.emplace_back(light);
+  }
+
+  // Spotlights
+  {
+    Flame::SpotLight light;
+    light.color = glm::vec3(1.0f, 1.0f, 1.0f);
+    light.position = glm::vec3(6.0f, 0.8f, -1.0f);
+    light.direction = glm::vec3(-1.0f, 0.0f, 0.0f);
+    light.intensity = 20.0f;
+    light.cutoffCosineInner = glm::cos(glm::radians(5.0f));
+    light.cutoffCosineOuter = glm::cos(glm::radians(12.0f));
+    light.constantFadeoff = 0.0f;
+    light.linearFadeoff = 0.2f;
+    light.quadraticFadeoff = 0.04f;
+
+    m_spotLights.emplace_back(light);
   }
 }
 
@@ -91,12 +107,12 @@ void MainScene::InitializeMaterials() {
   {
     // Metal sphere
     Flame::Material m;
-    m.albedo = glm::vec3(0.90f, 0.90f, 0.90f);
+    m.albedo = glm::vec3(0.99f, 0.99f, 0.99f);
     m.diffuse = 1.0f;
     m.specular = 1.0f;
     m.specularExponent = 32.0f;
     m.roughness = 0.0f;
-    m.metallic = 0.99f;
+    m.metallic = 1.0f;
     m.emissionColor = glm::vec3(0.0f);
     m.emissionStrength = 0.0f;
     m_materials.emplace_back(m);
@@ -104,15 +120,14 @@ void MainScene::InitializeMaterials() {
   {
     // Albedo sphere
     Flame::Material m;
-    // m.albedo = glm::vec3(0.28f, 1.0f, 0.5f);
-    m.albedo = glm::vec3(0.0f);
+    m.albedo = glm::vec3(0.28f, 1.0f, 0.5f);
     m.diffuse = 1.0f;
-    m.specular = 0.0f;
-    m.specularExponent = 0.0f;
+    m.specular = 1.0f;
+    m.specularExponent = 32.0f;
     m.roughness = 1.0f;
     m.metallic = 0.0f;
     m.emissionColor = glm::vec3(0.28f, 1.0f, 0.5f);
-    m.emissionStrength = 1.0f;
+    m.emissionStrength = 200.0f;
     //m.emissionColor = glm::vec3(0.0f);
     //m.emissionStrength = 0.0f;
     m_materials.emplace_back(m);
@@ -122,8 +137,8 @@ void MainScene::InitializeMaterials() {
     Flame::Material m;
     m.albedo = glm::vec3(1.0f, 0.28f, 0.5f);
     m.diffuse = 1.0f;
-    m.specular = 0.0f;
-    m.specularExponent = 0.0f;
+    m.specular = 1.0f;
+    m.specularExponent = 32.0f;
     m.roughness = 1.0f;
     m.metallic = 0.1f;
     m.emissionColor = glm::vec3(0.0f);
@@ -135,8 +150,8 @@ void MainScene::InitializeMaterials() {
     Flame::Material m;
     m.albedo = glm::vec3(0.26f, 0.30f, 0.32f);
     m.diffuse = 1.0f;
-    m.specular = 0.0f;
-    m.specularExponent = 0.0f;
+    m.specular = 1.0f;
+    m.specularExponent = 32.0f;
     m.roughness = 1.0f;
     m.metallic = 0.2f;
     m.emissionColor = glm::vec3(0.0f);
@@ -163,8 +178,8 @@ void MainScene::InitializeMaterials() {
     m.diffuse = 1.0f;
     m.specular = 0.0f;
     m.specularExponent = 0.0f;
-    m.roughness = 0.0f;
-    m.metallic = 1.0f;
+    m.roughness = 0.1f;
+    m.metallic = 0.8f;
     m.emissionColor = glm::vec3(0.0f);
     m.emissionStrength = 0.0f;
     m_materials.emplace_back(m);

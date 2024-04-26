@@ -47,7 +47,11 @@ namespace Flame {
     glm::vec3 direction;
     glm::vec3 color;
     float intensity;
-    float spotSize;
-    float blend;
+    float cutoffCosineInner;
+    float cutoffCosineOuter;
+
+    float linearFadeoff;
+    float constantFadeoff;
+    float quadraticFadeoff;
   };
 }
