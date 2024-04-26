@@ -227,8 +227,8 @@ namespace Flame {
 
   void Window::HandleMouseMoveMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
     // TODO Will I need the real coordinates?
-    float xCursor = static_cast<float>(GET_X_LPARAM(lParam)) / m_resolutionDivisor;
-    float yCursor = static_cast<float>(GET_Y_LPARAM(lParam)) / m_resolutionDivisor;
+    float xCursor = static_cast<float>(GET_X_LPARAM(lParam));
+    float yCursor = static_cast<float>(GET_Y_LPARAM(lParam));
     m_dispatcher.Dispatch(MouseMoveWindowEvent(xCursor, yCursor));
   }
 

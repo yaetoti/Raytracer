@@ -18,7 +18,7 @@ namespace Flame {
         glm::vec3 color(0.0f);
         // TODO replace with accumulation
         for (uint32_t sample = 0; sample < m_samples; ++sample) {
-          color += ColorPerSample(camera, col, row);
+          color += ColorPerRay(camera, camera.GetRandomizedRay(col, row), 0);
         }
 
         color = glm::clamp(color * m_sampleCountInv, glm::vec3(0), glm::vec3(1));
@@ -46,10 +46,8 @@ namespace Flame {
     return m_hitables;
   }
 
-  glm::vec3 Scene::ColorPerSample(const Camera& camera, uint32_t x, uint32_t y) {
-    Ray ray = camera.GetRandomizedRay(x, y);
+  glm::vec3 Scene::ColorPerRay(const Camera& camera, const Ray& ray, uint32_t bounce) {
     HitRecord record;
-    uint32_t bounce = 0;
     glm::vec3 color(0.0f);
 
     if (!MathUtils::HitClosest(m_hitables.begin(), m_hitables.end(), ray, 0.0001f, std::numeric_limits<float>::max(), record)) {
@@ -106,7 +104,7 @@ namespace Flame {
       if (bounces < m_bounces && record.material->Scatter(ray, record, scattered, attenuation)) {
         // TODO material handling
         // Get color for reflected ray TODO and refracted
-        glm::vec3 color = attenuation * ColorPerSample(camera, scattered, bounces + 1);
+        glm::vec3 color = attenuation * ColorPerRay(camera, scattered, bounces + 1);
         glm::vec3 sampledLighting(0);
 
         glm::vec3 ambient = ambientStrength * lightColor;

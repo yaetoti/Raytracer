@@ -26,7 +26,7 @@ namespace Flame {
     std::vector<std::unique_ptr<IHitable>>& GetHitables();
 
   private:
-    glm::vec3 ColorPerSample(const Camera& camera, uint32_t x, uint32_t y);
+    glm::vec3 ColorPerRay(const Camera& camera, const Ray& ray, uint32_t bounce);
 
   protected:
     // TODO Renderer

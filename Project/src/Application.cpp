@@ -125,14 +125,14 @@ void Application::UpdateCamera(float deltaTime) {
   }
   // Rotation
   if (m_input->IsMouseButtonPressed(Flame::MouseButton::LEFT)) {
-    static float rotationSpeed = -180.0f;
+    static float rotationSpeed = -glm::radians(180.0f);
     constexpr float sensitivity = 1.0f;
     auto[x, y] = m_input->GetCursorPos();
     auto[lastX, lastY] = m_input->GetLastCursorPos();
-    float deltaX = ((x - lastX) / m_window->GetFramebuffer().GetWidth()) * sensitivity;
-    float deltaY = ((y - lastY) / m_window->GetFramebuffer().GetHeight()) * sensitivity;
-    m_camera->Rotate(glm::eulerAngleY(deltaX * rotationSpeed * deltaTime));
-    m_camera->Rotate(glm::eulerAngleX(deltaY * rotationSpeed * deltaTime));
+    float deltaX = ((x - lastX) / m_window->GetWidth()) * sensitivity;
+    float deltaY = ((y - lastY) / m_window->GetHeight()) * sensitivity;
+    m_camera->Rotate(glm::eulerAngleY(deltaX * rotationSpeed));
+    m_camera->Rotate(glm::eulerAngleX(deltaY * rotationSpeed));
   }
 }
 
@@ -141,6 +141,9 @@ void Application::UpdateGrabbing(float deltaTime) {
   static float grabbedTime = 0.0f;
   static glm::vec3 grabbedOffset;
   auto[x, y] = m_input->GetCursorPos();
+  // TODO Do something with that
+  x /= m_window->GetResolutionDivisor();
+  y /= m_window->GetResolutionDivisor();
   // TODO Fix window inversion
   y = m_window->GetFramebuffer().GetHeight() - y;
 
