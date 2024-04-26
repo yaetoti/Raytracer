@@ -106,7 +106,7 @@ namespace Flame {
     }
 
     // TODO Global Illumination. Try #2 (success ?)
-    lightTotal += lightSurface;
+    lightTotal += lightSurface + record.material->emissionStrength * record.material->emissionColor;
     color *= lightTotal;
 
     // Mix colors
@@ -131,7 +131,7 @@ namespace Flame {
       HitRecord recordLight;
 
       // Check for objects between point and light
-      if (MathUtils::HitClosest(m_hitables.begin(), m_hitables.end(), rayLight, 0.0f, lightDistance, recordLight)) {
+      if (MathUtils::HitClosest(m_hitables.begin(), m_hitables.end(), rayLight, 0.0f, lightDistance, recordLight, true)) {
         // TODO Global Illumination. Try #1 (failed)
         // light += CalculatePointLightPerPoint(camera, recordLight, bounce + 1);
         // light += recordLight.material->emissionStrength * recordLight.material->emissionColor;

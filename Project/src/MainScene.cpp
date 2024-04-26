@@ -18,28 +18,28 @@ void MainScene::Initialize() {
    std::make_unique<Flame::Sphere>(
      glm::vec3(0, 0, -2),
      0.5f,
-     &m_materials[0]
+     &m_materials[1]
    )
   );
   m_hitables.emplace_back(
    std::make_unique<Flame::Sphere>(
      glm::vec3(0, 1, -1),
      0.3f,
-     &m_materials[1]
+     &m_materials[2]
    )
   );
   m_hitables.emplace_back(
    std::make_unique<Flame::Sphere>(
      glm::vec3(0, -50.5, -1),
      50.0f,
-     &m_materials[2]
+     &m_materials[3]
    )
   );
   m_hitables.emplace_back(
    std::make_unique<Flame::Plane>(
      glm::vec3(0, 0, -5),
      glm::normalize(glm::vec3(1, 0.2, 1)),
-     &m_materials[3]
+     &m_materials[4]
    )
   );
   m_hitables.emplace_back(
@@ -48,13 +48,19 @@ void MainScene::Initialize() {
      glm::vec3(2, 2, -4),
      glm::vec3(1, 0, -4),
      glm::vec3(0, 0, 1),
-     &m_materials[4]
+     &m_materials[5]
    )
   );
   m_hitables.emplace_back(
    std::make_unique<Flame::Cube>(
-     &m_materials[5]
+     &m_materials[6]
    )
+  );
+
+  Flame::Sphere lightSphere(
+    glm::vec3(0.0f),
+    0.1f,
+    &m_materials[0]
   );
 
   // Point lights
@@ -67,6 +73,9 @@ void MainScene::Initialize() {
     light.linearFadeoff = 1.2f;
     light.quadraticFadeoff = 0.18f;
     m_pointLights.emplace_back(light);
+
+    lightSphere.center = light.position;
+    m_hitables.emplace_back(std::make_unique<Flame::Sphere>(lightSphere));
   }
   {
     Flame::PointLight light;
@@ -77,6 +86,9 @@ void MainScene::Initialize() {
     light.linearFadeoff = 0.7f;
     light.quadraticFadeoff = 0.18f;
     m_pointLights.emplace_back(light);
+
+    lightSphere.center = light.position;
+    m_hitables.emplace_back(std::make_unique<Flame::Sphere>(lightSphere));
   }
 
   // Spotlights
@@ -92,6 +104,9 @@ void MainScene::Initialize() {
     light.linearFadeoff = 0.2f;
     light.quadraticFadeoff = 0.04f;
     m_spotLights.emplace_back(light);
+
+    lightSphere.center = light.position;
+    m_hitables.emplace_back(std::make_unique<Flame::Sphere>(lightSphere));
   }
 
   // Direct lights
@@ -112,6 +127,15 @@ void MainScene::Cleanup() {
 
 void MainScene::InitializeMaterials() {
   // Materials
+  {
+    // Light Visualizer
+    Flame::Material m;
+    m.albedo = glm::vec3(1.00f);
+    m.emissionColor = glm::vec3(1.0f);
+    m.emissionStrength = 1.0f;
+    m.debugMaterial = true;
+    m_materials.emplace_back(m);
+  }
   {
     // Metal sphere
     Flame::Material m;

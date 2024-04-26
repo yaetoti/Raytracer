@@ -24,6 +24,8 @@ namespace Flame {
     // TODO Not used
     glm::vec3 emissionColor { 0.0f };
     float emissionStrength = 0.0f;
+
+    bool debugMaterial = false;
   };
 
   struct PointLight final {
