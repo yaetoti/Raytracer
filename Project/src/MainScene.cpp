@@ -91,8 +91,16 @@ void MainScene::Initialize() {
     light.constantFadeoff = 0.0f;
     light.linearFadeoff = 0.2f;
     light.quadraticFadeoff = 0.04f;
-
     m_spotLights.emplace_back(light);
+  }
+
+  // Direct lights
+  {
+    Flame::DirectLight light;
+    light.color = glm::vec3(0.066666f, 0.070588f, 0.180392f);
+    light.direction = glm::vec3(0.0f, -1.0f, 0.0f);
+    light.intensity = 1.0f;
+    m_directLights.emplace_back(light);
   }
 }
 

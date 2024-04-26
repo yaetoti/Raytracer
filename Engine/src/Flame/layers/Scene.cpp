@@ -81,6 +81,7 @@ namespace Flame {
     // Lighting
     glm::vec3 lightSurface = CalculatePointLightPerPoint(camera, record);
     lightSurface += CalculateSpotLightPerPoint(camera, record);
+    lightSurface += CalculateDirectLightPerPoint(camera, record);
 
     // TODO In Blender works differently
     // Calculate reflected color and light for metallic objects
@@ -199,6 +200,24 @@ namespace Flame {
 
       // Accumulate light
       light += attenuation * (diffuse + specular) * spotLight.intensity * intensity;
+    }
+
+    return light;
+  }
+
+  glm::vec3 Scene::CalculateDirectLightPerPoint(const Camera& camera, const HitRecord& record) {
+    glm::vec3 light(0.0f);
+
+    for (const DirectLight& directLight : m_directLights) {
+      // Diffuse
+      glm::vec3 diffuse = record.material->diffuse * glm::max(glm::dot(record.normal, -directLight.direction), 0.0f) * directLight.color;
+      // Specular
+      glm::vec3 viewDir = glm::normalize(camera.GetPosition() - record.point);
+      glm::vec3 halfReflect = glm::normalize(directLight.direction + viewDir);
+      glm::vec3 specular = record.material->specular * glm::pow(glm::max(glm::dot(record.normal, halfReflect), 0.0f), record.material->specularExponent) * directLight.color;
+
+      // Accumulate light
+      light += (diffuse + specular) * directLight.intensity;
     }
 
     return light;

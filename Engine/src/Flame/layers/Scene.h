@@ -31,6 +31,7 @@ namespace Flame {
     glm::vec3 ColorPerRay(const Camera& camera, const Ray& ray, uint32_t bounce, glm::vec3& lightTotal);
     glm::vec3 CalculatePointLightPerPoint(const Camera& camera, const HitRecord& record);
     glm::vec3 CalculateSpotLightPerPoint(const Camera& camera, const HitRecord& record);
+    glm::vec3 CalculateDirectLightPerPoint(const Camera& camera, const HitRecord& record);
 
   protected:
     // TODO Renderer
