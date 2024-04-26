@@ -1,7 +1,7 @@
 #include "Sphere.h"
 
 namespace Flame {
-  Sphere::Sphere(const glm::vec3& center, const float& radius, const IMaterial& material)
+  Sphere::Sphere(const glm::vec3& center, const float& radius, const Material* material)
   : center(center)
   , radius(radius)
   , material(material) {
@@ -20,7 +20,7 @@ namespace Flame {
         record.time = t;
         record.point = r.AtParameter(t);
         record.normal = (record.point - center) / radius;
-        record.material = &material;
+        record.material = material;
         record.hitable = const_cast<Sphere*>(this);
         return true;
       }
@@ -30,7 +30,7 @@ namespace Flame {
         record.time = t;
         record.point = r.AtParameter(t);
         record.normal = (record.point - center) / radius;
-        record.material = &material;
+        record.material = material;
         record.hitable = const_cast<Sphere*>(this);
         return true;
       }

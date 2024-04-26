@@ -26,7 +26,7 @@ namespace Flame {
     std::vector<std::unique_ptr<IHitable>>& GetHitables();
 
   private:
-    glm::vec3 Color(const Camera& camera, const Ray& ray, uint32_t bounces);
+    glm::vec3 ColorPerSample(const Camera& camera, uint32_t x, uint32_t y);
 
   protected:
     // TODO Renderer
@@ -34,14 +34,17 @@ namespace Flame {
     uint32_t m_surfaceHeight = 0;
     std::vector<uint32_t> m_rowIndices;
     std::vector<uint32_t> m_columnIndices;
-    uint32_t m_sampleCount = 10;
-    float m_raysScale = 1.0f / static_cast<float>(m_sampleCount);
-    uint32_t m_bouncesCount = 10;
-    uint32_t m_lightSampleCount = 4;
+
+    uint32_t m_samples = 10;
+    float m_sampleCountInv = 1.0f / static_cast<float>(m_samples);
+    uint32_t m_bounces = 10;
+    uint32_t m_lightSamples = 4;
     float m_lightSmooth = 1.0f;
 
     // Scene
     std::vector<std::unique_ptr<IHitable>> m_hitables;
+    std::vector<Material> m_materials;
+
     std::vector<DirectLight> m_directLights;
     std::vector<PointLight> m_pointLights;
     std::vector<SpotLight> m_spotLights;

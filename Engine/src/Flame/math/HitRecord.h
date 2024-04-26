@@ -10,7 +10,9 @@ namespace Flame {
     float time;
     glm::vec3 point;
     glm::vec3 normal;
-    const IMaterial* material;
+    uint32_t objectIndex;
+
+    const Material* material;
     IHitable* hitable;
   };
 }

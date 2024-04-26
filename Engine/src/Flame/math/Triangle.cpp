@@ -1,7 +1,7 @@
 #include "Triangle.h"
 
 namespace Flame {
-  Triangle::Triangle(glm::vec3 p1, glm::vec3 p2, glm::vec3 p3, glm::vec3 normal, const IMaterial& material)
+  Triangle::Triangle(glm::vec3 p1, glm::vec3 p2, glm::vec3 p3, glm::vec3 normal, const Material* material)
   : point1(p1)
   , point2(p2)
   , point3(p3)
@@ -38,7 +38,7 @@ namespace Flame {
       record.point = r.AtParameter(t);
       record.normal = normal;
       record.time = t;
-      record.material = &material;
+      record.material = material;
       record.hitable = const_cast<Triangle*>(this);
       return true;
     }

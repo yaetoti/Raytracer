@@ -15,14 +15,16 @@ namespace Flame {
   void Scene::Render(Framebuffer& surface, const Camera& camera) {
     std::for_each(std::execution::par, m_rowIndices.begin(), m_rowIndices.end(), [&](uint32_t row) {
       std::for_each(std::execution::par, m_columnIndices.begin(), m_columnIndices.end(), [&](uint32_t col) {
-        glm::vec3 resultColor(0.0f);
-        for (uint32_t i = 0; i < m_sampleCount; ++i) {
-          resultColor += Color(camera, camera.GetRandomizedRay(col, row), 0);
+        glm::vec3 color(0.0f);
+        // TODO replace with accumulation
+        for (uint32_t sample = 0; sample < m_samples; ++sample) {
+          color += ColorPerSample(camera, col, row);
         }
 
-        resultColor *= m_raysScale;
-        resultColor *= 255.0f;
-        surface.SetPixel(col, row, static_cast<BYTE>(resultColor.r), static_cast<BYTE>(resultColor.g), static_cast<BYTE>(resultColor.b));
+        color = glm::clamp(color * m_sampleCountInv, glm::vec3(0), glm::vec3(1));
+        // color *= m_sampleCountInv;
+        color *= 255.0f;
+        surface.SetPixel(col, row, static_cast<BYTE>(color.r), static_cast<BYTE>(color.g), static_cast<BYTE>(color.b));
       });
     });
   }
@@ -44,7 +46,46 @@ namespace Flame {
     return m_hitables;
   }
 
-  glm::vec3 Scene::Color(const Camera& camera, const Ray& ray, uint32_t bounces) {
+  glm::vec3 Scene::ColorPerSample(const Camera& camera, uint32_t x, uint32_t y) {
+    Ray ray = camera.GetRandomizedRay(x, y);
+    HitRecord record;
+    uint32_t bounce = 0;
+    glm::vec3 color(0.0f);
+
+    if (!MathUtils::HitClosest(m_hitables.begin(), m_hitables.end(), ray, 0.0001f, std::numeric_limits<float>::max(), record)) {
+      // No surface was hit
+      glm::vec3 skyColorTop(0.066666f, 0.070588f, 0.180392f);
+      glm::vec3 skyColorBottom(0.262745f, 0.207843f, 0.549019f);
+      return glm::mix(skyColorTop, skyColorBottom, (ray.direction.y + 1) * 0.5f);
+    }
+
+    color += record.material->albedo;
+
+    //do {
+    //  
+    //} while(record.mat.metallic > std::numeric_limits<float>::epsilon() && bounce++ < m_bounces);
+
+    //for (uint32_t bounce = 0; bounce < m_bounces; ++bounce) {
+    //  // Find surface for which the color will be calculated
+    //  if (!MathUtils::HitClosest(m_hitables.begin(), m_hitables.end(), ray, 0.0001f, std::numeric_limits<float>::max(), record)) {
+    //    // No surface was hit
+    //    glm::vec3 skyColorTop(0.066666f, 0.070588f, 0.180392f);
+    //    glm::vec3 skyColorBottom(0.262745f, 0.207843f, 0.549019f);
+    //    color += glm::mix(skyColorTop, skyColorBottom, (ray.direction.y + 1) * 0.5f);
+    //    break;
+    //  }
+
+    //  ray.origin = record.point;
+    //  ray.direction = glm::normalize(glm::reflect(ray.direction, record.normal + record.mat.roughness * Random::UnitVector<3, float>()));
+    //}
+
+    return color;
+
+
+
+    // TODO remove
+#if 0
+
     // Lighting
     // glm::vec3 lightColor(1.0f, 0.784313, 0.0f);
     glm::vec3 lightColor(1.0f, 1.0f, 1.0f);
@@ -62,16 +103,16 @@ namespace Flame {
 
       // Recursively bounce N times
       // Scatter a ray 
-      if (bounces < m_bouncesCount && record.material->Scatter(ray, record, scattered, attenuation)) {
+      if (bounces < m_bounces && record.material->Scatter(ray, record, scattered, attenuation)) {
         // TODO material handling
         // Get color for reflected ray TODO and refracted
-        glm::vec3 color = attenuation * Color(camera, scattered, bounces + 1);
+        glm::vec3 color = attenuation * ColorPerSample(camera, scattered, bounces + 1);
         glm::vec3 sampledLighting(0);
 
         glm::vec3 ambient = ambientStrength * lightColor;
 
         // For each light source
-        for (uint32_t lightSample = 0; lightSample < m_lightSampleCount; ++lightSample) {
+        for (uint32_t lightSample = 0; lightSample < m_lightSamples; ++lightSample) {
           // Diffuse
           // Light vector is randomized to get different results
           glm::vec3 lightVec = lightPos + m_lightSmooth * Random::UnitVector<3, float, glm::packed_highp>() - record.point;
@@ -98,7 +139,7 @@ namespace Flame {
         }
 
         // Average color among all light samples
-        sampledLighting /= m_lightSampleCount;
+        sampledLighting /= m_lightSamples;
         return glm::clamp(color * sampledLighting, glm::vec3(0), glm::vec3(1));
       }
 
@@ -111,5 +152,6 @@ namespace Flame {
     glm::vec3 skyColor2(0.262745f, 0.207843f, 0.549019f);
     float t = (ray.direction.y + 1) * 0.5f;
     return skyColor * t + (1.0f - t) * skyColor2;
+#endif
   }
 }

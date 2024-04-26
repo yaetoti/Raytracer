@@ -4,7 +4,7 @@
 
 namespace Flame {
   struct Plane final : IHitable {
-    Plane(const glm::vec3& position, const glm::vec3& normal, const IMaterial& material)
+    Plane(const glm::vec3& position, const glm::vec3& normal, const Material* material)
     : position(position)
     , normal(normal)
     , material(material) {
@@ -16,7 +16,7 @@ namespace Flame {
         record.point = r.AtParameter(t);
         record.normal = normal;
         record.time = t;
-        record.material = &material;
+        record.material = material;
         record.hitable = const_cast<Plane*>(this);
         return true;
       }
@@ -26,6 +26,6 @@ namespace Flame {
 
     glm::vec3 position;
     glm::vec3 normal;
-    const IMaterial& material;
+    const Material* material;
   };  
 }

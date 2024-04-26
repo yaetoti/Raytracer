@@ -8,7 +8,7 @@
 
 namespace Flame {
   struct Face final : IHitable {
-    Face(glm::vec3 p1, glm::vec3 p2, glm::vec3 p3, glm::vec3 p4, glm::vec3 normal, const IMaterial& material)
+    Face(glm::vec3 p1, glm::vec3 p2, glm::vec3 p3, glm::vec3 p4, glm::vec3 normal, const Material* material)
     : half1(p1, p2, p3, normal, material)
     , half2(p1, p3, p4, normal, material) {
     }
@@ -27,7 +27,7 @@ namespace Flame {
 
   struct Cube final : IHitable {
     // TODO WTF
-    explicit Cube(const IMaterial& material)
+    explicit Cube(const Material* material)
     : top(
       glm::vec3(-1, 1, 1),
       glm::vec3(1, 1, 1),

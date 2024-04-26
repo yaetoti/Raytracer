@@ -17,9 +17,13 @@ struct MainScene : Flame::Scene {
   void Cleanup() override;
 
 private:
+  void InitializeMaterials();
+
+private:
   Flame::Window& m_window;
   Flame::InputSystem& m_input;
 
   // TODO Not here. ResourceManager
-  std::vector<std::unique_ptr<Flame::IMaterial>> m_materials;
+  std::vector<std::unique_ptr<Flame::IMaterial>> m_oldMaterials;
+
 };

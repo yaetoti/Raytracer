@@ -96,7 +96,6 @@ void Application::HandleEvent(const Flame::WindowEvent& e) {
 void Application::UpdateCamera(float deltaTime) {
   static float speed = 4.0f;
   static float rollSpeed = glm::radians(45.0f);
-  static float rotationSpeed = -glm::radians(1.0f);
   // TODO ScrollWheel
 
   if (m_input->IsKeyPressed('A')) {
@@ -126,7 +125,8 @@ void Application::UpdateCamera(float deltaTime) {
   }
   // Rotation
   if (m_input->IsMouseButtonPressed(Flame::MouseButton::LEFT)) {
-    constexpr float sensitivity = 5000.0f;
+    static float rotationSpeed = -180.0f;
+    constexpr float sensitivity = 1.0f;
     auto[x, y] = m_input->GetCursorPos();
     auto[lastX, lastY] = m_input->GetLastCursorPos();
     float deltaX = ((x - lastX) / m_window->GetFramebuffer().GetWidth()) * sensitivity;

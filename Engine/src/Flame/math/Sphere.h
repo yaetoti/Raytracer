@@ -8,7 +8,7 @@ namespace Flame {
   struct IMaterial;
 
   struct Sphere final : IHitable {
-    explicit Sphere(const glm::vec3& center, const float& radius, const IMaterial& material);
+    explicit Sphere(const glm::vec3& center, const float& radius, const Material* material);
     bool Hit(const Ray& r, float tMin, float tMax, HitRecord& record) const override;
 
     friend std::ostream& operator<<(std::ostream& out, const Sphere& s) {
@@ -24,6 +24,6 @@ namespace Flame {
   public:
     glm::vec3 center;
     float radius;
-    const IMaterial& material;
+    const Material* material;
   };
 }
