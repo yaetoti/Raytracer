@@ -21,7 +21,7 @@ namespace Flame {
 
     float roughness = 1.0f;
     float metallic = 0.0f;
-
+    // TODO Not used
     glm::vec3 emissionColor { 0.0f };
     float emissionStrength = 0.0f;
   };

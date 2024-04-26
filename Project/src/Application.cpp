@@ -3,7 +3,7 @@
 Application::Application() {
   // m_window = std::make_shared<Flame::Window>(L"Flame 🔥", 1366, 768, 2);
   // High performance mode
-  m_window = std::make_shared<Flame::Window>(L"Flame 🔥", 160, 90, 2);
+  m_window = std::make_shared<Flame::Window>(L"Flame 🔥", 160, 90, 1);
   m_input = &m_window->GetInputSystem();
   // TODO Pass width and height = mistake
   m_camera = std::make_shared<Flame::Camera>(m_window->GetFramebuffer().GetWidth(), m_window->GetFramebuffer().GetHeight(), 90.0f, 0.1f, 1000.0f);
@@ -94,34 +94,44 @@ void Application::HandleEvent(const Flame::WindowEvent& e) {
 }
 
 void Application::UpdateCamera(float deltaTime) {
-  static float speed = 4.0f;
-  static float rollSpeed = glm::radians(45.0f);
+  // TODO Move into CameraController
+  bool moved = false;
+  float speed = 4.0f;
+  float rollSpeed = glm::radians(45.0f);
   // TODO ScrollWheel
 
   if (m_input->IsKeyPressed('A')) {
     m_camera->SetPosition(m_camera->GetPosition() + m_camera->GetRightUnit() * -speed * deltaTime);
+    moved = true;
   }
   if (m_input->IsKeyPressed('D')) {
     m_camera->SetPosition(m_camera->GetPosition() + m_camera->GetRightUnit() * speed * deltaTime);
+    moved = true;
   }
   if (m_input->IsKeyPressed('W')) {
     m_camera->SetPosition(m_camera->GetPosition() + m_camera->GetFrontUnit() * speed * deltaTime);
+    moved = true;
   }
   if (m_input->IsKeyPressed('S')) {
     m_camera->SetPosition(m_camera->GetPosition() + m_camera->GetFrontUnit() * -speed * deltaTime);
+    moved = true;
   }
   if (m_input->IsKeyPressed(VK_SPACE)) {
     m_camera->SetPosition(m_camera->GetPosition() + m_camera->GetUpUnit() * speed * deltaTime);
+    moved = true;
   }
   if (m_input->IsKeyPressed(VK_CONTROL)) {
     m_camera->SetPosition(m_camera->GetPosition() + m_camera->GetUpUnit() * -speed * deltaTime);
+    moved = true;
   }
   // DO A BARREL ROLL
   if (m_input->IsKeyPressed('Q')) {
     m_camera->Rotate(glm::eulerAngleZ(rollSpeed * deltaTime));
+    moved = true;
   }
   if (m_input->IsKeyPressed('E')) {
     m_camera->Rotate(glm::eulerAngleZ(-rollSpeed * deltaTime));
+    moved = true;
   }
   // Rotation
   if (m_input->IsMouseButtonPressed(Flame::MouseButton::LEFT)) {
@@ -133,10 +143,16 @@ void Application::UpdateCamera(float deltaTime) {
     float deltaY = ((y - lastY) / m_window->GetHeight()) * sensitivity;
     m_camera->Rotate(glm::eulerAngleY(deltaX * rotationSpeed));
     m_camera->Rotate(glm::eulerAngleX(deltaY * rotationSpeed));
+    moved = true;
+  }
+
+  if (moved) {
+    m_scene->ResetAccumulatedData();
   }
 }
 
 void Application::UpdateGrabbing(float deltaTime) {
+  bool moved = false;
   static Flame::Sphere* grabbed = nullptr;
   static float grabbedTime = 0.0f;
   static glm::vec3 grabbedOffset;
@@ -166,5 +182,10 @@ void Application::UpdateGrabbing(float deltaTime) {
 
   if (grabbed != nullptr) {
     grabbed->center = m_camera->GetRay(x, y).AtParameter(grabbedTime) + grabbedOffset;
+    moved = true;
+  }
+
+  if (moved) {
+    m_scene->ResetAccumulatedData();
   }
 }

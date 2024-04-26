@@ -18,15 +18,30 @@ namespace Flame {
         glm::vec3 color(0.0f);
         // TODO replace with accumulation
         for (uint32_t sample = 0; sample < m_samples; ++sample) {
-          color += ColorPerRay(camera, camera.GetRandomizedRay(col, row), 0);
+          glm::vec3 light(0.0f);
+          glm::vec3 resultColor = ColorPerRay(camera, camera.GetRandomizedRay(col, row), 0, light);
+          color += resultColor;
         }
 
         color = glm::clamp(color * m_sampleCountInv, glm::vec3(0), glm::vec3(1));
-        // color *= m_sampleCountInv;
-        color *= 255.0f;
-        surface.SetPixel(col, row, static_cast<BYTE>(color.r), static_cast<BYTE>(color.g), static_cast<BYTE>(color.b));
+
+        // Accumulate color
+        color.r = m_accumulatedData[(row * m_surfaceWidth + col) * 3 + 0] += color.r;
+        color.g = m_accumulatedData[(row * m_surfaceWidth + col) * 3 + 1] += color.g;
+        color.b = m_accumulatedData[(row * m_surfaceWidth + col) * 3 + 2] += color.b;
+        color *= 255.0f / static_cast<float>(m_framesCount);
+
+        surface.SetPixel(
+          col, row,
+          static_cast<BYTE>(color.r),
+          static_cast<BYTE>(color.g),
+          static_cast<BYTE>(color.b)
+        );
+
       });
     });
+
+    ++m_framesCount;
   }
 
   void Scene::HandleEvent(const WindowEvent& e) {
@@ -38,15 +53,24 @@ namespace Flame {
       m_rowIndices.resize(m_surfaceHeight);
       std::iota(m_columnIndices.begin(), m_columnIndices.end(), 0);
       std::iota(m_rowIndices.begin(), m_rowIndices.end(), 0);
+
+      m_accumulatedData.resize(m_surfaceWidth * m_surfaceHeight * 3);
+      ResetAccumulatedData();
+
       return;
     }
+  }
+
+  void Scene::ResetAccumulatedData() {
+    std::ranges::fill(m_accumulatedData, 0.0f);
+    m_framesCount = 1;
   }
 
   std::vector<std::unique_ptr<IHitable>>& Scene::GetHitables() {
     return m_hitables;
   }
 
-  glm::vec3 Scene::ColorPerRay(const Camera& camera, const Ray& ray, uint32_t bounce) {
+  glm::vec3 Scene::ColorPerRay(const Camera& camera, const Ray& ray, uint32_t bounce, glm::vec3& lightTotal) {
     HitRecord record;
 
     // Find surface for which the color will be calculated
@@ -58,13 +82,14 @@ namespace Flame {
     }
 
     glm::vec3 color = record.material->albedo + record.material->emissionStrength * record.material->emissionColor;
+    glm::vec3 colorReflected(0.0f);
+
     // Lighting
-    glm::vec3 light = LightPerPoint(camera, record, 0);
-    // color *= glm::mix(light, glm::vec3(1.0f), record.material->metallic);
-    color *= light;
+    glm::vec3 lightSurface = LightPerPoint(camera, record);
+    // color *= lightSurface;
 
     // TODO In Blender works differently
-    // Calculate reflected light for metallic objects
+    // Calculate reflected lightTotal for metallic objects
     if (bounce < m_bounces) {
       // TODO perform for emission
       // Don't perform calculations for non-reflective materials
@@ -76,29 +101,27 @@ namespace Flame {
         }
 
         Ray rayReflected(record.point, glm::normalize(glm::reflect(ray.direction, normal)));
-        glm::vec3 colorReflected = ColorPerRay(camera, rayReflected, bounce + 1);
+        colorReflected = ColorPerRay(camera, rayReflected, bounce + 1, lightSurface);
 
         // Mix colors
-        color = glm::mix(color, colorReflected, record.material->metallic);
-        // color *= colorReflected;
+        // color = glm::mix(color, colorReflected, record.material->metallic);
       // }
     } else {
       // I'm in too deep (Too much bounces)
       return glm::vec3(0.0f);
     }
 
-    // Lighting
-    // color *= glm::mix(light, glm::vec3(1.0f), record.material->metallic);
-    // color *= light;
+    // TODO Global Illumination. Try #2 (success ?)
+    lightTotal += lightSurface;
+    color *= lightTotal;
+
+    // Mix colors
+    color = glm::mix(color, colorReflected, record.material->metallic);
 
     return color;
   }
 
-  glm::vec3 Scene::LightPerPoint(const Camera& camera, const HitRecord& record, uint32_t bounce) {
-    //if (bounce > m_lightBounces) {
-    //  return glm::vec3(0.0f);
-    //}
-
+  glm::vec3 Scene::LightPerPoint(const Camera& camera, const HitRecord& record) {
     glm::vec3 light(0.0f);
 
     for (uint32_t lightSample = 0; lightSample < m_lightSamples; ++lightSample) {
@@ -115,6 +138,7 @@ namespace Flame {
         HitRecord recordLight;
         // Check for objects between point and light
         if (MathUtils::HitClosest(m_hitables.begin(), m_hitables.end(), rayLight, 0.0f, glm::length(lightVec), recordLight)) {
+          // TODO Global Illumination. Try #1 (failed)
           // light += LightPerPoint(camera, recordLight, bounce + 1);
           continue;
         }
