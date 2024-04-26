@@ -11,10 +11,8 @@
 #include "Flame/math/Ray.h"
 #include "Flame/math/Sphere.h"
 
-#include "Flame/render/AlbedoMaterial.h"
 #include "Flame/render/Framebuffer.h"
-#include "Flame/render/IMaterial.h"
-#include "Flame/render/LambertianMaterial.h"
+#include "Flame/render/Material.h"
 
 #include "Flame/utils/EventDispatcher.h"
 #include "Flame/utils/FunctionalDispatcher.h"

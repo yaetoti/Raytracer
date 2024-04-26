@@ -5,7 +5,7 @@
 #include <iostream>
 
 namespace Flame {
-  struct IMaterial;
+  struct Material;
 
   struct Sphere final : IHitable {
     explicit Sphere(const glm::vec3& center, const float& radius, const Material* material);

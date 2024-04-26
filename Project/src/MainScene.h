@@ -22,8 +22,4 @@ private:
 private:
   Flame::Window& m_window;
   Flame::InputSystem& m_input;
-
-  // TODO Not here. ResourceManager
-  std::vector<std::unique_ptr<Flame::IMaterial>> m_oldMaterials;
-
 };

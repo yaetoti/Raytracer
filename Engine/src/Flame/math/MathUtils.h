@@ -22,5 +22,13 @@ namespace Flame {
 
       return hitAnything;
     }
+
+    static glm::vec3 ColorFromHex(uint32_t color) {
+      return glm::vec3(
+        static_cast<float>(color >> 16 & 0xFF) / 255.0f,
+        static_cast<float>(color >> 8 & 0xFF) / 255.0f,
+        static_cast<float>(color & 0xFF)  / 255.0f
+      );
+    }
   };
 }

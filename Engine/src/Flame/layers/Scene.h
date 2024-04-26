@@ -27,6 +27,7 @@ namespace Flame {
 
   private:
     glm::vec3 ColorPerRay(const Camera& camera, const Ray& ray, uint32_t bounce);
+    glm::vec3 LightPerPoint(const Camera& camera, const HitRecord& record, uint32_t bounce);
 
   protected:
     // TODO Renderer
@@ -37,9 +38,10 @@ namespace Flame {
 
     uint32_t m_samples = 10;
     float m_sampleCountInv = 1.0f / static_cast<float>(m_samples);
-    uint32_t m_bounces = 10;
+    uint32_t m_bounces = 4;
     uint32_t m_lightSamples = 4;
-    float m_lightSmooth = 1.0f;
+    uint32_t m_lightBounces = 0;
+    float m_lightSmooth = 0.2f;
 
     // Scene
     std::vector<std::unique_ptr<IHitable>> m_hitables;

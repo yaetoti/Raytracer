@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Flame/render/IMaterial.h"
+#include "Flame/render/Material.h"
 #include <glm/glm.hpp>
 
 namespace Flame {

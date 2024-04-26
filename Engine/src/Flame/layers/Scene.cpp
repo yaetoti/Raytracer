@@ -48,108 +48,90 @@ namespace Flame {
 
   glm::vec3 Scene::ColorPerRay(const Camera& camera, const Ray& ray, uint32_t bounce) {
     HitRecord record;
-    glm::vec3 color(0.0f);
 
-    if (!MathUtils::HitClosest(m_hitables.begin(), m_hitables.end(), ray, 0.0001f, std::numeric_limits<float>::max(), record)) {
+    // Find surface for which the color will be calculated
+    if (!MathUtils::HitClosest(m_hitables.begin(), m_hitables.end(), ray, 0.001f, std::numeric_limits<float>::max(), record)) {
       // No surface was hit
       glm::vec3 skyColorTop(0.066666f, 0.070588f, 0.180392f);
       glm::vec3 skyColorBottom(0.262745f, 0.207843f, 0.549019f);
       return glm::mix(skyColorTop, skyColorBottom, (ray.direction.y + 1) * 0.5f);
     }
 
-    color += record.material->albedo;
-
-    //do {
-    //  
-    //} while(record.mat.metallic > std::numeric_limits<float>::epsilon() && bounce++ < m_bounces);
-
-    //for (uint32_t bounce = 0; bounce < m_bounces; ++bounce) {
-    //  // Find surface for which the color will be calculated
-    //  if (!MathUtils::HitClosest(m_hitables.begin(), m_hitables.end(), ray, 0.0001f, std::numeric_limits<float>::max(), record)) {
-    //    // No surface was hit
-    //    glm::vec3 skyColorTop(0.066666f, 0.070588f, 0.180392f);
-    //    glm::vec3 skyColorBottom(0.262745f, 0.207843f, 0.549019f);
-    //    color += glm::mix(skyColorTop, skyColorBottom, (ray.direction.y + 1) * 0.5f);
-    //    break;
-    //  }
-
-    //  ray.origin = record.point;
-    //  ray.direction = glm::normalize(glm::reflect(ray.direction, record.normal + record.mat.roughness * Random::UnitVector<3, float>()));
-    //}
-
-    return color;
-
-
-
-    // TODO remove
-#if 0
-
+    glm::vec3 color = record.material->albedo + record.material->emissionStrength * record.material->emissionColor;
     // Lighting
-    // glm::vec3 lightColor(1.0f, 0.784313, 0.0f);
-    glm::vec3 lightColor(1.0f, 1.0f, 1.0f);
-    glm::vec3 lightPos(5.0, 6.0, -3.0);
-    float ambientStrength = 0.55f;
-    float diffuseStrength = 4.0f;
-    float specularStrength = 1.0f;
-    float specularExponent = 32;
+    glm::vec3 light = LightPerPoint(camera, record, 0);
+    // color *= glm::mix(light, glm::vec3(1.0f), record.material->metallic);
+    color *= light;
 
-    // Find surface for which the color will be calculated
-    HitRecord record;
-    if (MathUtils::HitClosest(m_hitables.begin(), m_hitables.end(), ray, 0.01f, std::numeric_limits<float>::max(), record)) {
-      Ray scattered;
-      glm::vec3 attenuation;
-
-      // Recursively bounce N times
-      // Scatter a ray 
-      if (bounces < m_bounces && record.material->Scatter(ray, record, scattered, attenuation)) {
-        // TODO material handling
-        // Get color for reflected ray TODO and refracted
-        glm::vec3 color = attenuation * ColorPerRay(camera, scattered, bounces + 1);
-        glm::vec3 sampledLighting(0);
-
-        glm::vec3 ambient = ambientStrength * lightColor;
-
-        // For each light source
-        for (uint32_t lightSample = 0; lightSample < m_lightSamples; ++lightSample) {
-          // Diffuse
-          // Light vector is randomized to get different results
-          glm::vec3 lightVec = lightPos + m_lightSmooth * Random::UnitVector<3, float, glm::packed_highp>() - record.point;
-          glm::vec3 lightDir = glm::normalize(lightVec);
-
-          Ray ray2(record.point + record.normal * 0.01, lightDir);
-          HitRecord record2;
-
-          // Check for objects between point and light
-          if (MathUtils::HitClosest(m_hitables.begin(), m_hitables.end(), ray2, 0, glm::length(lightVec), record2)) {
-            // No light was hit
-            return glm::clamp(color * ambient, glm::vec3(0.0f), glm::vec3(1.0f));
-          }
-
-          // Hit light
-
-          glm::vec3 diffuse = diffuseStrength * glm::max(glm::dot(record.normal, lightDir), 0.0f) * lightColor;
-          // Specular
-          glm::vec3 viewDir = glm::normalize(camera.GetPosition() - record.point);
-          glm::vec3 halfReflect = glm::normalize(lightDir + viewDir);
-          glm::vec3 specular = specularStrength * glm::pow(glm::max(glm::dot(record.normal, halfReflect), 0.0f), specularExponent) * lightColor;
-
-          sampledLighting += ambient + diffuse + specular;
+    // TODO In Blender works differently
+    // Calculate reflected light for metallic objects
+    if (bounce < m_bounces) {
+      // TODO perform for emission
+      // Don't perform calculations for non-reflective materials
+      // if (record.material->metallic > std::numeric_limits<float>::epsilon()) {
+        glm::vec3 normal = record.normal;
+        // Don't perform calculations for smooth materials
+        if (record.material->roughness > std::numeric_limits<float>::epsilon()) {
+          normal += record.material->roughness * Random::UnitVector<3, float>();
         }
 
-        // Average color among all light samples
-        sampledLighting /= m_lightSamples;
-        return glm::clamp(color * sampledLighting, glm::vec3(0), glm::vec3(1));
-      }
+        Ray rayReflected(record.point, glm::normalize(glm::reflect(ray.direction, normal)));
+        glm::vec3 colorReflected = ColorPerRay(camera, rayReflected, bounce + 1);
 
-      // Too much bounces
+        // Mix colors
+        color = glm::mix(color, colorReflected, record.material->metallic);
+        // color *= colorReflected;
+      // }
+    } else {
+      // I'm in too deep (Too much bounces)
       return glm::vec3(0.0f);
     }
 
-    // glm::vec3 skyColor(0.5f, 0.7f, 1.0f);
-    glm::vec3 skyColor(0.066666f, 0.070588f, 0.180392f);
-    glm::vec3 skyColor2(0.262745f, 0.207843f, 0.549019f);
-    float t = (ray.direction.y + 1) * 0.5f;
-    return skyColor * t + (1.0f - t) * skyColor2;
-#endif
+    // Lighting
+    // color *= glm::mix(light, glm::vec3(1.0f), record.material->metallic);
+    // color *= light;
+
+    return color;
+  }
+
+  glm::vec3 Scene::LightPerPoint(const Camera& camera, const HitRecord& record, uint32_t bounce) {
+    //if (bounce > m_lightBounces) {
+    //  return glm::vec3(0.0f);
+    //}
+
+    glm::vec3 light(0.0f);
+
+    for (uint32_t lightSample = 0; lightSample < m_lightSamples; ++lightSample) {
+      for (const PointLight& pointLight : m_pointLights) {
+        glm::vec3 lightVec = pointLight.position - record.point;
+        if (m_lightSmooth > std::numeric_limits<float>::epsilon()) {
+          // Light vector is randomized to get different results
+          lightVec += m_lightSmooth * Random::UnitVector<3, float, glm::packed_highp>();
+        }
+
+        glm::vec3 lightDir = glm::normalize(lightVec);
+
+        Ray rayLight(record.point + record.normal * 0.01f, lightDir);
+        HitRecord recordLight;
+        // Check for objects between point and light
+        if (MathUtils::HitClosest(m_hitables.begin(), m_hitables.end(), rayLight, 0.0f, glm::length(lightVec), recordLight)) {
+          // light += LightPerPoint(camera, recordLight, bounce + 1);
+          continue;
+        }
+
+        // Diffuse
+        glm::vec3 diffuse = record.material->diffuse * glm::max(glm::dot(record.normal, lightDir), 0.0f) * pointLight.color;
+        // Specular
+        glm::vec3 viewDir = glm::normalize(camera.GetPosition() - record.point);
+        glm::vec3 halfReflect = glm::normalize(lightDir + viewDir);
+        glm::vec3 specular = record.material->specular * glm::pow(glm::max(glm::dot(record.normal, halfReflect), 0.0f), record.material->specularExponent) * pointLight.color;
+
+        // Accumulate light
+        light += (diffuse + specular) * pointLight.intensity;
+      }
+    }
+
+    light *= 1.0f / m_lightSamples;
+    return light;
   }
 }

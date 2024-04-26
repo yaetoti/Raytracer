@@ -3,8 +3,6 @@
 #include "Flame/math/Cube.h"
 #include "Flame/math/Plane.h"
 #include "Flame/math/Triangle.h"
-#include "Flame/render/AlbedoMaterial.h"
-#include "Flame/render/LambertianMaterial.h"
 
 MainScene::MainScene(Flame::Window& window)
 : m_window(window)
@@ -37,22 +35,22 @@ void MainScene::Initialize() {
      &m_materials[2]
    )
   );
-  //m_hitables.emplace_back(
-  // std::make_unique<Flame::Plane>(
-  //   glm::vec3(0, 0, -5),
-  //   glm::normalize(glm::vec3(1, 0.2, 1)),
-  //   &m_materials[3]
-  // )
-  //);
-  //m_hitables.emplace_back(
-  // std::make_unique<Flame::Triangle>(
-  //   glm::vec3(0, 2, -4),
-  //   glm::vec3(2, 2, -4),
-  //   glm::vec3(1, 0, -4),
-  //   glm::vec3(0, 0, 1),
-  //   &m_materials[4]
-  // )
-  //);
+  m_hitables.emplace_back(
+   std::make_unique<Flame::Plane>(
+     glm::vec3(0, 0, -5),
+     glm::normalize(glm::vec3(1, 0.2, 1)),
+     &m_materials[3]
+   )
+  );
+  m_hitables.emplace_back(
+   std::make_unique<Flame::Triangle>(
+     glm::vec3(0, 2, -4),
+     glm::vec3(2, 2, -4),
+     glm::vec3(1, 0, -4),
+     glm::vec3(0, 0, 1),
+     &m_materials[4]
+   )
+  );
   //m_hitables.emplace_back(
   // std::make_unique<Flame::Cube>(
   //   &m_materials[5]
@@ -63,8 +61,18 @@ void MainScene::Initialize() {
   {
     Flame::PointLight light;
     light.position = glm::vec3(5.0f, 6.0f, -3.0f);
-    light.color = glm::vec3(1.0f, 1.0f, 1.0f);
-    light.intensity = 1000.0f;
+    light.color = Flame::MathUtils::ColorFromHex(0xFA3120);
+    light.intensity = 2.0f;
+    light.constantFadeoff = 1.0f;
+    light.linearFadeoff = 1.0f;
+    light.quadraticFadeoff = 1.0f;
+    m_pointLights.emplace_back(light);
+  }
+  {
+    Flame::PointLight light;
+    light.position = glm::vec3(3.0f, 3.0f, 1.0f);
+    light.color = Flame::MathUtils::ColorFromHex(0x2C1EF7);
+    light.intensity = 1.0f;
     light.constantFadeoff = 1.0f;
     light.linearFadeoff = 1.0f;
     light.quadraticFadeoff = 1.0f;
@@ -81,57 +89,65 @@ void MainScene::Cleanup() {
 void MainScene::InitializeMaterials() {
   // Materials
   {
+    // Metal sphere
     Flame::Material m;
     m.albedo = glm::vec3(0.90f, 0.90f, 0.90f);
-    m.diffuse = 0.0f;
-    m.specular = 0.0f;
-    m.specularExponent = 0.0f;
+    m.diffuse = 1.0f;
+    m.specular = 1.0f;
+    m.specularExponent = 32.0f;
     m.roughness = 0.0f;
-    m.metallic = 1.0f;
+    m.metallic = 0.99f;
     m.emissionColor = glm::vec3(0.0f);
     m.emissionStrength = 0.0f;
     m_materials.emplace_back(m);
   }
   {
+    // Albedo sphere
     Flame::Material m;
-    m.albedo = glm::vec3(0.28f, 1.0f, 0.5f);
-    m.diffuse = 0.0f;
+    // m.albedo = glm::vec3(0.28f, 1.0f, 0.5f);
+    m.albedo = glm::vec3(0.0f);
+    m.diffuse = 1.0f;
     m.specular = 0.0f;
     m.specularExponent = 0.0f;
-    m.roughness = 0.0f;
+    m.roughness = 1.0f;
     m.metallic = 0.0f;
-    m.emissionColor = glm::vec3(0.0f);
-    m.emissionStrength = 0.0f;
+    m.emissionColor = glm::vec3(0.28f, 1.0f, 0.5f);
+    m.emissionStrength = 1.0f;
+    //m.emissionColor = glm::vec3(0.0f);
+    //m.emissionStrength = 0.0f;
     m_materials.emplace_back(m);
   }
   {
+    // The big boi
     Flame::Material m;
     m.albedo = glm::vec3(1.0f, 0.28f, 0.5f);
-    m.diffuse = 0.0f;
+    m.diffuse = 1.0f;
     m.specular = 0.0f;
     m.specularExponent = 0.0f;
-    m.roughness = 0.1f;
-    m.metallic = 1.0f;
+    m.roughness = 1.0f;
+    m.metallic = 0.1f;
     m.emissionColor = glm::vec3(0.0f);
     m.emissionStrength = 0.0f;
     m_materials.emplace_back(m);
   }
   {
+    // Plane
     Flame::Material m;
     m.albedo = glm::vec3(0.26f, 0.30f, 0.32f);
-    m.diffuse = 0.0f;
+    m.diffuse = 1.0f;
     m.specular = 0.0f;
     m.specularExponent = 0.0f;
-    m.roughness = 0.1f;
-    m.metallic = 1.0f;
+    m.roughness = 1.0f;
+    m.metallic = 0.2f;
     m.emissionColor = glm::vec3(0.0f);
     m.emissionStrength = 0.0f;
     m_materials.emplace_back(m);
   }
   {
+    // Triangle
     Flame::Material m;
     m.albedo = glm::vec3(0.99f, 0.99f, 0.99f);
-    m.diffuse = 0.0f;
+    m.diffuse = 1.0f;
     m.specular = 0.0f;
     m.specularExponent = 0.0f;
     m.roughness = 0.0f;
@@ -141,9 +157,10 @@ void MainScene::InitializeMaterials() {
     m_materials.emplace_back(m);
   }
   {
+    // Cube
     Flame::Material m;
     m.albedo = glm::vec3(0.99f, 0.99f, 0.99f);
-    m.diffuse = 0.0f;
+    m.diffuse = 1.0f;
     m.specular = 0.0f;
     m.specularExponent = 0.0f;
     m.roughness = 0.0f;

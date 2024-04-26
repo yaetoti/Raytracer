@@ -125,7 +125,7 @@ void Application::UpdateCamera(float deltaTime) {
   }
   // Rotation
   if (m_input->IsMouseButtonPressed(Flame::MouseButton::LEFT)) {
-    static float rotationSpeed = -glm::radians(180.0f);
+    static float rotationSpeed = -glm::pi<float>();
     constexpr float sensitivity = 1.0f;
     auto[x, y] = m_input->GetCursorPos();
     auto[lastX, lastY] = m_input->GetLastCursorPos();
