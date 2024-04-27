@@ -82,6 +82,7 @@ namespace Flame {
     glm::vec3 lightSurface = CalculatePointLightPerPoint(camera, record);
     lightSurface += CalculateSpotLightPerPoint(camera, record);
     lightSurface += CalculateDirectLightPerPoint(camera, record);
+    lightSurface += record.material->emissionStrength * record.material->emissionColor;
 
     // TODO In Blender works differently
     // Calculate reflected color and light for metallic objects

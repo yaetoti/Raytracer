@@ -159,9 +159,7 @@ void MainScene::InitializeMaterials() {
     m.roughness = 1.0f;
     m.metallic = 0.0f;
     m.emissionColor = glm::vec3(0.28f, 1.0f, 0.5f);
-    m.emissionStrength = 200.0f;
-    //m.emissionColor = glm::vec3(0.0f);
-    //m.emissionStrength = 0.0f;
+    m.emissionStrength = 0.0f;
     m_materials.emplace_back(m);
   }
   {
