@@ -39,13 +39,13 @@ void MainScene::Initialize() {
      &m_materials[3]
    )
   );
-  //m_hitables.emplace_back(
-  // std::make_unique<Flame::Plane>(
-  //   glm::vec3(0, 0, -5),
-  //   glm::normalize(glm::vec3(1, 0.2, 1)),
-  //   &m_materials[4]
-  // )
-  //);
+  m_hitables.emplace_back(
+   std::make_unique<Flame::Plane>(
+     glm::vec3(0, 0, -5),
+     glm::normalize(glm::vec3(1, 0.2, 1)),
+     &m_materials[4]
+   )
+  );
   //m_hitables.emplace_back(
   // std::make_unique<Flame::TriangleObject>(
   //   glm::vec3(0, 2, -4),

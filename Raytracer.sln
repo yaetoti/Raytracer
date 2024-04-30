@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34322.80
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Engine", "Engine\Engine.vcxproj", "{13CF642D-B8B8-480F-B920-27439AD877E1}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Project", "Project\Project.vcxproj", "{B5223313-24D7-407E-99A1-0E9EE925310C}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Engine", "Engine\Engine.vcxproj", "{13CF642D-B8B8-480F-B920-27439AD877E1}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ConsoleLib", "ConsoleLib\ConsoleLib.vcxproj", "{025A1406-606D-4A21-9700-53CF7F4641BF}"
 EndProject
