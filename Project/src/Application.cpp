@@ -152,40 +152,33 @@ void Application::UpdateCamera(float deltaTime) {
 }
 
 void Application::UpdateGrabbing(float deltaTime) {
-  bool moved = false;
-  static Flame::Sphere* grabbed = nullptr;
-  static float grabbedTime = 0.0f;
-  static glm::vec3 grabbedOffset;
+  bool sceneChanged = false;
   auto[x, y] = m_input->GetCursorPos();
   // TODO Do something with that
   x /= m_window->GetResolutionDivisor();
   y /= m_window->GetResolutionDivisor();
   // TODO Fix window inversion
   y = m_window->GetFramebuffer().GetHeight() - y;
+  Flame::Ray ray = m_camera->GetRay(static_cast<uint32_t>(x), static_cast<uint32_t>(y));
 
   if (m_input->IsMouseButtonPressed(Flame::MouseButton::RIGHT)) {
-    if (grabbed == nullptr) {
+    if (m_dragger == nullptr) {
       Flame::HitRecord record;
       std::vector<std::unique_ptr<Flame::IHitable>>& hitables = m_scene->GetHitables();
-
-      if (Flame::MathUtils::HitClosest(hitables.begin(), hitables.end(), m_camera->GetRay(x, y), 0.0f, 1000.0f, record)) {
-        if (auto sphere = dynamic_cast<Flame::Sphere*>(record.hitable)) {
-          grabbed = sphere;
-          grabbedTime = record.time;
-          grabbedOffset = sphere->Center() - record.point;
-        }
+      if (Flame::MathUtils::HitClosest(hitables.begin(), hitables.end(), ray, 0.0f, 1000.0f, record)) {
+        m_dragger = Flame::DraggerFactory::CreateDragger(record);
       }
     }
   } else {
-    grabbed = nullptr;
+    m_dragger = nullptr;
   }
 
-  if (grabbed != nullptr) {
-    grabbed->SetCenter(m_camera->GetRay(x, y).AtParameter(grabbedTime) + grabbedOffset);
-    moved = true;
+  if (m_dragger != nullptr) {
+    m_dragger->Drag(ray);
+    sceneChanged = true;
   }
 
-  if (moved) {
+  if (sceneChanged) {
     m_scene->ResetAccumulatedData();
   }
 }

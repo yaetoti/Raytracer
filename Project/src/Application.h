@@ -9,6 +9,8 @@
 #include <thread>
 #include <Windows.h>
 
+#include "Flame/utils/draggers/IDragger.h"
+
 struct Application final : Flame::EventListener<Flame::WindowEvent> {
   Application();
 
@@ -34,4 +36,6 @@ private:
   uint32_t m_frames = 0;
   uint32_t m_lastFps = 0;
   float m_fpsTimer = 0.0f;
+
+  std::unique_ptr<Flame::IDragger> m_dragger;
 };

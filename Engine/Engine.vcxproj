@@ -30,6 +30,7 @@
     <ClInclude Include="src\Flame\math\TriangleObject.h" />
     <ClInclude Include="src\Flame\render\Framebuffer.h" />
     <ClInclude Include="src\Flame\render\Material.h" />
+    <ClInclude Include="src\Flame\utils\draggers\IDragger.h" />
     <ClInclude Include="src\Flame\utils\EventDispatcher.h" />
     <ClInclude Include="src\Flame\utils\FunctionalDispatcher.h" />
     <ClInclude Include="src\Flame\utils\ObjUtils.h" />

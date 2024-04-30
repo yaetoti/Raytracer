@@ -63,21 +63,17 @@ void MainScene::Initialize() {
 
   // TODO Fix reflections
 
-  std::unique_ptr<Flame::IHitable>& cube = m_hitables.emplace_back(std::make_unique<Flame::MeshObject>(m_meshes[0].get(), &m_materials[6]));
+  std::unique_ptr<Flame::IHitable>& cubeHitable = m_hitables.emplace_back(std::make_unique<Flame::MeshObject>(m_meshes[0].get(), &m_materials[6]));
   // TODO cringe
-  dynamic_cast<Flame::MeshObject*>(cube.get())->modelMatrix
-    = glm::translate(glm::vec3(1.0f, 1.0f, 2.0f))
-    * glm::eulerAngleZ(glm::radians(12.0f))
-    * glm::eulerAngleX(glm::radians(37.0f))
-    * glm::eulerAngleY(glm::radians(45.0f));
+  Flame::MeshObject* cube = static_cast<Flame::MeshObject*>(cubeHitable.get());
+  cube->SetPosition(glm::vec3(1.0f, 1.0f, 2.0f));
+  cube->SetRotation(glm::radians(glm::vec3(37.0f, 45.0f, 12.0f)));
 
-  std::unique_ptr<Flame::IHitable>& car = m_hitables.emplace_back(std::make_unique<Flame::MeshObject>(m_meshes[1].get(), &m_materials[6]));
+  std::unique_ptr<Flame::IHitable>& carHitable = m_hitables.emplace_back(std::make_unique<Flame::MeshObject>(m_meshes[1].get(), &m_materials[6]));
   // TODO cringe
-  dynamic_cast<Flame::MeshObject*>(car.get())->modelMatrix
-    = glm::translate(glm::vec3(3.0f, 0.0f, -2.0f))
-    * glm::eulerAngleZ(0.0f)
-    * glm::eulerAngleX(0.0f)
-    * glm::eulerAngleY(glm::radians(-45.0f));
+  Flame::MeshObject* car = static_cast<Flame::MeshObject*>(carHitable.get());
+  car->SetPosition(glm::vec3(3.0f, 0.0f, -2.0f));
+  car->SetRotation(glm::radians(glm::vec3(0.0f, -45.0f, 0.0f)));
 
   // TODO separate debug rendering? Add automatically
   Flame::Sphere lightSphere(
