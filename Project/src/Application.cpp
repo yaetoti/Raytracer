@@ -172,7 +172,7 @@ void Application::UpdateGrabbing(float deltaTime) {
         if (auto sphere = dynamic_cast<Flame::Sphere*>(record.hitable)) {
           grabbed = sphere;
           grabbedTime = record.time;
-          grabbedOffset = sphere->center - record.point;
+          grabbedOffset = sphere->Center() - record.point;
         }
       }
     }
@@ -181,7 +181,7 @@ void Application::UpdateGrabbing(float deltaTime) {
   }
 
   if (grabbed != nullptr) {
-    grabbed->center = m_camera->GetRay(x, y).AtParameter(grabbedTime) + grabbedOffset;
+    grabbed->SetCenter(m_camera->GetRay(x, y).AtParameter(grabbedTime) + grabbedOffset);
     moved = true;
   }
 

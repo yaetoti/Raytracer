@@ -12,21 +12,23 @@ namespace Flame {
     m_position = glm::vec3(0.0f);
     // TODO Setup
     m_rotation = glm::inverse(glm::eulerAngleXYZ(0.0f, glm::radians(0.0f), 0.0f));
-    CalculateProjection();
+    Recalculate();
   }
 
   void Camera::Resize(uint32_t width, uint32_t height) {
     m_width = width;
     m_height = height;
-    CalculateProjection();
+    Recalculate();
   }
 
   void Camera::SetRotation(glm::quat rotation) {
     m_rotation = rotation;
+    Recalculate();
   }
 
   void Camera::SetPosition(glm::vec3 position) {
     m_position = position;
+    Recalculate();
   }
 
   glm::vec3 Camera::GetPosition() const {
@@ -37,6 +39,7 @@ namespace Flame {
     //::vec3 angles = glm::eulerAngles(m_rotation) - glm::eulerAngles(rotation);
     //m_rotation = glm::normalize(glm::quat(glm::eulerAngleZXY(angles.z, angles.x, angles.y)));
     m_rotation = glm::normalize(m_rotation * rotation);
+    Recalculate();
   }
 
   glm::vec3 Camera::GetFrontUnit() const {
@@ -73,10 +76,10 @@ namespace Flame {
       (static_cast<float>(x) + 0.5f) / static_cast<float>(m_width),
       (static_cast<float>(y) + 0.5f) / static_cast<float>(m_height)
     );
-    coords = 2.0f * coords - 1.0f;
-    glm::vec4 target = m_iProjection * glm::vec4(coords, 1.0f, 1.0f);
-    glm::vec3 direction(m_rotation * glm::vec4(glm::normalize(glm::vec3(target) / target.w), 0));
-    return Ray(m_position, direction);
+
+    glm::vec3 target = m_cornerTl + m_toRightCorner * coords.x + m_toBottomCorner * coords.y;
+    glm::vec3 direction(glm::vec4(target - m_position, 0.0f));
+    return Ray(m_position, glm::normalize(direction));
   }
 
   Ray Camera::GetRandomizedRay(uint32_t x, uint32_t y) const {
@@ -87,13 +90,13 @@ namespace Flame {
       (static_cast<float>(x) + Random::Float()) / static_cast<float>(m_width),
       (static_cast<float>(y) + Random::Float()) / static_cast<float>(m_height)
     );
-    coords = 2.0f * coords - 1.0f;
-    glm::vec4 target = m_iProjection * glm::vec4(coords, 1.0f, 1.0f);
-    glm::vec3 direction(m_rotation * glm::vec4(glm::normalize(glm::vec3(target) / target.w), 0));
-    return Ray(m_position, direction);
+
+    glm::vec3 target = m_cornerTl + m_toRightCorner * coords.x + m_toBottomCorner * coords.y;
+    glm::vec3 direction(glm::vec4(target - m_position, 0.0f));
+    return Ray(m_position, glm::normalize(direction));
   }
 
-  void Camera::CalculateProjection() {
+  void Camera::Recalculate() {
     // TODO Manual creation
     m_projection = glm::perspective(
       glm::radians(m_fov),
@@ -101,5 +104,19 @@ namespace Flame {
       m_far, m_near
     );
     m_iProjection = glm::inverse(m_projection);
+    m_iView = glm::translate(m_position) * glm::mat4(m_rotation);
+    m_view = glm::inverse(m_view);
+
+    glm::vec4 target = m_iView * m_iProjection * glm::vec4(-1.0f, -1.0f, 1.0f, 1.0f);
+    m_cornerTl = glm::vec3(target) / target.w;
+
+    target = m_iView * m_iProjection * glm::vec4(1.0f, -1.0f, 1.0f, 1.0f);
+    glm::vec3 cornerTr = glm::vec3(target) / target.w;
+
+    target = m_iView * m_iProjection * glm::vec4(-1.0f, 1.0f, 1.0f, 1.0f);
+    glm::vec3 cornerBl = glm::vec3(target) / target.w;
+
+    m_toRightCorner = cornerTr - m_cornerTl;
+    m_toBottomCorner = cornerBl - m_cornerTl;
   }
 }

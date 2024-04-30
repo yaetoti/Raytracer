@@ -30,7 +30,7 @@ namespace Flame {
     glm::mat4 GetInversedProjectionMatrix() const;
 
   private:
-    void CalculateProjection();
+    void Recalculate();
 
   private:
     uint32_t m_width;
@@ -46,5 +46,9 @@ namespace Flame {
     glm::mat4 m_iProjection;
     glm::mat4 m_view;
     glm::mat4 m_iView;
+
+    glm::vec3 m_cornerTl;
+    glm::vec3 m_toRightCorner;
+    glm::vec3 m_toBottomCorner;
   };
 }
