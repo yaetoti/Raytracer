@@ -11,7 +11,6 @@
 
 struct MainScene : Flame::Scene {
   explicit MainScene(Flame::Window& window);
-  void InitializeMeshes();
   ~MainScene() override = default;
 
   void Initialize() override;
@@ -20,6 +19,7 @@ struct MainScene : Flame::Scene {
 
 private:
   void InitializeMaterials();
+  void InitializeMeshes();
 
 private:
   Flame::Window& m_window;

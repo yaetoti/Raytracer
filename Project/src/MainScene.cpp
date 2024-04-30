@@ -12,28 +12,6 @@ MainScene::MainScene(Flame::Window& window)
 , m_input(window.GetInputSystem()) {
 }
 
-void MainScene::InitializeMeshes() {
-  {
-    Flame::MeshData meshData;
-    if (!Flame::ObjUtils::ParseObj(L"Assets/CopyCar.obj", meshData)) {
-      std::wcout << L"Can't parse obj.\n";
-      __debugbreak();
-    }
-
-    m_meshes.emplace_back(std::make_unique<Flame::Mesh>(meshData));
-  }
-
-  {
-    Flame::MeshData meshData;
-    if (!Flame::ObjUtils::ParseObj(L"Assets/Cube.obj", meshData)) {
-      std::wcout << L"Can't parse obj.\n";
-      __debugbreak();
-    }
-
-    m_meshes.emplace_back(std::make_unique<Flame::Mesh>(meshData));
-  }
-}
-
 void MainScene::Initialize() {
   // TODO Move fillers to Scene. Move filling to Application
   InitializeMaterials();
@@ -82,8 +60,24 @@ void MainScene::Initialize() {
   //   &m_materials[6]
   // )
   //);
-  m_hitables.emplace_back(std::make_unique<Flame::MeshObject>(m_meshes[0].get(), &m_materials[6]));
-  m_hitables.emplace_back(std::make_unique<Flame::MeshObject>(m_meshes[1].get(), &m_materials[6]));
+
+  // TODO Fix reflections
+
+  std::unique_ptr<Flame::IHitable>& cube = m_hitables.emplace_back(std::make_unique<Flame::MeshObject>(m_meshes[0].get(), &m_materials[6]));
+  // TODO cringe
+  dynamic_cast<Flame::MeshObject*>(cube.get())->modelMatrix
+    = glm::translate(glm::vec3(1.0f, 1.0f, 2.0f))
+    * glm::eulerAngleZ(glm::radians(12.0f))
+    * glm::eulerAngleX(glm::radians(37.0f))
+    * glm::eulerAngleY(glm::radians(45.0f));
+
+  std::unique_ptr<Flame::IHitable>& car = m_hitables.emplace_back(std::make_unique<Flame::MeshObject>(m_meshes[1].get(), &m_materials[6]));
+  // TODO cringe
+  dynamic_cast<Flame::MeshObject*>(car.get())->modelMatrix
+    = glm::translate(glm::vec3(3.0f, 0.0f, -2.0f))
+    * glm::eulerAngleZ(0.0f)
+    * glm::eulerAngleX(0.0f)
+    * glm::eulerAngleY(glm::radians(-45.0f));
 
   // TODO separate debug rendering? Add automatically
   Flame::Sphere lightSphere(
@@ -236,6 +230,19 @@ void MainScene::InitializeMaterials() {
   {
     // Cube
     Flame::Material m;
+    m.albedo = glm::vec3(0.95f, 0.95f, 0.95f);
+    m.diffuse = 1.0f;
+    m.specular = 1.0f;
+    m.specularExponent = 32.0f;
+    m.roughness = 0.001f;
+    m.metallic = 0.95f;
+    m.emissionColor = glm::vec3(0.0f);
+    m.emissionStrength = 0.0f;
+    m_materials.emplace_back(m);
+  }
+  {
+    // Albedo MuscleCar
+    Flame::Material m;
     m.albedo = glm::vec3(0.99f, 0.99f, 0.99f);
     m.diffuse = 1.0f;
     m.specular = 0.0f;
@@ -246,17 +253,26 @@ void MainScene::InitializeMaterials() {
     m.emissionStrength = 0.0f;
     m_materials.emplace_back(m);
   }
+}
+
+void MainScene::InitializeMeshes() {
   {
-    // Albedo MuscleCar
-    Flame::Material m;
-    m.albedo = glm::vec3(1.0f, 1.0f, 1.0f);
-    m.diffuse = 1.0f;
-    m.specular = 1.0f;
-    m.specularExponent = 32.0f;
-    m.roughness = 1.0f;
-    m.metallic = 0.1f;
-    m.emissionColor = Flame::MathUtils::ColorFromHex(0xFA3120);
-    m.emissionStrength = 0.1f;
-    m_materials.emplace_back(m);
+    Flame::MeshData meshData;
+    if (!Flame::ObjUtils::ParseObj(L"Assets/Cube.obj", meshData)) {
+      std::wcout << L"Can't parse obj.\n";
+      __debugbreak();
+    }
+
+    m_meshes.emplace_back(std::make_unique<Flame::Mesh>(meshData));
+  }
+
+  {
+    Flame::MeshData meshData;
+    if (!Flame::ObjUtils::ParseObj(L"Assets/CopyCar.obj", meshData)) {
+      std::wcout << L"Can't parse obj.\n";
+      __debugbreak();
+    }
+
+    m_meshes.emplace_back(std::make_unique<Flame::Mesh>(meshData));
   }
 }

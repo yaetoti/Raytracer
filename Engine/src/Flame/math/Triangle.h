@@ -28,34 +28,35 @@ namespace Flame {
     }
 
     bool Hit(const Ray& r, HitRecord& record, float tMin = 0, float tMax = std::numeric_limits<float>::infinity()) const override {
+#if 1
       // Is parallel
-      //if (fabs(glm::dot(normal, r.direction)) <= 0.00001f) {
-      //  return false;
-      //}
+      if (fabs(glm::dot(normal, r.direction)) <= 0.00001f) {
+        return false;
+      }
 
-      //float t = glm::dot(normal, points[0] - r.origin) / glm::dot(normal, r.direction);
-      //if (t > tMin && t < tMax) {
-      //  glm::vec3 point = r.AtParameter(t);
-      //  glm::vec3 v12 = points[1] - points[0];
-      //  glm::vec3 v1p = point - points[0];
-      //  glm::vec3 v23 = points[2] - points[1];
-      //  glm::vec3 v2p = point - points[1];
-      //  glm::vec3 v31 = points[0] - points[2];
-      //  glm::vec3 v3p = point - points[2];
-      //  // TODO replace with mesh data
-      //  glm::vec3 calcNormal = glm::cross(v12, v23);
-      //  if (glm::dot(calcNormal, glm::cross(v12, v1p)) > 0
-      //      && glm::dot(calcNormal, glm::cross(v23, v2p)) > 0
-      //      && glm::dot(calcNormal, glm::cross(v31, v3p)) > 0) {
-      //    record.point = point;
-      //    record.normal = normal;
-      //    record.time = t;
-      //    return true;
-      //  }
-      //}
+      float t = glm::dot(normal, points[0] - r.origin) / glm::dot(normal, r.direction);
+      if (t > tMin && t < tMax) {
+        glm::vec3 point = r.AtParameter(t);
+        glm::vec3 v12 = points[1] - points[0];
+        glm::vec3 v1p = point - points[0];
+        glm::vec3 v23 = points[2] - points[1];
+        glm::vec3 v2p = point - points[1];
+        glm::vec3 v31 = points[0] - points[2];
+        glm::vec3 v3p = point - points[2];
+        // glm::vec3 calcNormal = glm::cross(v12, v23);
+        glm::vec3 calcNormal = normal;
+        if (glm::dot(calcNormal, glm::cross(v12, v1p)) > 0
+            && glm::dot(calcNormal, glm::cross(v23, v2p)) > 0
+            && glm::dot(calcNormal, glm::cross(v31, v3p)) > 0) {
+          record.point = point;
+          record.normal = normal;
+          record.time = t;
+          return true;
+        }
+      }
 
-      //return false;
-
+      return false;
+#else
       glm::vec3 v0v1 = points[1] - points[0];
 	    glm::vec3 v0v2 = points[2] - points[0];
 
@@ -88,6 +89,7 @@ namespace Flame {
       }
 
 	    return false;
+#endif
     }
 
     friend std::ostream& operator<<(std::ostream& os, const Triangle& obj) {
