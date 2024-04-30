@@ -74,6 +74,7 @@ namespace Flame {
 
     uint32_t InitNode(std::vector<uint32_t>&& boundsId, bool shouldSubdivide = true) {
       uint32_t currentIndex = static_cast<uint32_t>(m_nodes.size());
+      // TODO. Since init is recursive - placement is reversed and there is no cache locality
       BvhNode& node = m_nodes.emplace_back();
       node.m_bound = CalculateBound(boundsId);
 

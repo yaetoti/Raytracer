@@ -1,6 +1,7 @@
 #include "MainScene.h"
 
 #include "Flame/math/Cube.h"
+#include "Flame/math/Mesh.h"
 #include "Flame/math/MeshObject.h"
 #include "Flame/math/Plane.h"
 #include "Flame/math/TriangleObject.h"
@@ -11,9 +12,32 @@ MainScene::MainScene(Flame::Window& window)
 , m_input(window.GetInputSystem()) {
 }
 
+void MainScene::InitializeMeshes() {
+  {
+    Flame::MeshData meshData;
+    if (!Flame::ObjUtils::ParseObj(L"Assets/CopyCar.obj", meshData)) {
+      std::wcout << L"Can't parse obj.\n";
+      __debugbreak();
+    }
+
+    m_meshes.emplace_back(std::make_unique<Flame::Mesh>(meshData));
+  }
+
+  {
+    Flame::MeshData meshData;
+    if (!Flame::ObjUtils::ParseObj(L"Assets/Cube.obj", meshData)) {
+      std::wcout << L"Can't parse obj.\n";
+      __debugbreak();
+    }
+
+    m_meshes.emplace_back(std::make_unique<Flame::Mesh>(meshData));
+  }
+}
+
 void MainScene::Initialize() {
   // TODO Move fillers to Scene. Move filling to Application
   InitializeMaterials();
+  InitializeMeshes();
 
   // Objects
   m_hitables.emplace_back(
@@ -37,13 +61,13 @@ void MainScene::Initialize() {
      &m_materials[3]
    )
   );
-  m_hitables.emplace_back(
-   std::make_unique<Flame::Plane>(
-     glm::vec3(0, 0, -5),
-     glm::normalize(glm::vec3(1, 0.2, 1)),
-     &m_materials[4]
-   )
-  );
+  //m_hitables.emplace_back(
+  // std::make_unique<Flame::Plane>(
+  //   glm::vec3(0, 0, -5),
+  //   glm::normalize(glm::vec3(1, 0.2, 1)),
+  //   &m_materials[4]
+  // )
+  //);
   //m_hitables.emplace_back(
   // std::make_unique<Flame::TriangleObject>(
   //   glm::vec3(0, 2, -4),
@@ -58,15 +82,10 @@ void MainScene::Initialize() {
   //   &m_materials[6]
   // )
   //);
+  m_hitables.emplace_back(std::make_unique<Flame::MeshObject>(m_meshes[0].get(), &m_materials[6]));
+  m_hitables.emplace_back(std::make_unique<Flame::MeshObject>(m_meshes[1].get(), &m_materials[6]));
 
-  Flame::MeshData data;
-  if (!Flame::ObjUtils::ParseObj(L"Assets/CopyCar.obj", data)) {
-    std::wcout << L"Can't parse obj.\n";
-    __debugbreak();
-  }
-
-  m_hitables.emplace_back(std::make_unique<Flame::MeshObject>(data, &m_materials[7]));
-
+  // TODO separate debug rendering? Add automatically
   Flame::Sphere lightSphere(
     glm::vec3(0.0f),
     0.1f,
@@ -85,6 +104,7 @@ void MainScene::Initialize() {
     m_pointLights.emplace_back(light);
 
     lightSphere.center = light.position;
+    lightSphere.UpdateAabb();
     m_hitables.emplace_back(std::make_unique<Flame::Sphere>(lightSphere));
   }
   {
@@ -98,6 +118,7 @@ void MainScene::Initialize() {
     m_pointLights.emplace_back(light);
 
     lightSphere.center = light.position;
+    lightSphere.UpdateAabb();
     m_hitables.emplace_back(std::make_unique<Flame::Sphere>(lightSphere));
   }
 
@@ -116,6 +137,7 @@ void MainScene::Initialize() {
     m_spotLights.emplace_back(light);
 
     lightSphere.center = light.position;
+    lightSphere.UpdateAabb();
     m_hitables.emplace_back(std::make_unique<Flame::Sphere>(lightSphere));
   }
 

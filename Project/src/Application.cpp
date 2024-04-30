@@ -1,7 +1,7 @@
 ﻿#include "Application.h"
 
 #include "Flame/math/MeshData.h"
-#include "Flame/math/MeshObject.h"
+#include "Flame/math/Mesh.h"
 #include "Flame/utils/ObjUtils.h"
 
 Application::Application() {

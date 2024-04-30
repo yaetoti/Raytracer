@@ -23,6 +23,10 @@ namespace Flame {
       return out;
     }
 
+    void UpdateAabb() {
+      bound = GetSphereBox(*this);
+    }
+
   private:
     // TODO remove
     static Aabb GetSphereBox(const Sphere& o) {
@@ -41,6 +45,6 @@ namespace Flame {
     glm::vec3 center;
     float radius;
     const Material* material;
-    Aabb bound;
+    Aabb bound; // TODO SceneObject, SOLID
   };
 }

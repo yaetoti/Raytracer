@@ -12,7 +12,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Flame\camera\Camera.h" />
-    <ClInclude Include="src\Flame\layers\Mesh.h" />
     <ClInclude Include="src\Flame\layers\Scene.h" />
     <ClInclude Include="src\Flame.h" />
     <ClInclude Include="src\Flame\layers\SceneObject.h" />
@@ -22,6 +21,7 @@
     <ClInclude Include="src\Flame\math\IHitable.h" />
     <ClInclude Include="src\Flame\math\MathUtils.h" />
     <ClInclude Include="src\Flame\math\MeshData.h" />
+    <ClInclude Include="src\Flame\math\Mesh.h" />
     <ClInclude Include="src\Flame\math\MeshObject.h" />
     <ClInclude Include="src\Flame\math\Plane.h" />
     <ClInclude Include="src\Flame\math\Ray.h" />

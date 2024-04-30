@@ -90,9 +90,6 @@
     <ClInclude Include="src\Flame\layers\SceneObject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Flame\layers\Mesh.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\Flame\utils\ScopeTimer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -105,10 +102,13 @@
     <ClInclude Include="src\Flame\math\MeshData.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Flame\math\MeshObject.h">
+    <ClInclude Include="src\Flame\math\Mesh.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Flame\utils\ObjUtils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Flame\math\MeshObject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

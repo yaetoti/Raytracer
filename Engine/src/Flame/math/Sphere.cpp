@@ -4,8 +4,8 @@ namespace Flame {
   Sphere::Sphere(const glm::vec3& center, const float& radius, const Material* material)
   : center(center)
   , radius(radius)
-  , material(material)
-  , bound(GetSphereBox(*this)) {
+  , material(material) {
+    UpdateAabb();
   }
 
   bool Sphere::Hit(const Ray& r, HitRecord& record, float tMin, float tMax) const {
