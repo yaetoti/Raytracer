@@ -1,8 +1,10 @@
 #include "MainScene.h"
 
 #include "Flame/math/Cube.h"
+#include "Flame/math/MeshObject.h"
 #include "Flame/math/Plane.h"
-#include "Flame/math/Triangle.h"
+#include "Flame/math/TriangleObject.h"
+#include "Flame/utils/ObjUtils.h"
 
 MainScene::MainScene(Flame::Window& window)
 : m_window(window)
@@ -42,20 +44,28 @@ void MainScene::Initialize() {
      &m_materials[4]
    )
   );
-  m_hitables.emplace_back(
-   std::make_unique<Flame::Triangle>(
-     glm::vec3(0, 2, -4),
-     glm::vec3(2, 2, -4),
-     glm::vec3(1, 0, -4),
-     glm::vec3(0, 0, 1),
-     &m_materials[5]
-   )
-  );
-  m_hitables.emplace_back(
-   std::make_unique<Flame::Cube>(
-     &m_materials[6]
-   )
-  );
+  //m_hitables.emplace_back(
+  // std::make_unique<Flame::TriangleObject>(
+  //   glm::vec3(0, 2, -4),
+  //   glm::vec3(2, 2, -4),
+  //   glm::vec3(1, 0, -4),
+  //   glm::vec3(0, 0, 1),
+  //   &m_materials[5]
+  // )
+  //);
+  //m_hitables.emplace_back(
+  // std::make_unique<Flame::Cube>(
+  //   &m_materials[6]
+  // )
+  //);
+
+  Flame::MeshData data;
+  if (!Flame::ObjUtils::ParseObj(L"Assets/CopyCar.obj", data)) {
+    std::wcout << L"Can't parse obj.\n";
+    __debugbreak();
+  }
+
+  m_hitables.emplace_back(std::make_unique<Flame::MeshObject>(data, &m_materials[7]));
 
   Flame::Sphere lightSphere(
     glm::vec3(0.0f),
@@ -139,12 +149,12 @@ void MainScene::InitializeMaterials() {
   {
     // Metal sphere
     Flame::Material m;
-    m.albedo = glm::vec3(0.99f, 0.99f, 0.99f);
+    m.albedo = glm::vec3(1.00f, 1.00f, 1.00f);
     m.diffuse = 1.0f;
     m.specular = 1.0f;
     m.specularExponent = 32.0f;
     m.roughness = 0.0f;
-    m.metallic = 1.0f;
+    m.metallic = 0.8f;
     m.emissionColor = glm::vec3(0.0f);
     m.emissionStrength = 0.0f;
     m_materials.emplace_back(m);
@@ -189,7 +199,7 @@ void MainScene::InitializeMaterials() {
     m_materials.emplace_back(m);
   }
   {
-    // Triangle
+    // TriangleObject
     Flame::Material m;
     m.albedo = glm::vec3(0.99f, 0.99f, 0.99f);
     m.diffuse = 1.0f;
@@ -212,6 +222,19 @@ void MainScene::InitializeMaterials() {
     m.metallic = 0.8f;
     m.emissionColor = glm::vec3(0.0f);
     m.emissionStrength = 0.0f;
+    m_materials.emplace_back(m);
+  }
+  {
+    // Albedo MuscleCar
+    Flame::Material m;
+    m.albedo = glm::vec3(1.0f, 1.0f, 1.0f);
+    m.diffuse = 1.0f;
+    m.specular = 1.0f;
+    m.specularExponent = 32.0f;
+    m.roughness = 1.0f;
+    m.metallic = 0.1f;
+    m.emissionColor = Flame::MathUtils::ColorFromHex(0xFA3120);
+    m.emissionStrength = 0.1f;
     m_materials.emplace_back(m);
   }
 }

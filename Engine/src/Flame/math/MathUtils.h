@@ -12,7 +12,7 @@ namespace Flame {
       float closest = tMax;
 
       while (begin != end) {
-        if ((*begin)->Hit(r, tMin, closest, tempRecord)) {
+        if ((*begin)->Hit(r, tempRecord, tMin, closest)) {
           hitAnything = true;
           closest = tempRecord.time;
           record = tempRecord;
@@ -30,7 +30,7 @@ namespace Flame {
       float closest = tMax;
 
       while (begin != end) {
-        if ((*begin++)->Hit(r, tMin, closest, tempRecord)) {
+        if ((*begin++)->Hit(r, tempRecord, tMin, closest)) {
           // TODO: Temporary solution for light visualization. Remove or refactor later
           if (tempRecord.material->debugMaterial && ignoreDebug) {
             continue;

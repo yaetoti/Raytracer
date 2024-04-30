@@ -1,7 +1,7 @@
-#include "Triangle.h"
+#include "TriangleObject.h"
 
 namespace Flame {
-  Triangle::Triangle(glm::vec3 p1, glm::vec3 p2, glm::vec3 p3, glm::vec3 normal, const Material* material)
+  TriangleObject::TriangleObject(glm::vec3 p1, glm::vec3 p2, glm::vec3 p3, glm::vec3 normal, const Material* material)
   : point1(p1)
   , point2(p2)
   , point3(p3)
@@ -9,7 +9,7 @@ namespace Flame {
   , material(material) {
   }
 
-  bool Triangle::Hit(const Ray& r, float tMin, float tMax, HitRecord& record) const {
+  bool TriangleObject::Hit(const Ray& r, HitRecord& record, float tMin, float tMax) const {
     constexpr float epsilon = std::numeric_limits<float>::epsilon();
     glm::vec3 edge1 = point2 - point1;
     glm::vec3 edge2 = point3 - point1;
@@ -39,7 +39,7 @@ namespace Flame {
       record.normal = normal;
       record.time = t;
       record.material = material;
-      record.hitable = const_cast<Triangle*>(this);
+      record.hitable = const_cast<TriangleObject*>(this);
       return true;
     }
 
@@ -69,7 +69,7 @@ namespace Flame {
         record.normal = normal;
         record.time = t;
         record.material = &material;
-        record.hitable = const_cast<Triangle*>(this);
+        record.hitable = const_cast<TriangleObject*>(this);
         return true;
       }
     }

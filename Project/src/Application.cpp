@@ -1,5 +1,9 @@
 ﻿#include "Application.h"
 
+#include "Flame/math/MeshData.h"
+#include "Flame/math/MeshObject.h"
+#include "Flame/utils/ObjUtils.h"
+
 Application::Application() {
   // m_window = std::make_shared<Flame::Window>(L"Flame 🔥", 1366, 768, 2);
   // High performance mode

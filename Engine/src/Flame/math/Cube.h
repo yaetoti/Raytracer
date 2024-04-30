@@ -1,28 +1,28 @@
 #pragma once
 
 #include "IHitable.h"
-#include "Triangle.h"
+#include "TriangleObject.h"
 #include <vector>
 
 #include "MathUtils.h"
 
 namespace Flame {
-  struct Face final : IHitable {
-    Face(glm::vec3 p1, glm::vec3 p2, glm::vec3 p3, glm::vec3 p4, glm::vec3 normal, const Material* material)
+  struct CubeFace final : IHitable {
+    CubeFace(glm::vec3 p1, glm::vec3 p2, glm::vec3 p3, glm::vec3 p4, glm::vec3 normal, const Material* material)
     : half1(p1, p2, p3, normal, material)
     , half2(p1, p3, p4, normal, material) {
     }
 
-    bool Hit(const Ray& r, float tMin, float tMax, HitRecord& record) const override {
+    bool Hit(const Ray& r, HitRecord& record, float tMin, float tMax) const override {
       std::vector<IHitable*> hitables(2);
-      hitables[0] = const_cast<Triangle*>(&half1);
-      hitables[1] = const_cast<Triangle*>(&half2);
+      hitables[0] = const_cast<TriangleObject*>(&half1);
+      hitables[1] = const_cast<TriangleObject*>(&half2);
 
       return MathUtils::HitClosest(hitables.begin(), hitables.end(), r, tMin, tMax, record);
     }
 
-    Triangle half1;
-    Triangle half2;
+    TriangleObject half1;
+    TriangleObject half2;
   };
 
   struct Cube final : IHitable {
@@ -78,23 +78,23 @@ namespace Flame {
     ) {
     }
 
-    bool Hit(const Ray& r, float tMin, float tMax, HitRecord& record) const override {
+    bool Hit(const Ray& r, HitRecord& record, float tMin, float tMax) const override {
       std::vector<IHitable*> hitables(6);
-      hitables[0] = const_cast<Face*>(&top);
-      hitables[1] = const_cast<Face*>(&bottom);
-      hitables[2] = const_cast<Face*>(&left);
-      hitables[3] = const_cast<Face*>(&right);
-      hitables[4] = const_cast<Face*>(&faceFar);
-      hitables[5] = const_cast<Face*>(&faceNear);
+      hitables[0] = const_cast<CubeFace*>(&top);
+      hitables[1] = const_cast<CubeFace*>(&bottom);
+      hitables[2] = const_cast<CubeFace*>(&left);
+      hitables[3] = const_cast<CubeFace*>(&right);
+      hitables[4] = const_cast<CubeFace*>(&faceFar);
+      hitables[5] = const_cast<CubeFace*>(&faceNear);
 
       return MathUtils::HitClosest(hitables.begin(), hitables.end(), r, tMin, tMax, record);
     }
 
-    Face top;
-    Face bottom;
-    Face left;
-    Face right;
-    Face faceFar;
-    Face faceNear;
+    CubeFace top;
+    CubeFace bottom;
+    CubeFace left;
+    CubeFace right;
+    CubeFace faceFar;
+    CubeFace faceNear;
   };
 }

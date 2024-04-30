@@ -10,7 +10,7 @@ namespace Flame {
     , material(material) {
     }
 
-    bool Hit(const Ray& r, float tMin, float tMax, HitRecord& record) const override {
+    bool Hit(const Ray& r, HitRecord& record, float tMin, float tMax) const override {
       float t = glm::dot(normal, position - r.origin) / glm::dot(normal, r.direction);
       if (t > tMin && t < tMax) {
         record.point = r.AtParameter(t);

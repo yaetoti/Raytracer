@@ -78,13 +78,37 @@
     <ClInclude Include="src\Flame\math\Plane.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Flame\math\Triangle.h">
+    <ClInclude Include="src\Flame\math\TriangleObject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Flame\math\Cube.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Flame\render\Material.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Flame\layers\SceneObject.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Flame\layers\Mesh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Flame\utils\ScopeTimer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Flame\math\Aabb.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Flame\math\Triangle.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Flame\math\MeshData.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Flame\math\MeshObject.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Flame\utils\ObjUtils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -104,13 +128,16 @@
     <ClCompile Include="src\Flame\camera\Camera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Flame\math\Triangle.cpp">
+    <ClCompile Include="src\Flame\math\TriangleObject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Flame\math\Cube.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Flame\render\Framebuffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Flame\math\Bvh.h">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

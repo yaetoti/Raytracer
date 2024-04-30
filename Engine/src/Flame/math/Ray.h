@@ -6,9 +6,6 @@
 
 namespace Flame {
   struct Ray final {
-    glm::vec3 origin;
-    glm::vec3 direction;
-
     Ray()
     : origin(glm::vec3())
     , direction(glm::vec3()) {
@@ -32,5 +29,9 @@ namespace Flame {
       out << L"{ C: " << ray.origin << L", D: " << ray.direction << L" }";
       return out;
     }
+
+  public:
+    glm::vec3 origin;
+    glm::vec3 direction;
   };
 }

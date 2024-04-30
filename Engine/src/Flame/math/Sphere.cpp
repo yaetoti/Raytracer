@@ -4,10 +4,15 @@ namespace Flame {
   Sphere::Sphere(const glm::vec3& center, const float& radius, const Material* material)
   : center(center)
   , radius(radius)
-  , material(material) {
+  , material(material)
+  , bound(GetSphereBox(*this)) {
   }
 
-  bool Sphere::Hit(const Ray& r, float tMin, float tMax, HitRecord& record) const {
+  bool Sphere::Hit(const Ray& r, HitRecord& record, float tMin, float tMax) const {
+    if (!bound.Hit(r, record, tMin, tMax)) {
+      return false;
+    }
+
     glm::vec3 oc = r.origin - center;
 
     float b = glm::dot(oc, r.direction);

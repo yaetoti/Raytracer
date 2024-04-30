@@ -16,7 +16,7 @@ namespace Flame {
     }
 
     template<glm::length_t L = 3, typename T, glm::qualifier Q = glm::defaultp>
-    static glm::vec<L, T, Q> UnnormalizedVector() {
+    static glm::vec<L, T, Q> Vector() {
       return 2 * glm::vec<L, T, Q>(m_dist(m_gen), m_dist(m_gen), m_dist(m_gen)) - glm::vec<L, T, Q>(1);
     }
   

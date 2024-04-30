@@ -12,21 +12,29 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Flame\camera\Camera.h" />
+    <ClInclude Include="src\Flame\layers\Mesh.h" />
     <ClInclude Include="src\Flame\layers\Scene.h" />
     <ClInclude Include="src\Flame.h" />
+    <ClInclude Include="src\Flame\layers\SceneObject.h" />
+    <ClInclude Include="src\Flame\math\Aabb.h" />
     <ClInclude Include="src\Flame\math\Cube.h" />
     <ClInclude Include="src\Flame\math\HitRecord.h" />
     <ClInclude Include="src\Flame\math\IHitable.h" />
     <ClInclude Include="src\Flame\math\MathUtils.h" />
+    <ClInclude Include="src\Flame\math\MeshData.h" />
+    <ClInclude Include="src\Flame\math\MeshObject.h" />
     <ClInclude Include="src\Flame\math\Plane.h" />
     <ClInclude Include="src\Flame\math\Ray.h" />
     <ClInclude Include="src\Flame\math\Sphere.h" />
     <ClInclude Include="src\Flame\math\Triangle.h" />
+    <ClInclude Include="src\Flame\math\TriangleObject.h" />
     <ClInclude Include="src\Flame\render\Framebuffer.h" />
     <ClInclude Include="src\Flame\render\Material.h" />
     <ClInclude Include="src\Flame\utils\EventDispatcher.h" />
     <ClInclude Include="src\Flame\utils\FunctionalDispatcher.h" />
+    <ClInclude Include="src\Flame\utils\ObjUtils.h" />
     <ClInclude Include="src\Flame\utils\Random.h" />
+    <ClInclude Include="src\Flame\utils\ScopeTimer.h" />
     <ClInclude Include="src\Flame\utils\Timer.h" />
     <ClInclude Include="src\Flame\window\events\KeyWindowEvent.h" />
     <ClInclude Include="src\Flame\window\events\MouseButtonWindowEvent.h" />
@@ -39,9 +47,10 @@
   <ItemGroup>
     <ClCompile Include="src\Flame\camera\Camera.cpp" />
     <ClCompile Include="src\Flame\layers\Scene.cpp" />
+    <ClCompile Include="src\Flame\math\Bvh.h" />
     <ClCompile Include="src\Flame\math\Cube.cpp" />
     <ClCompile Include="src\Flame\math\Sphere.cpp" />
-    <ClCompile Include="src\Flame\math\Triangle.cpp" />
+    <ClCompile Include="src\Flame\math\TriangleObject.cpp" />
     <ClCompile Include="src\Flame\render\Framebuffer.cpp" />
     <ClCompile Include="src\Flame\window\InputSystem.cpp" />
     <ClCompile Include="src\Flame\window\Window.cpp" />
