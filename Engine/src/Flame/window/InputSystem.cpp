@@ -7,12 +7,14 @@ namespace Flame {
   , m_cursorX(0)
   , m_cursorY(0)
   , m_lastCursorX(0)
-  , m_lastCursorY(0) {
+  , m_lastCursorY(0)
+  , m_scrollDelta(0) {
   }
 
   void InputSystem::Update() {
     m_lastCursorX = m_cursorX;
     m_lastCursorY = m_cursorY;
+    m_scrollDelta = 0.0f;
   }
 
   void InputSystem::HandleEvent(const WindowEvent& e) {
@@ -25,6 +27,9 @@ namespace Flame {
           return;
         case WindowEventType::MOUSE_MOVE:
           HandleMouseMoveEvent(*dynamic_cast<const MouseMoveWindowEvent*>(&e));
+          return;
+        case WindowEventType::MOUSE_SCROLL:
+          HandleMouseScrollEvent(*dynamic_cast<const MouseScrollWindowEvent*>(&e));
           return;
         default: 
           break;
@@ -63,6 +68,10 @@ namespace Flame {
     return std::make_pair(m_lastCursorX, m_lastCursorY);;
   }
 
+  float InputSystem::GetScrollDelta() const {
+    return m_scrollDelta;
+  }
+
   void InputSystem::HandleKeyEvent(const KeyWindowEvent& e) {
     m_keyMap[e.vkCode] = e.isPressed;
   }
@@ -74,5 +83,9 @@ namespace Flame {
   void InputSystem::HandleMouseMoveEvent(const MouseMoveWindowEvent& e) {
     m_cursorX = e.xCursor;
     m_cursorY = e.yCursor;
+  }
+
+  void InputSystem::HandleMouseScrollEvent(const MouseScrollWindowEvent& e) {
+    m_scrollDelta += e.delta;
   }
 }

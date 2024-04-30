@@ -37,6 +37,7 @@ namespace Flame {
     void HandleKeyMessage(UINT msg, WPARAM wParam, LPARAM lParam);
     void HandleMouseButtonMessage(UINT msg, WPARAM wParam, LPARAM lParam);
     void HandleMouseMoveMessage(UINT msg, WPARAM wParam, LPARAM lParam);
+    void HandleMouseScrollMessage(UINT msg, WPARAM wParam, LPARAM lParam);
 
     static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 

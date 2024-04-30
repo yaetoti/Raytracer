@@ -3,6 +3,7 @@
 #include "events/KeyWindowEvent.h"
 #include "events/MouseButtonWindowEvent.h"
 #include "events/MouseMoveWindowEvent.h"
+#include "events/MouseScrollWindowEvent.h"
 #include "Flame/utils/EventDispatcher.h"
 
 namespace Flame {
@@ -20,11 +21,13 @@ namespace Flame {
     float GetLastCursorY() const;
     std::pair<float, float> GetCursorPos() const;
     std::pair<float, float> GetLastCursorPos() const;
+    float GetScrollDelta() const;
 
   private:
     void HandleKeyEvent(const KeyWindowEvent& e);
     void HandleMouseButtonEvent(const MouseButtonWindowEvent& e);
     void HandleMouseMoveEvent(const MouseMoveWindowEvent& e);
+    void HandleMouseScrollEvent(const MouseScrollWindowEvent& e);
 
   public:
     constexpr static size_t kKeyCount = 255;
@@ -37,5 +40,6 @@ namespace Flame {
     float m_cursorY;
     float m_lastCursorX;
     float m_lastCursorY;
+    float m_scrollDelta;
   };
 }

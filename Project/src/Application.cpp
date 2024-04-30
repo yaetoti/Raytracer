@@ -86,11 +86,20 @@ void Application::HandleEvent(const Flame::WindowEvent& e) {
 
 void Application::UpdateCamera(float deltaTime) {
   // TODO Move into CameraController
+  static float baseSpeed = 2.0f;
   bool moved = false;
-  float speed = 4.0f;
+  float speed = baseSpeed;
   float rollSpeed = glm::radians(45.0f);
-  // TODO ScrollWheel
 
+  // Movement speed
+  if (m_input->IsKeyPressed(VK_SHIFT)) {
+    speed *= 5;
+  }
+  if (m_input->GetScrollDelta() != 0.0f) {
+    baseSpeed += baseSpeed * 0.05f * m_input->GetScrollDelta();
+  }
+
+  /// Movement
   if (m_input->IsKeyPressed('A')) {
     m_camera->SetPosition(m_camera->GetPosition() + m_camera->GetRightUnit() * -speed * deltaTime);
     moved = true;

@@ -140,5 +140,8 @@
     <ClCompile Include="src\Flame\math\Bvh.h">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Flame\window\events\MouseScrollWindowEvent.h">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

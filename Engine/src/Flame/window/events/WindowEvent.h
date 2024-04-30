@@ -6,6 +6,7 @@ namespace Flame {
     KEY,
     MOUSE_BUTTON,
     MOUSE_MOVE,
+    MOUSE_SCROLL,
     COUNT
   };
 

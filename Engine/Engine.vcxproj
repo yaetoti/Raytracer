@@ -52,6 +52,7 @@
     <ClCompile Include="src\Flame\math\Sphere.cpp" />
     <ClCompile Include="src\Flame\math\TriangleObject.cpp" />
     <ClCompile Include="src\Flame\render\Framebuffer.cpp" />
+    <ClCompile Include="src\Flame\window\events\MouseScrollWindowEvent.h" />
     <ClCompile Include="src\Flame\window\InputSystem.cpp" />
     <ClCompile Include="src\Flame\window\Window.cpp" />
   </ItemGroup>

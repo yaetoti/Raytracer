@@ -5,6 +5,8 @@
 #include "events/ResizeWindowEvent.h"
 #include <windowsx.h>
 
+#include "events/MouseScrollWindowEvent.h"
+
 namespace Flame {
   Window::Window(const wchar_t* title, uint32_t width, uint32_t height, uint32_t resolutionDivisor)
   : m_hWnd(nullptr)
@@ -171,6 +173,10 @@ namespace Flame {
     m_messageHandlers[WM_MOUSEMOVE] = [this](UINT msg, WPARAM wParam, LPARAM lParam) {
       HandleMouseMoveMessage(msg, wParam, lParam);
     };
+
+    m_messageHandlers[WM_MOUSEWHEEL] = [this](UINT msg, WPARAM wParam, LPARAM lParam) {
+      HandleMouseScrollMessage(msg, wParam, lParam);
+    };
   }
 
   void Window::HandleResizeMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
@@ -230,6 +236,13 @@ namespace Flame {
     float xCursor = static_cast<float>(GET_X_LPARAM(lParam));
     float yCursor = static_cast<float>(GET_Y_LPARAM(lParam));
     m_dispatcher.Dispatch(MouseMoveWindowEvent(xCursor, yCursor));
+  }
+
+  void Window::HandleMouseScrollMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
+    float xCursor = static_cast<float>(GET_X_LPARAM(lParam));
+    float yCursor = static_cast<float>(GET_Y_LPARAM(lParam));
+    float delta = static_cast<float>(GET_WHEEL_DELTA_WPARAM(wParam)) / WHEEL_DELTA;
+    m_dispatcher.Dispatch(MouseScrollWindowEvent(xCursor, yCursor, delta));
   }
 
   LRESULT Window::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
