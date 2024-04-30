@@ -22,6 +22,7 @@ private:
 
   void UpdateCamera(float deltaTime);
   void UpdateGrabbing(float deltaTime);
+  void CountFps(float deltaTime);
 
 private:
   std::shared_ptr<Flame::Window> m_window;
@@ -29,4 +30,8 @@ private:
 
   std::shared_ptr<Flame::Scene> m_scene;
   std::shared_ptr<Flame::Camera> m_camera;
+
+  uint32_t m_frames = 0;
+  uint32_t m_lastFps = 0;
+  float m_fpsTimer = 0.0f;
 };

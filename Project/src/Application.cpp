@@ -21,26 +21,13 @@ void Application::Run() {
   // FPS limiter
   constexpr float targetFps = 60.0f;
   constexpr float targetDeltaTime = 1.0f / targetFps;
-  // FPS counter
-  int frames = 0;
-  int lastFps = 0;
-  float elapsedFpsCounter = 0.0;
 
   // Main loop
   MSG message;
   Flame::Timer timer;
   while (true) {
     float deltaTime = std::max(timer.Tick(), targetDeltaTime);
-
-    // TODO Move somewhere
-    elapsedFpsCounter += deltaTime;
-    if (elapsedFpsCounter >= 1.0) {
-      elapsedFpsCounter = 0.0;
-      lastFps = frames;
-      frames = 0;
-      std::cout << "FPS: " << lastFps << '\n';
-    }
-    ++frames;
+    CountFps(deltaTime);
 
     while (PeekMessageW(&message, nullptr, 0, 0, PM_REMOVE)) {
       if (message.message == WM_QUIT) {
@@ -192,4 +179,15 @@ void Application::UpdateGrabbing(float deltaTime) {
   if (moved) {
     m_scene->ResetAccumulatedData();
   }
+}
+
+void Application::CountFps(float deltaTime) {
+  m_fpsTimer += deltaTime;
+  if (m_fpsTimer >= 1.0) {
+    m_fpsTimer = 0.0;
+    m_lastFps = m_frames;
+    m_frames = 0;
+    std::cout << "FPS: " << m_lastFps << '\n';
+  }
+  ++m_frames;
 }
