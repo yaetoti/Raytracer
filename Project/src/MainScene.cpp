@@ -72,8 +72,9 @@ void MainScene::Initialize() {
   std::unique_ptr<Flame::IHitable>& carHitable = m_hitables.emplace_back(std::make_unique<Flame::MeshObject>(m_meshes[1].get(), &m_materials[6]));
   // TODO cringe
   Flame::MeshObject* car = static_cast<Flame::MeshObject*>(carHitable.get());
-  car->SetPosition(glm::vec3(3.0f, 0.0f, -2.0f));
-  car->SetRotation(glm::radians(glm::vec3(0.0f, -45.0f, 0.0f)));
+  car->SetPosition(glm::vec3(2.0f, -0.6f, -2.0f));
+  car->SetScale(glm::vec3(0.5f, 0.5f, 0.5f));
+  car->SetRotation(glm::radians(glm::vec3(0.0f, 0.0f, 0.0f)));
 
   // TODO separate debug rendering? Add automatically
   Flame::Sphere lightSphere(
@@ -261,7 +262,7 @@ void MainScene::InitializeMeshes() {
 
   {
     Flame::MeshData meshData;
-    if (!Flame::ObjUtils::ParseObj(L"Assets/CopyCar.obj", meshData)) {
+    if (!Flame::ObjUtils::ParseObj(L"Assets/McLaren.obj", meshData)) {
       std::wcout << L"Can't parse obj.\n";
       __debugbreak();
     }

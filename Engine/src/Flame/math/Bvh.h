@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <iostream>
 #include <limits>
 #include <numeric>
 #include <vector>
@@ -25,8 +26,9 @@ namespace Flame {
     explicit Bvh(std::vector<IHitableWithBounds*>& hitables)
     : m_hitables(hitables) {
       InitBounds();
+      // Reminder: program will crash if size == 0 => reserveSize == UINT_MAX.
       m_nodes.reserve(m_hitables.size() * 2 - 1);
-
+       
       std::vector<uint32_t> indices(m_hitables.size());
       std::iota(indices.begin(), indices.end(), 0);
       InitNode(std::move(indices));
