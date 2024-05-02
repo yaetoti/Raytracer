@@ -18,6 +18,7 @@ void MainScene::Initialize() {
   InitializeMeshes();
 
   // Objects
+  // Metallic sphere
   m_hitables.emplace_back(
    std::make_unique<Flame::Sphere>(
      glm::vec3(0, 0, -2),
@@ -25,6 +26,7 @@ void MainScene::Initialize() {
      &m_materials[1]
    )
   );
+  // Albedo sphere
   m_hitables.emplace_back(
    std::make_unique<Flame::Sphere>(
      glm::vec3(0, 1, -1),
@@ -32,6 +34,7 @@ void MainScene::Initialize() {
      &m_materials[2]
    )
   );
+  // The Big Danny
   m_hitables.emplace_back(
    std::make_unique<Flame::Sphere>(
      glm::vec3(0, -50.5, -1),
@@ -39,6 +42,7 @@ void MainScene::Initialize() {
      &m_materials[3]
    )
   );
+  // Plane
   m_hitables.emplace_back(
    std::make_unique<Flame::Plane>(
      glm::vec3(0, 0, -5),
@@ -61,8 +65,6 @@ void MainScene::Initialize() {
   // )
   //);
 
-  // TODO Fix reflections
-
   std::unique_ptr<Flame::IHitable>& cubeHitable = m_hitables.emplace_back(std::make_unique<Flame::MeshObject>(m_meshes[0].get(), &m_materials[6]));
   // TODO cringe
   Flame::MeshObject* cube = static_cast<Flame::MeshObject*>(cubeHitable.get());
@@ -72,8 +74,10 @@ void MainScene::Initialize() {
   std::unique_ptr<Flame::IHitable>& carHitable = m_hitables.emplace_back(std::make_unique<Flame::MeshObject>(m_meshes[1].get(), &m_materials[6]));
   // TODO cringe
   Flame::MeshObject* car = static_cast<Flame::MeshObject*>(carHitable.get());
-  car->SetPosition(glm::vec3(2.0f, -0.6f, -2.0f));
-  car->SetScale(glm::vec3(0.5f, 0.5f, 0.5f));
+  car->SetPosition(glm::vec3(5.0f, 0.0f, -3.0f));
+  //car->SetScale(glm::vec3(0.5f, 0.5f, 0.5f));
+  car->SetScale(glm::vec3(1.0f, 1.0f, 1.0f));
+  // Car has correct rotation. The plane is under 45deg
   car->SetRotation(glm::radians(glm::vec3(0.0f, 0.0f, 0.0f)));
 
   // TODO separate debug rendering? Add automatically
@@ -262,7 +266,8 @@ void MainScene::InitializeMeshes() {
 
   {
     Flame::MeshData meshData;
-    if (!Flame::ObjUtils::ParseObj(L"Assets/McLaren.obj", meshData)) {
+    // MuscleCar McLaren
+    if (!Flame::ObjUtils::ParseObj(L"Assets/MuscleCar.obj", meshData)) {
       std::wcout << L"Can't parse obj.\n";
       __debugbreak();
     }
