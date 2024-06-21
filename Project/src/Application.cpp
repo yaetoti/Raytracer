@@ -89,7 +89,8 @@ void Application::UpdateCamera(float deltaTime) {
   static float baseSpeed = 2.0f;
   bool moved = false;
   float speed = baseSpeed;
-  float rollSpeed = glm::radians(45.0f);
+  float rollSpeedDeg = 45.0f;
+  float rollSpeed = glm::radians(rollSpeedDeg);
 
   // Movement speed
   if (m_input->IsKeyPressed(VK_SHIFT)) {
@@ -126,23 +127,28 @@ void Application::UpdateCamera(float deltaTime) {
   }
   // DO A BARREL ROLL
   if (m_input->IsKeyPressed('Q')) {
-    m_camera->Rotate(glm::eulerAngleZ(rollSpeed * deltaTime));
+    m_camera->Rotate(rollSpeedDeg * deltaTime, 0.0f, 0.0f);
+    //m_camera->Rotate(glm::eulerAngleZ(rollSpeed * deltaTime));
     moved = true;
   }
   if (m_input->IsKeyPressed('E')) {
-    m_camera->Rotate(glm::eulerAngleZ(-rollSpeed * deltaTime));
+    m_camera->Rotate(-rollSpeedDeg * deltaTime, 0.0f, 0.0f);
+    //m_camera->Rotate(glm::eulerAngleZ(-rollSpeed * deltaTime));
     moved = true;
   }
   // Rotation
   if (m_input->IsMouseButtonPressed(Flame::MouseButton::LEFT)) {
+    static float rotationSpeedDeg = -180.0f;
     static float rotationSpeed = -glm::pi<float>();
     constexpr float sensitivity = 1.0f;
     auto[x, y] = m_input->GetCursorPos();
     auto[lastX, lastY] = m_input->GetLastCursorPos();
     float deltaX = ((x - lastX) / m_window->GetWidth()) * sensitivity;
     float deltaY = ((y - lastY) / m_window->GetHeight()) * sensitivity;
-    m_camera->Rotate(glm::eulerAngleY(deltaX * rotationSpeed));
-    m_camera->Rotate(glm::eulerAngleX(deltaY * rotationSpeed));
+
+    m_camera->Rotate(0.0f, deltaY * rotationSpeedDeg, deltaX * rotationSpeedDeg);
+    //m_camera->Rotate(glm::eulerAngleY(deltaX * rotationSpeed));
+    //m_camera->Rotate(glm::eulerAngleX(deltaY * rotationSpeed));
     moved = true;
   }
 

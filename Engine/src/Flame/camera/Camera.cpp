@@ -11,13 +11,31 @@ namespace Flame {
   , m_far(farPlane) {
     m_position = glm::vec3(0.0f);
     // TODO Setup
-    m_rotation = glm::inverse(glm::eulerAngleXYZ(0.0f, glm::radians(0.0f), 0.0f));
+    m_rotation = glm::inverse(glm::eulerAngleYXZ(0.0f, 0.0f, 0.0f));
     Recalculate();
   }
 
   void Camera::Resize(uint32_t width, uint32_t height) {
     m_width = width;
     m_height = height;
+    Recalculate();
+  }
+
+  void Camera::SetRoll(float roll) {
+    m_roll = roll;
+    m_rotation = glm::eulerAngleYXZ(glm::radians(m_yaw), glm::radians(m_pitch), glm::radians(m_roll));
+    Recalculate();
+  }
+
+  void Camera::SetPitch(float pitch) {
+    m_pitch = pitch;
+    m_rotation = glm::eulerAngleYXZ(glm::radians(m_yaw), glm::radians(m_pitch), glm::radians(m_roll));
+    Recalculate();
+  }
+
+  void Camera::SetYaw(float yaw) {
+    m_yaw = yaw;
+    m_rotation = glm::eulerAngleYXZ(glm::radians(m_yaw), glm::radians(m_pitch), glm::radians(m_roll));
     Recalculate();
   }
 
@@ -35,10 +53,11 @@ namespace Flame {
     return m_position;
   }
 
-  void Camera::Rotate(glm::quat rotation) {
-    //::vec3 angles = glm::eulerAngles(m_rotation) - glm::eulerAngles(rotation);
-    //m_rotation = glm::normalize(glm::quat(glm::eulerAngleZXY(angles.z, angles.x, angles.y)));
-    m_rotation = glm::normalize(m_rotation * rotation);
+  void Camera::Rotate(float roll, float pitch, float yaw) {
+    m_roll += roll;
+    m_pitch += pitch;
+    m_yaw += yaw;
+    m_rotation = glm::eulerAngleYXZ(glm::radians(m_yaw), glm::radians(m_pitch), glm::radians(m_roll));
     Recalculate();
   }
 
@@ -85,7 +104,6 @@ namespace Flame {
   Ray Camera::GetRandomizedRay(uint32_t x, uint32_t y) const {
     // Cache is inapplicable due to the need to get fuzzified direction for each ray in sample (for antialiasing)
     assert(x < m_width && y < m_height);
-    // TODO Start ray at near plane
     glm::vec2 coords(
       (static_cast<float>(x) + Random::Float()) / static_cast<float>(m_width),
       (static_cast<float>(y) + Random::Float()) / static_cast<float>(m_height)
