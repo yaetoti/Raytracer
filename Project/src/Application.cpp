@@ -100,7 +100,7 @@ void Application::UpdateCamera(float deltaTime) {
     baseSpeed += baseSpeed * 0.05f * m_input->GetScrollDelta();
   }
 
-  /// Movement
+  // Movement
   if (m_input->IsKeyPressed('A')) {
     m_camera->SetPosition(m_camera->GetPosition() + m_camera->GetRightUnit() * -speed * deltaTime);
     moved = true;
@@ -127,13 +127,11 @@ void Application::UpdateCamera(float deltaTime) {
   }
   // DO A BARREL ROLL
   if (m_input->IsKeyPressed('Q')) {
-    m_camera->Rotate(rollSpeedDeg * deltaTime, 0.0f, 0.0f);
-    //m_camera->Rotate(glm::eulerAngleZ(rollSpeed * deltaTime));
+    m_camera->Rotate(0.0f, 0.0f, rollSpeedDeg * deltaTime);
     moved = true;
   }
   if (m_input->IsKeyPressed('E')) {
-    m_camera->Rotate(-rollSpeedDeg * deltaTime, 0.0f, 0.0f);
-    //m_camera->Rotate(glm::eulerAngleZ(-rollSpeed * deltaTime));
+    m_camera->Rotate(0.0f, 0.0f, -rollSpeedDeg * deltaTime);
     moved = true;
   }
   // Rotation
@@ -146,9 +144,7 @@ void Application::UpdateCamera(float deltaTime) {
     float deltaX = ((x - lastX) / m_window->GetWidth()) * sensitivity;
     float deltaY = ((y - lastY) / m_window->GetHeight()) * sensitivity;
 
-    m_camera->Rotate(0.0f, deltaY * rotationSpeedDeg, deltaX * rotationSpeedDeg);
-    //m_camera->Rotate(glm::eulerAngleY(deltaX * rotationSpeed));
-    //m_camera->Rotate(glm::eulerAngleX(deltaY * rotationSpeed));
+    m_camera->Rotate(deltaY * rotationSpeedDeg, deltaX * rotationSpeedDeg, 0.0f);
     moved = true;
   }
 
