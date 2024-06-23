@@ -1,12 +1,12 @@
 #include "TriangleObject.h"
 
 namespace Flame {
-  TriangleObject::TriangleObject(glm::vec3 p1, glm::vec3 p2, glm::vec3 p3, glm::vec3 normal, const Material* material)
+  TriangleObject::TriangleObject(glm::vec3 p1, glm::vec3 p2, glm::vec3 p3, glm::vec3 normal, int materialId)
   : point1(p1)
   , point2(p2)
   , point3(p3)
   , normal(normal)
-  , material(material) {
+  , materialId(materialId) {
   }
 
   bool TriangleObject::Hit(const Ray& r, HitRecord& record, float tMin, float tMax) const {
@@ -38,7 +38,7 @@ namespace Flame {
       record.point = r.AtParameter(t);
       record.normal = normal;
       record.time = t;
-      record.material = material;
+      record.materialId = materialId;
       record.hitable = const_cast<TriangleObject*>(this);
       return true;
     }
@@ -68,7 +68,7 @@ namespace Flame {
         record.point = point;
         record.normal = normal;
         record.time = t;
-        record.material = &material;
+        record.materialId = &materialId;
         record.hitable = const_cast<TriangleObject*>(this);
         return true;
       }

@@ -6,12 +6,12 @@
 
 namespace Flame {
   struct SphereObject final : IHitable {
-    explicit SphereObject(const Sphere& sphere, const Material* material);
+    explicit SphereObject(const Sphere& sphere, int materialId);
     bool Hit(const Ray& r, HitRecord& record, float tMin, float tMax) const override;
 
   private:
     Sphere m_sphere;
-    const Material* m_material;
+    int m_materialId;
     Aabb m_bounds;
   };
 }

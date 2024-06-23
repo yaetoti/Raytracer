@@ -11,8 +11,6 @@ namespace Flame {
     glm::vec3 point;
     glm::vec3 normal;
     IHitable* hitable;
-    uint32_t materialId;
-
-    const Material* material;
+    int materialId;
   };
 }

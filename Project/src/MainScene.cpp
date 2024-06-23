@@ -23,21 +23,21 @@ void MainScene::Initialize() {
   m_hitables.emplace_back(
    std::make_unique<Flame::SphereObject>(
      Flame::Sphere(glm::vec3(0, 0, -2), 0.5f),
-     m_materials[1].get()
+     1
    )
   );
   // Albedo sphere
   m_hitables.emplace_back(
    std::make_unique<Flame::SphereObject>(
      Flame::Sphere(glm::vec3(0, 1, -1), 0.3f),
-     m_materials[2].get()
+     2
    )
   );
   // The Big Danny
   m_hitables.emplace_back(
    std::make_unique<Flame::SphereObject>(
      Flame::Sphere(glm::vec3(0, -50.5, -1), 50.0f),
-     m_materials[3].get()
+     3
    )
   );
   // Plane
@@ -45,7 +45,7 @@ void MainScene::Initialize() {
    std::make_unique<Flame::Plane>(
      glm::vec3(0, 0, -5),
      glm::normalize(glm::vec3(1, 0.2, 1)),
-     m_materials[4].get()
+     4
    )
   );
   //m_hitables.emplace_back(
@@ -54,17 +54,17 @@ void MainScene::Initialize() {
   //   glm::vec3(2, 2, -4),
   //   glm::vec3(1, 0, -4),
   //   glm::vec3(0, 0, 1),
-  //   m_materials[5].get()
+  //   5
   // )
   //);
 
-  std::unique_ptr<Flame::IHitable>& cubeHitable = m_hitables.emplace_back(std::make_unique<Flame::MeshObject>(m_meshes[0].get(), m_materials[6].get()));
+  auto& cubeHitable = m_hitables.emplace_back(std::make_unique<Flame::MeshObject>(m_meshes[0].get(), 6));
   // TODO cringe
   Flame::MeshObject* cube = static_cast<Flame::MeshObject*>(cubeHitable.get());
   cube->SetPosition(glm::vec3(1.0f, 1.0f, 2.0f));
   cube->SetRotation(glm::radians(glm::vec3(37.0f, 45.0f, 12.0f)));
 
-  std::unique_ptr<Flame::IHitable>& carHitable = m_hitables.emplace_back(std::make_unique<Flame::MeshObject>(m_meshes[1].get(), m_materials[6].get()));
+  auto& carHitable = m_hitables.emplace_back(std::make_unique<Flame::MeshObject>(m_meshes[1].get(), 6));
   // TODO cringe
   Flame::MeshObject* car = static_cast<Flame::MeshObject*>(carHitable.get());
   car->SetPosition(glm::vec3(5.0f, 0.0f, -3.0f));
@@ -91,7 +91,7 @@ void MainScene::Initialize() {
     lightSphere.SetCenter(light->position);
 
     m_pointLights.emplace_back(std::move(light));
-    m_hitables.emplace_back(std::make_unique<Flame::SphereObject>(lightSphere, m_materials[0].get()));
+    m_hitables.emplace_back(std::make_unique<Flame::SphereObject>(lightSphere, 0));
   }
   {
     auto light = std::make_unique<Flame::PointLight>();
@@ -104,7 +104,7 @@ void MainScene::Initialize() {
     lightSphere.SetCenter(light->position);
 
     m_pointLights.emplace_back(std::move(light));
-    m_hitables.emplace_back(std::make_unique<Flame::SphereObject>(lightSphere, m_materials[0].get()));
+    m_hitables.emplace_back(std::make_unique<Flame::SphereObject>(lightSphere, 0));
   }
 
   // Spotlights
@@ -122,7 +122,7 @@ void MainScene::Initialize() {
     lightSphere.SetCenter(light->position);
 
     m_spotLights.emplace_back(std::move(light));
-    m_hitables.emplace_back(std::make_unique<Flame::SphereObject>(lightSphere, m_materials[0].get()));
+    m_hitables.emplace_back(std::make_unique<Flame::SphereObject>(lightSphere, 0));
   }
 
   // Direct lights
@@ -149,7 +149,6 @@ void MainScene::InitializeMaterials() {
     m->albedo = glm::vec3(1.00f);
     m->emissionColor = glm::vec3(1.0f);
     m->emissionStrength = 1.0f;
-    m->debugMaterial = true;
     m_materials.emplace_back(std::move(m));
   }
   {

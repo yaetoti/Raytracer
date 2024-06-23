@@ -5,9 +5,9 @@
 
 namespace Flame {
   struct MeshObject final : IHitable {
-    MeshObject(const Mesh* mesh, const Material* material)
+    MeshObject(const Mesh* mesh, int materialId)
     : mesh(mesh)
-    , material(material)
+    , materialId(materialId)
     , m_position(0.0f)
     , m_rotation(0.0f)
     , m_scale(1.0f)
@@ -26,7 +26,7 @@ namespace Flame {
       Ray ray(origin / origin.w, direction);
 
       if (mesh->Hit(ray, record, tMin, tMax)) {
-        record.material = material;
+        record.materialId = materialId;
         record.hitable = const_cast<MeshObject*>(this);
         // TODO move transformation into SceneObject
         glm::vec4 normal = glm::normalize(m_modelMatrix * glm::vec4(record.normal, 0.0f));
@@ -76,14 +76,14 @@ namespace Flame {
 
   public:
     const Mesh* mesh;
-    const Material* material; // TODO replace with ID
+    int materialId;
 
   private:
     // TODO move to SceneObject
     glm::vec3 m_position;
     glm::vec3 m_rotation;
     glm::vec3 m_scale;
-    // TODO mutable? At least, while it's not accessible outside
+
     mutable glm::mat4 m_modelMatrix;
     mutable glm::mat4 m_modelMatrixInv;
     mutable bool m_modelMatrixDirty;

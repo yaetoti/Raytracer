@@ -3,9 +3,9 @@
 #include "Flame/math/MathUtils.h"
 
 namespace Flame {
-  SphereObject::SphereObject(const Sphere& sphere, const Material* material)
+  SphereObject::SphereObject(const Sphere& sphere, int materialId)
   : m_sphere(sphere)
-  , m_material(material) {
+  , m_materialId(materialId) {
     m_bounds = MathUtils::AabbFromSphere(m_sphere);
   }
 
@@ -15,7 +15,7 @@ namespace Flame {
     }
 
     if (m_sphere.Hit(r, record, tMin, tMax)) {
-      record.material = m_material;
+      record.materialId = m_materialId;
       return true;
     }
 
