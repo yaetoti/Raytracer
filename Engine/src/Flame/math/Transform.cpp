@@ -7,8 +7,7 @@ namespace Flame {
   Transform::Transform()
   : m_position(0.0f)
   , m_scale(1.0f)
-  , m_rotation(0.0f)
-  , m_rotationDirty(true) {
+  , m_rotation(1.0f, 0.0f, 0.0f, 0.0f) {
   }
 
   void Transform::SetPosition(const glm::vec3& position) {
@@ -28,37 +27,45 @@ namespace Flame {
   }
 
   void Transform::SetRotation(float pitch, float yaw, float roll) {
-    m_rotation = glm::vec3(pitch, yaw, roll);
-    m_rotationDirty = true;
+    m_rotation = glm::eulerAngleYXZ(yaw, pitch, roll);
+  }
+
+  void Transform::SetRotation(const glm::vec3& rotation) {
+    SetRotation(rotation.x, rotation.y, rotation.z);
   }
 
   void Transform::SetRotation(const glm::quat& rotation) {
-    m_rotationQuat = rotation;
-    m_rotationMat = glm::mat4(rotation);
-    m_rotation = glm::degrees(glm::eulerAngles(rotation));
-    m_rotationDirty = false;
+    m_rotation = rotation;
   }
 
   void Transform::Rotate(float pitch, float yaw, float roll) {
-    m_rotation.x += pitch;
-    m_rotation.y += yaw;
-    m_rotation.z += roll;
-    m_rotationDirty = true;
+    Rotate(glm::eulerAngleYXZ(glm::radians(yaw), glm::radians(pitch), glm::radians(roll)));
   }
 
-  void Transform::SetRoll(float roll) {
-    m_rotation.z = roll;
-    m_rotationDirty = true;
+  void Transform::Rotate(const glm::vec3& rotation) {
+    Rotate(rotation.x, rotation.y, rotation.z);
+  }
+
+  void Transform::Rotate(const glm::quat& rotation) {
+    m_rotation = glm::normalize(m_rotation * rotation);
   }
 
   void Transform::SetPitch(float pitch) {
-    m_rotation.x = pitch;
-    m_rotationDirty = true;
+    glm::vec3 rotation = GetRotationEuler();
+    rotation.x = pitch;
+    SetRotation(rotation);
   }
 
   void Transform::SetYaw(float yaw) {
-    m_rotation.y = yaw;
-    m_rotationDirty = true;
+    glm::vec3 rotation = GetRotationEuler();
+    rotation.y = yaw;
+    SetRotation(rotation);
+  }
+
+  void Transform::SetRoll(float roll) {
+    glm::vec3 rotation = GetRotationEuler();
+    rotation.z = roll;
+    SetRotation(rotation);
   }
 
   const glm::vec3& Transform::GetPosition() const {
@@ -69,46 +76,34 @@ namespace Flame {
     return m_scale;
   }
 
-  const glm::vec3& Transform::GetRotation() const {
+  const glm::quat& Transform::GetRotation() const {
     return m_rotation;
   }
 
-  const glm::quat& Transform::GetRotationQuat() const {
-    InvalidateRotation();
-    return m_rotationQuat;
+  glm::vec3 Transform::GetRotationEuler() const {
+    return glm::eulerAngles(m_rotation);
   }
 
-  const glm::mat4& Transform::GetRotationMat() const {
-    InvalidateRotation();
-    return m_rotationMat;
-  }
-
-  float Transform::GetRoll() const {
-    return m_rotation.z;
+  glm::mat4 Transform::GetRotationMat() const {
+    return glm::mat4(m_rotation);
   }
 
   float Transform::GetPitch() const {
-    return m_rotation.x;
+    return GetRotationEuler().x;
   }
 
   float Transform::GetYaw() const {
-    return m_rotation.y;
+    return GetRotationEuler().y;
   }
 
-  void Transform::InvalidateRotation() const {
-    if (!m_rotationDirty) {
-      return;
-    }
-
-    m_rotationQuat = glm::eulerAngleYXZ(glm::radians(m_rotation.y), glm::radians(m_rotation.x), glm::radians(m_rotation.z));
-    m_rotationMat = glm::mat4(m_rotationQuat);
-    m_rotationDirty = false;
+  float Transform::GetRoll() const {
+    return GetRotationEuler().z;
   }
 
   std::ostream& operator<<(std::ostream& out, const Transform& t) {
     out << "Transform { Position: " << glm::to_string(t.m_position)
         << ", Scale: " << glm::to_string(t.m_scale)
-        << ", Rotation: " << glm::to_string(t.m_rotation)
+        << ", Rotation: " << glm::to_string(t.GetRotationEuler())
         << " }";
     return out;
   }
