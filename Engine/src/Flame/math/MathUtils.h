@@ -4,6 +4,7 @@
 #include "HitRecord.h"
 #include "Ray.h"
 #include "Sphere.h"
+#include "Triangle.h"
 
 namespace Flame {
   struct MathUtils {
@@ -38,8 +39,21 @@ namespace Flame {
       glm::vec3 max;
 
       for (int dim = 0; dim < 3; ++dim) {
-        min[dim] = sphere.Center()[dim] - sphere.Radius();
-        max[dim] = sphere.Center()[dim] + sphere.Radius();
+        min[dim] = sphere.center[dim] - sphere.radius;
+        max[dim] = sphere.center[dim] + sphere.radius;
+      }
+
+      return Aabb(min, max);
+    }
+
+    static Aabb AabbFromTriangle(const Triangle& triangle) {
+      glm::vec3 min(std::numeric_limits<float>::infinity());
+      glm::vec3 max(-std::numeric_limits<float>::infinity());
+      for (int point = 0; point < 3; ++point) {
+        for (int dim = 0; dim < 3; ++dim) {
+          min[dim] = glm::min(triangle.points[point][dim], min[dim]);
+          max[dim] = glm::max(triangle.points[point][dim], max[dim]);
+        }
       }
 
       return Aabb(min, max);

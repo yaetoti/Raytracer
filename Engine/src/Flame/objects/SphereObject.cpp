@@ -6,11 +6,11 @@ namespace Flame {
   SphereObject::SphereObject(const Sphere& sphere, int materialId)
   : m_sphere(sphere)
   , m_materialId(materialId) {
-    m_bounds = MathUtils::AabbFromSphere(m_sphere);
   }
 
   bool SphereObject::Hit(const Ray& r, HitRecord& record, float tMin, float tMax) const {
-    if (!m_bounds.Hit(r, record, tMin, tMax)) {
+    Aabb bounds = MathUtils::AabbFromSphere(m_sphere);
+    if (!bounds.Hit(r, record, tMin, tMax)) {
       return false;
     }
 

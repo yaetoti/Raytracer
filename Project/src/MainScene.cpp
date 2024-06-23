@@ -88,7 +88,7 @@ void MainScene::Initialize() {
     light->constantFadeoff = 0.0f;
     light->linearFadeoff = 1.2f;
     light->quadraticFadeoff = 0.18f;
-    lightSphere.SetCenter(light->position);
+    lightSphere.center = light->position;
 
     m_pointLights.emplace_back(std::move(light));
     m_hitables.emplace_back(std::make_unique<Flame::SphereObject>(lightSphere, 0));
@@ -101,7 +101,7 @@ void MainScene::Initialize() {
     light->constantFadeoff = 0.0f;
     light->linearFadeoff = 0.7f;
     light->quadraticFadeoff = 0.18f;
-    lightSphere.SetCenter(light->position);
+    lightSphere.center = light->position;
 
     m_pointLights.emplace_back(std::move(light));
     m_hitables.emplace_back(std::make_unique<Flame::SphereObject>(lightSphere, 0));
@@ -119,7 +119,7 @@ void MainScene::Initialize() {
     light->constantFadeoff = 0.0f;
     light->linearFadeoff = 0.2f;
     light->quadraticFadeoff = 0.04f;
-    lightSphere.SetCenter(light->position);
+    lightSphere.center = light->position;
 
     m_spotLights.emplace_back(std::move(light));
     m_hitables.emplace_back(std::make_unique<Flame::SphereObject>(lightSphere, 0));

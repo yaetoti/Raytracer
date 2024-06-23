@@ -12,6 +12,5 @@ namespace Flame {
   private:
     Sphere m_sphere;
     int m_materialId;
-    Aabb m_bounds;
   };
 }
