@@ -18,18 +18,11 @@ namespace Flame {
       return out;
     }
 
-    friend std::wostream& operator<<(std::wostream& out, const Sphere& s) {
-      out << L"{ C: " << s.m_center << L", R: " << s.m_radius << L" }";
-      return out;
-    }
-
     void UpdateAabb() {
       m_bound = GetSphereBox(*this);
     }
 
-    glm::vec3 Center() const {
-      return m_center;
-    }
+    const glm::vec3& Center() const;
 
     void SetCenter(const glm::vec3& center) {
       m_center = center;

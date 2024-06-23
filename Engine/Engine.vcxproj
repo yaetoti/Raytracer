@@ -16,7 +16,6 @@
     <ClInclude Include="src\Flame.h" />
     <ClInclude Include="src\Flame\layers\SceneObject.h" />
     <ClInclude Include="src\Flame\math\Aabb.h" />
-    <ClInclude Include="src\Flame\math\Cube.h" />
     <ClInclude Include="src\Flame\math\HitRecord.h" />
     <ClInclude Include="src\Flame\math\IHitable.h" />
     <ClInclude Include="src\Flame\math\MathUtils.h" />
@@ -47,10 +46,12 @@
     <ClInclude Include="src\Flame\window\Window.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Flame\math\Bvh.cpp" />
     <ClCompile Include="src\Flame\camera\Camera.cpp" />
     <ClCompile Include="src\Flame\layers\Scene.cpp" />
+    <ClCompile Include="src\Flame\math\Aabb.cpp" />
     <ClCompile Include="src\Flame\math\Bvh.h" />
-    <ClCompile Include="src\Flame\math\Cube.cpp" />
+    <ClCompile Include="src\Flame\math\Mesh.cpp" />
     <ClCompile Include="src\Flame\math\Sphere.cpp" />
     <ClCompile Include="src\Flame\math\Transform.cpp" />
     <ClCompile Include="src\Flame\math\TriangleObject.cpp" />

@@ -1,6 +1,6 @@
 #include "MainScene.h"
 
-#include "Flame/math/Cube.h"
+#include "Flame/math/MathUtils.h"
 #include "Flame/math/Mesh.h"
 #include "Flame/math/MeshObject.h"
 #include "Flame/math/Plane.h"
@@ -57,11 +57,6 @@ void MainScene::Initialize() {
   //   glm::vec3(1, 0, -4),
   //   glm::vec3(0, 0, 1),
   //   &m_materials[5]
-  // )
-  //);
-  //m_hitables.emplace_back(
-  // std::make_unique<Flame::Cube>(
-  //   &m_materials[6]
   // )
   //);
 

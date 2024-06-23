@@ -5,7 +5,7 @@
 #include <glm/detail/type_quat.hpp>
 
 namespace Flame {
-  struct Transform {
+  struct Transform final {
     explicit Transform();
 
     void SetPosition(const glm::vec3& position);

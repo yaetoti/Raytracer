@@ -38,7 +38,7 @@ namespace Flame {
 
   glm::vec3 Camera::GetFrontUnit() const {
     InvalidateMatrices();
-    // TODO Why inverted ?!?
+    // Inversion is related to the OpenGL world coordinate system (camera looks at -Z)
     return -glm::vec3(m_transform.GetRotationMat()[2]);
   }
 

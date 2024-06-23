@@ -9,7 +9,6 @@ Application::Application() {
   // High performance mode
   m_window = std::make_shared<Flame::Window>(L"Flame 🔥", 160, 90, 1);
   m_input = &m_window->GetInputSystem();
-  // TODO Pass width and height = mistake
   m_camera = std::make_shared<Flame::Camera>(m_window->GetFramebuffer().GetWidth(), m_window->GetFramebuffer().GetHeight(), 90.0f, 0.1f, 1000.0f);
 }
 
@@ -78,7 +77,6 @@ void Application::Render() {
 
 void Application::HandleEvent(const Flame::WindowEvent& e) {
   if (e.type == Flame::WindowEventType::RESIZE) {
-    // TODO Do not cuff camera to a resolution
     m_camera->Resize(m_window->GetFramebuffer().GetWidth(), m_window->GetFramebuffer().GetHeight());
     return;
   }
@@ -89,8 +87,7 @@ void Application::UpdateCamera(float deltaTime) {
   static float baseSpeed = 2.0f;
   bool moved = false;
   float speed = baseSpeed;
-  float rollSpeedDeg = 45.0f;
-  float rollSpeed = glm::radians(rollSpeedDeg);
+  float rollSpeedDeg = 90.0f;
 
   // Movement speed
   if (m_input->IsKeyPressed(VK_SHIFT)) {
@@ -137,7 +134,6 @@ void Application::UpdateCamera(float deltaTime) {
   // Rotation
   if (m_input->IsMouseButtonPressed(Flame::MouseButton::LEFT)) {
     static float rotationSpeedDeg = -180.0f;
-    static float rotationSpeed = -glm::pi<float>();
     constexpr float sensitivity = 1.0f;
     auto[x, y] = m_input->GetCursorPos();
     auto[lastX, lastY] = m_input->GetLastCursorPos();

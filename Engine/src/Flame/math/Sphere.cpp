@@ -43,4 +43,8 @@ namespace Flame {
 
     return false;
   }
+
+  const glm::vec3& Sphere::Center() const {
+    return m_center;
+  }
 }

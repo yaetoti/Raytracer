@@ -46,8 +46,6 @@ namespace Flame {
     std::vector<float> m_accumulatedData;
     uint32_t m_framesCount = 1;
 
-    // TODO Accumulation instead of samples
-
     // Scene
     std::vector<std::unique_ptr<IHitable>> m_hitables;
     std::vector<Material> m_materials;
