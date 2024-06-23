@@ -2,7 +2,7 @@
 
 #include <Flame/math/Sphere.h>
 
-#include "Flame/math/MeshObject.h"
+#include "Flame/objects/MeshObject.h"
 
 namespace Flame {
   struct IDragger {

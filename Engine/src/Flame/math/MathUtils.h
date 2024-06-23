@@ -1,7 +1,9 @@
 #pragma once
 
+#include "Aabb.h"
 #include "HitRecord.h"
 #include "Ray.h"
+#include "Sphere.h"
 
 namespace Flame {
   struct MathUtils {
@@ -51,6 +53,18 @@ namespace Flame {
         static_cast<float>(color >> 8 & 0xFF) / 255.0f,
         static_cast<float>(color & 0xFF)  / 255.0f
       );
+    }
+
+    static Aabb AabbFromSphere(const Sphere& sphere) {
+      glm::vec3 min;
+      glm::vec3 max;
+
+      for (int dim = 0; dim < 3; ++dim) {
+        min[dim] = sphere.Center()[dim] - sphere.Radius();
+        max[dim] = sphere.Center()[dim] + sphere.Radius();
+      }
+
+      return Aabb(min, max);
     }
   };
 }

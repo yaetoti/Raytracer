@@ -1,18 +1,14 @@
 #include "Sphere.h"
 
+#include "MathUtils.h"
+
 namespace Flame {
-  Sphere::Sphere(const glm::vec3& center, const float& radius, const Material* material)
+  Sphere::Sphere(const glm::vec3& center, const float& radius)
   : m_center(center)
-  , m_radius(radius)
-  , m_material(material) {
-    UpdateAabb();
+  , m_radius(radius) {
   }
 
   bool Sphere::Hit(const Ray& r, HitRecord& record, float tMin, float tMax) const {
-    if (!m_bound.Hit(r, record, tMin, tMax)) {
-      return false;
-    }
-
     glm::vec3 oc = r.origin - m_center;
 
     float b = glm::dot(oc, r.direction);
@@ -25,7 +21,6 @@ namespace Flame {
         record.time = t;
         record.point = r.AtParameter(t);
         record.normal = (record.point - m_center) / m_radius;
-        record.material = m_material;
         record.hitable = const_cast<Sphere*>(this);
         return true;
       }
@@ -35,7 +30,6 @@ namespace Flame {
         record.time = t;
         record.point = r.AtParameter(t);
         record.normal = (record.point - m_center) / m_radius;
-        record.material = m_material;
         record.hitable = const_cast<Sphere*>(this);
         return true;
       }
@@ -46,5 +40,22 @@ namespace Flame {
 
   const glm::vec3& Sphere::Center() const {
     return m_center;
+  }
+
+  void Sphere::SetCenter(const glm::vec3& center) {
+    m_center = center;
+  }
+
+  float Sphere::Radius() const {
+    return m_radius;
+  }
+
+  void Sphere::SetRadius(float radius) {
+    m_radius = radius;
+  }
+
+  std::ostream& operator<<(std::ostream& out, const Sphere& s) {
+    out << "{ C: " << s.m_center << ", R: " << s.m_radius << " }";
+    return out;
   }
 }

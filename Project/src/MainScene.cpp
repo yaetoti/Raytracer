@@ -2,9 +2,10 @@
 
 #include "Flame/math/MathUtils.h"
 #include "Flame/math/Mesh.h"
-#include "Flame/math/MeshObject.h"
+#include "Flame/objects/MeshObject.h"
 #include "Flame/math/Plane.h"
-#include "Flame/math/TriangleObject.h"
+#include "Flame/objects/TriangleObject.h"
+#include "Flame/objects/SphereObject.h"
 #include "Flame/utils/ObjUtils.h"
 
 MainScene::MainScene(Flame::Window& window)
@@ -20,25 +21,22 @@ void MainScene::Initialize() {
   // Objects
   // Metallic sphere
   m_hitables.emplace_back(
-   std::make_unique<Flame::Sphere>(
-     glm::vec3(0, 0, -2),
-     0.5f,
+   std::make_unique<Flame::SphereObject>(
+     Flame::Sphere(glm::vec3(0, 0, -2), 0.5f),
      &m_materials[1]
    )
   );
   // Albedo sphere
   m_hitables.emplace_back(
-   std::make_unique<Flame::Sphere>(
-     glm::vec3(0, 1, -1),
-     0.3f,
+   std::make_unique<Flame::SphereObject>(
+     Flame::Sphere(glm::vec3(0, 1, -1), 0.3f),
      &m_materials[2]
    )
   );
   // The Big Danny
   m_hitables.emplace_back(
-   std::make_unique<Flame::Sphere>(
-     glm::vec3(0, -50.5, -1),
-     50.0f,
+   std::make_unique<Flame::SphereObject>(
+     Flame::Sphere(glm::vec3(0, -50.5, -1), 50.0f),
      &m_materials[3]
    )
   );
@@ -78,8 +76,7 @@ void MainScene::Initialize() {
   // TODO separate debug rendering? Add automatically
   Flame::Sphere lightSphere(
     glm::vec3(0.0f),
-    0.1f,
-    &m_materials[0]
+    0.1f
   );
 
   // Point lights
@@ -94,7 +91,7 @@ void MainScene::Initialize() {
     m_pointLights.emplace_back(light);
 
     lightSphere.SetCenter(light.position);
-    m_hitables.emplace_back(std::make_unique<Flame::Sphere>(lightSphere));
+    m_hitables.emplace_back(std::make_unique<Flame::SphereObject>(lightSphere, &m_materials[0]));
   }
   {
     Flame::PointLight light;
@@ -107,7 +104,7 @@ void MainScene::Initialize() {
     m_pointLights.emplace_back(light);
 
     lightSphere.SetCenter(light.position);
-    m_hitables.emplace_back(std::make_unique<Flame::Sphere>(lightSphere));
+    m_hitables.emplace_back(std::make_unique<Flame::SphereObject>(lightSphere, &m_materials[0]));
   }
 
   // Spotlights
@@ -125,7 +122,7 @@ void MainScene::Initialize() {
     m_spotLights.emplace_back(light);
 
     lightSphere.SetCenter(light.position);
-    m_hitables.emplace_back(std::make_unique<Flame::Sphere>(lightSphere));
+    m_hitables.emplace_back(std::make_unique<Flame::SphereObject>(lightSphere, &m_materials[0]));
   }
 
   // Direct lights

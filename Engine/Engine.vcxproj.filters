@@ -72,13 +72,13 @@
     <ClInclude Include="src\Flame\math\MathUtils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Flame\camera\Camera.h">
+    <ClInclude Include="src\Flame\render\Camera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Flame\math\Plane.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Flame\math\TriangleObject.h">
+    <ClInclude Include="src\Flame\objects\TriangleObject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Flame\render\Material.h">
@@ -105,13 +105,16 @@
     <ClInclude Include="src\Flame\utils\ObjUtils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Flame\math\MeshObject.h">
+    <ClInclude Include="src\Flame\objects\MeshObject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Flame\utils\draggers\IDragger.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Flame\math\Transform.h">
+    <ClInclude Include="src\Flame\components\Transform.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Flame\objects\SphereObject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -128,10 +131,10 @@
     <ClCompile Include="src\Flame\math\Sphere.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Flame\camera\Camera.cpp">
+    <ClCompile Include="src\Flame\render\Camera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Flame\math\TriangleObject.cpp">
+    <ClCompile Include="src\Flame\objects\TriangleObject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Flame\render\Framebuffer.cpp">
@@ -143,7 +146,7 @@
     <ClCompile Include="src\Flame\window\events\MouseScrollWindowEvent.h">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Flame\math\Transform.cpp">
+    <ClCompile Include="src\Flame\components\Transform.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Flame\math\Aabb.cpp">
@@ -153,6 +156,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Flame\math\Mesh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Flame\objects\SphereObject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

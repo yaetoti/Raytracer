@@ -1,5 +1,6 @@
 #pragma once
-#include "IHitable.h"
+
+#include "Flame/math/IHitable.h"
 
 namespace Flame {
   struct TriangleObject final : IHitable {

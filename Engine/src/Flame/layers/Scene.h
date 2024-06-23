@@ -8,7 +8,7 @@
 #include <Flame/render/Framebuffer.h>
 #include <glm/glm.hpp>
 
-#include "Flame/camera/Camera.h"
+#include "Flame/render/Camera.h"
 #include "Flame/utils/EventDispatcher.h"
 #include "Flame/window/events/WindowEvent.h"
 

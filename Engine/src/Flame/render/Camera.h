@@ -4,7 +4,7 @@
 #include <glm/detail/type_quat.hpp>
 
 #include "Flame/math/Ray.h"
-#include "Flame/math/Transform.h"
+#include "Flame/components/Transform.h"
 
 namespace Flame {
   struct Camera final {

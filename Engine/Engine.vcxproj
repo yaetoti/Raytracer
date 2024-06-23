@@ -11,7 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\Flame\camera\Camera.h" />
+    <ClInclude Include="src\Flame\render\Camera.h" />
     <ClInclude Include="src\Flame\layers\Scene.h" />
     <ClInclude Include="src\Flame.h" />
     <ClInclude Include="src\Flame\layers\SceneObject.h" />
@@ -21,13 +21,14 @@
     <ClInclude Include="src\Flame\math\MathUtils.h" />
     <ClInclude Include="src\Flame\math\MeshData.h" />
     <ClInclude Include="src\Flame\math\Mesh.h" />
-    <ClInclude Include="src\Flame\math\MeshObject.h" />
+    <ClInclude Include="src\Flame\objects\MeshObject.h" />
     <ClInclude Include="src\Flame\math\Plane.h" />
     <ClInclude Include="src\Flame\math\Ray.h" />
     <ClInclude Include="src\Flame\math\Sphere.h" />
-    <ClInclude Include="src\Flame\math\Transform.h" />
+    <ClInclude Include="src\Flame\components\Transform.h" />
     <ClInclude Include="src\Flame\math\Triangle.h" />
-    <ClInclude Include="src\Flame\math\TriangleObject.h" />
+    <ClInclude Include="src\Flame\objects\TriangleObject.h" />
+    <ClInclude Include="src\Flame\objects\SphereObject.h" />
     <ClInclude Include="src\Flame\render\Framebuffer.h" />
     <ClInclude Include="src\Flame\render\Material.h" />
     <ClInclude Include="src\Flame\utils\draggers\IDragger.h" />
@@ -47,14 +48,15 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Flame\math\Bvh.cpp" />
-    <ClCompile Include="src\Flame\camera\Camera.cpp" />
+    <ClCompile Include="src\Flame\render\Camera.cpp" />
     <ClCompile Include="src\Flame\layers\Scene.cpp" />
     <ClCompile Include="src\Flame\math\Aabb.cpp" />
     <ClCompile Include="src\Flame\math\Bvh.h" />
     <ClCompile Include="src\Flame\math\Mesh.cpp" />
     <ClCompile Include="src\Flame\math\Sphere.cpp" />
-    <ClCompile Include="src\Flame\math\Transform.cpp" />
-    <ClCompile Include="src\Flame\math\TriangleObject.cpp" />
+    <ClCompile Include="src\Flame\components\Transform.cpp" />
+    <ClCompile Include="src\Flame\objects\TriangleObject.cpp" />
+    <ClCompile Include="src\Flame\objects\SphereObject.cpp" />
     <ClCompile Include="src\Flame\render\Framebuffer.cpp" />
     <ClCompile Include="src\Flame\window\events\MouseScrollWindowEvent.h" />
     <ClCompile Include="src\Flame\window\InputSystem.cpp" />

@@ -1,6 +1,7 @@
 #pragma once
-#include "IHitable.h"
-#include "Mesh.h"
+
+#include "Flame/math/IHitable.h"
+#include "Flame/math/Mesh.h"
 
 namespace Flame {
   struct MeshObject final : IHitable {

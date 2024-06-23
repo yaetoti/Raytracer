@@ -4,7 +4,7 @@
 #include <iostream>
 #include <numeric>
 
-#include "Flame/camera/Camera.h"
+#include "Flame/render/Camera.h"
 #include "Flame/math/MathUtils.h"
 #include "Flame/math/Ray.h"
 #include "Flame/utils/Random.h"
