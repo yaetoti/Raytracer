@@ -4,6 +4,7 @@
 #include "Flame/math/Mesh.h"
 #include "Flame/objects/MeshObject.h"
 #include "Flame/math/Plane.h"
+#include "Flame/objects/PlaneObject.h"
 #include "Flame/objects/TriangleObject.h"
 #include "Flame/objects/SphereObject.h"
 #include "Flame/utils/ObjUtils.h"
@@ -42,9 +43,8 @@ void MainScene::Initialize() {
   );
   // Plane
   m_hitables.emplace_back(
-   std::make_unique<Flame::Plane>(
-     glm::vec3(0, 0, -5),
-     glm::normalize(glm::vec3(1, 0.2, 1)),
+   std::make_unique<Flame::PlaneObject>(
+     Flame::Plane(glm::vec3(0, 0, -5), glm::normalize(glm::vec3(1, 0.2, 1))),
      4
    )
   );

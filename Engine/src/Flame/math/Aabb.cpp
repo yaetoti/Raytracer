@@ -17,9 +17,8 @@ namespace Flame {
       }
     }
 
-    // TODO: No need now
-    // record.time = tMin;
-    // record.hitable = const_cast<Aabb*>(this);
+    record.time = tMin;
+    record.hitable = const_cast<Aabb*>(this);
     return true;
   }
 

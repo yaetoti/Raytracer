@@ -11,6 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Flame\objects\PlaneObject.h" />
     <ClInclude Include="src\Flame\render\Camera.h" />
     <ClInclude Include="src\Flame\layers\Scene.h" />
     <ClInclude Include="src\Flame.h" />
@@ -48,6 +49,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Flame\math\Bvh.cpp" />
+    <ClCompile Include="src\Flame\math\Plane.cpp" />
+    <ClCompile Include="src\Flame\objects\PlaneObject.cpp" />
     <ClCompile Include="src\Flame\render\Camera.cpp" />
     <ClCompile Include="src\Flame\layers\Scene.cpp" />
     <ClCompile Include="src\Flame\math\Aabb.cpp" />
