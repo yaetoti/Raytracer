@@ -119,8 +119,8 @@ namespace Flame {
   glm::vec3 Scene::CalculatePointLightPerPoint(const Camera& camera, const HitRecord& record) {
     glm::vec3 light(0.0f);
 
-    for (const PointLight& pointLight : m_pointLights) {
-      glm::vec3 lightVec = pointLight.position - record.point;
+    for (auto& pointLight : m_pointLights) {
+      glm::vec3 lightVec = pointLight->position - record.point;
       if (m_lightSmooth > std::numeric_limits<float>::epsilon()) {
         // Light vector is randomized to get different results
         lightVec += m_lightSmooth * Random::UnitVector<3, float, glm::packed_highp>();
@@ -140,18 +140,18 @@ namespace Flame {
       }
 
       // Attenuation
-      float attenuation = 1.0f / (pointLight.constantFadeoff
-                                  + pointLight.linearFadeoff * lightDistance
-                                  + pointLight.quadraticFadeoff * lightDistance * lightDistance);
+      float attenuation = 1.0f / (pointLight->constantFadeoff
+                                  + pointLight->linearFadeoff * lightDistance
+                                  + pointLight->quadraticFadeoff * lightDistance * lightDistance);
       // Diffuse
-      glm::vec3 diffuse = record.material->diffuse * glm::max(glm::dot(record.normal, lightDir), 0.0f) * pointLight.color;
+      glm::vec3 diffuse = record.material->diffuse * glm::max(glm::dot(record.normal, lightDir), 0.0f) * pointLight->color;
       // Specular
       glm::vec3 viewDir = glm::normalize(camera.GetPosition() - record.point);
       glm::vec3 halfReflect = glm::normalize(lightDir + viewDir);
-      glm::vec3 specular = record.material->specular * glm::pow(glm::max(glm::dot(record.normal, halfReflect), 0.0f), record.material->specularExponent) * pointLight.color;
+      glm::vec3 specular = record.material->specular * glm::pow(glm::max(glm::dot(record.normal, halfReflect), 0.0f), record.material->specularExponent) * pointLight->color;
 
       // Accumulate light
-      light += attenuation * (diffuse + specular) * pointLight.intensity;
+      light += attenuation * (diffuse + specular) * pointLight->intensity;
     }
 
     return light;
@@ -160,8 +160,8 @@ namespace Flame {
   glm::vec3 Scene::CalculateSpotLightPerPoint(const Camera& camera, const HitRecord& record) {
     glm::vec3 light(0.0f);
 
-    for (const SpotLight& spotLight : m_spotLights) {
-      glm::vec3 lightVec = spotLight.position - record.point;
+    for (auto& spotLight : m_spotLights) {
+      glm::vec3 lightVec = spotLight->position - record.point;
       if (m_lightSmooth > std::numeric_limits<float>::epsilon()) {
         // Light vector is randomized to get different results
         lightVec += m_lightSmooth * Random::UnitVector<3, float, glm::packed_highp>();
@@ -170,9 +170,9 @@ namespace Flame {
       float lightDistance = glm::length(lightVec);
       glm::vec3 lightDir = glm::normalize(lightVec);
 
-      float theta = glm::dot(lightDir, -spotLight.direction);
-      float epsilon = spotLight.cutoffCosineInner - spotLight.cutoffCosineOuter;
-      float intensity = glm::clamp((theta - spotLight.cutoffCosineOuter) / epsilon, 0.0f, 1.0f);
+      float theta = glm::dot(lightDir, -spotLight->direction);
+      float epsilon = spotLight->cutoffCosineInner - spotLight->cutoffCosineOuter;
+      float intensity = glm::clamp((theta - spotLight->cutoffCosineOuter) / epsilon, 0.0f, 1.0f);
       if (intensity <= 0.001f) {
         return light;
       }
@@ -189,18 +189,18 @@ namespace Flame {
       }
 
       // Attenuation
-      float attenuation = 1.0f / (spotLight.constantFadeoff
-                                  + spotLight.linearFadeoff * lightDistance
-                                  + spotLight.quadraticFadeoff * lightDistance * lightDistance);
+      float attenuation = 1.0f / (spotLight->constantFadeoff
+                                  + spotLight->linearFadeoff * lightDistance
+                                  + spotLight->quadraticFadeoff * lightDistance * lightDistance);
       // Diffuse
-      glm::vec3 diffuse = record.material->diffuse * glm::max(glm::dot(record.normal, lightDir), 0.0f) * spotLight.color;
+      glm::vec3 diffuse = record.material->diffuse * glm::max(glm::dot(record.normal, lightDir), 0.0f) * spotLight->color;
       // Specular
       glm::vec3 viewDir = glm::normalize(camera.GetPosition() - record.point);
       glm::vec3 halfReflect = glm::normalize(lightDir + viewDir);
-      glm::vec3 specular = record.material->specular * glm::pow(glm::max(glm::dot(record.normal, halfReflect), 0.0f), record.material->specularExponent) * spotLight.color;
+      glm::vec3 specular = record.material->specular * glm::pow(glm::max(glm::dot(record.normal, halfReflect), 0.0f), record.material->specularExponent) * spotLight->color;
 
       // Accumulate light
-      light += attenuation * (diffuse + specular) * spotLight.intensity * intensity;
+      light += attenuation * (diffuse + specular) * spotLight->intensity * intensity;
     }
 
     return light;
@@ -209,16 +209,16 @@ namespace Flame {
   glm::vec3 Scene::CalculateDirectLightPerPoint(const Camera& camera, const HitRecord& record) {
     glm::vec3 light(0.0f);
 
-    for (const DirectLight& directLight : m_directLights) {
+    for (auto& directLight : m_directLights) {
       // Diffuse
-      glm::vec3 diffuse = record.material->diffuse * glm::max(glm::dot(record.normal, -directLight.direction), 0.0f) * directLight.color;
+      glm::vec3 diffuse = record.material->diffuse * glm::max(glm::dot(record.normal, -directLight->direction), 0.0f) * directLight->color;
       // Specular
       glm::vec3 viewDir = glm::normalize(camera.GetPosition() - record.point);
-      glm::vec3 halfReflect = glm::normalize(directLight.direction + viewDir);
-      glm::vec3 specular = record.material->specular * glm::pow(glm::max(glm::dot(record.normal, halfReflect), 0.0f), record.material->specularExponent) * directLight.color;
+      glm::vec3 halfReflect = glm::normalize(directLight->direction + viewDir);
+      glm::vec3 specular = record.material->specular * glm::pow(glm::max(glm::dot(record.normal, halfReflect), 0.0f), record.material->specularExponent) * directLight->color;
 
       // Accumulate light
-      light += (diffuse + specular) * directLight.intensity;
+      light += (diffuse + specular) * directLight->intensity;
     }
 
     return light;

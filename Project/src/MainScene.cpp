@@ -23,21 +23,21 @@ void MainScene::Initialize() {
   m_hitables.emplace_back(
    std::make_unique<Flame::SphereObject>(
      Flame::Sphere(glm::vec3(0, 0, -2), 0.5f),
-     &m_materials[1]
+     m_materials[1].get()
    )
   );
   // Albedo sphere
   m_hitables.emplace_back(
    std::make_unique<Flame::SphereObject>(
      Flame::Sphere(glm::vec3(0, 1, -1), 0.3f),
-     &m_materials[2]
+     m_materials[2].get()
    )
   );
   // The Big Danny
   m_hitables.emplace_back(
    std::make_unique<Flame::SphereObject>(
      Flame::Sphere(glm::vec3(0, -50.5, -1), 50.0f),
-     &m_materials[3]
+     m_materials[3].get()
    )
   );
   // Plane
@@ -45,7 +45,7 @@ void MainScene::Initialize() {
    std::make_unique<Flame::Plane>(
      glm::vec3(0, 0, -5),
      glm::normalize(glm::vec3(1, 0.2, 1)),
-     &m_materials[4]
+     m_materials[4].get()
    )
   );
   //m_hitables.emplace_back(
@@ -54,17 +54,17 @@ void MainScene::Initialize() {
   //   glm::vec3(2, 2, -4),
   //   glm::vec3(1, 0, -4),
   //   glm::vec3(0, 0, 1),
-  //   &m_materials[5]
+  //   m_materials[5].get()
   // )
   //);
 
-  std::unique_ptr<Flame::IHitable>& cubeHitable = m_hitables.emplace_back(std::make_unique<Flame::MeshObject>(m_meshes[0].get(), &m_materials[6]));
+  std::unique_ptr<Flame::IHitable>& cubeHitable = m_hitables.emplace_back(std::make_unique<Flame::MeshObject>(m_meshes[0].get(), m_materials[6].get()));
   // TODO cringe
   Flame::MeshObject* cube = static_cast<Flame::MeshObject*>(cubeHitable.get());
   cube->SetPosition(glm::vec3(1.0f, 1.0f, 2.0f));
   cube->SetRotation(glm::radians(glm::vec3(37.0f, 45.0f, 12.0f)));
 
-  std::unique_ptr<Flame::IHitable>& carHitable = m_hitables.emplace_back(std::make_unique<Flame::MeshObject>(m_meshes[1].get(), &m_materials[6]));
+  std::unique_ptr<Flame::IHitable>& carHitable = m_hitables.emplace_back(std::make_unique<Flame::MeshObject>(m_meshes[1].get(), m_materials[6].get()));
   // TODO cringe
   Flame::MeshObject* car = static_cast<Flame::MeshObject*>(carHitable.get());
   car->SetPosition(glm::vec3(5.0f, 0.0f, -3.0f));
@@ -81,57 +81,57 @@ void MainScene::Initialize() {
 
   // Point lights
   {
-    Flame::PointLight light;
-    light.position = glm::vec3(5.0f, 6.0f, -3.0f);
-    light.color = Flame::MathUtils::ColorFromHex(0xFA3120);
-    light.intensity = 14.0f;
-    light.constantFadeoff = 0.0f;
-    light.linearFadeoff = 1.2f;
-    light.quadraticFadeoff = 0.18f;
-    m_pointLights.emplace_back(light);
+    auto light = std::make_unique<Flame::PointLight>();
+    light->position = glm::vec3(5.0f, 6.0f, -3.0f);
+    light->color = Flame::MathUtils::ColorFromHex(0xFA3120);
+    light->intensity = 14.0f;
+    light->constantFadeoff = 0.0f;
+    light->linearFadeoff = 1.2f;
+    light->quadraticFadeoff = 0.18f;
+    lightSphere.SetCenter(light->position);
 
-    lightSphere.SetCenter(light.position);
-    m_hitables.emplace_back(std::make_unique<Flame::SphereObject>(lightSphere, &m_materials[0]));
+    m_pointLights.emplace_back(std::move(light));
+    m_hitables.emplace_back(std::make_unique<Flame::SphereObject>(lightSphere, m_materials[0].get()));
   }
   {
-    Flame::PointLight light;
-    light.position = glm::vec3(3.0f, 3.0f, 1.0f);
-    light.color = Flame::MathUtils::ColorFromHex(0x2C1EF7);
-    light.intensity = 12.0f;
-    light.constantFadeoff = 0.0f;
-    light.linearFadeoff = 0.7f;
-    light.quadraticFadeoff = 0.18f;
-    m_pointLights.emplace_back(light);
+    auto light = std::make_unique<Flame::PointLight>();
+    light->position = glm::vec3(3.0f, 3.0f, 1.0f);
+    light->color = Flame::MathUtils::ColorFromHex(0x2C1EF7);
+    light->intensity = 12.0f;
+    light->constantFadeoff = 0.0f;
+    light->linearFadeoff = 0.7f;
+    light->quadraticFadeoff = 0.18f;
+    lightSphere.SetCenter(light->position);
 
-    lightSphere.SetCenter(light.position);
-    m_hitables.emplace_back(std::make_unique<Flame::SphereObject>(lightSphere, &m_materials[0]));
+    m_pointLights.emplace_back(std::move(light));
+    m_hitables.emplace_back(std::make_unique<Flame::SphereObject>(lightSphere, m_materials[0].get()));
   }
 
   // Spotlights
   {
-    Flame::SpotLight light;
-    light.color = glm::vec3(1.0f, 1.0f, 1.0f);
-    light.position = glm::vec3(6.0f, 0.8f, -1.0f);
-    light.direction = glm::vec3(-1.0f, 0.0f, 0.0f);
-    light.intensity = 20.0f;
-    light.cutoffCosineInner = glm::cos(glm::radians(5.0f));
-    light.cutoffCosineOuter = glm::cos(glm::radians(12.0f));
-    light.constantFadeoff = 0.0f;
-    light.linearFadeoff = 0.2f;
-    light.quadraticFadeoff = 0.04f;
-    m_spotLights.emplace_back(light);
+    auto light = std::make_unique<Flame::SpotLight>();
+    light->color = glm::vec3(1.0f, 1.0f, 1.0f);
+    light->position = glm::vec3(6.0f, 0.8f, -1.0f);
+    light->direction = glm::vec3(-1.0f, 0.0f, 0.0f);
+    light->intensity = 20.0f;
+    light->cutoffCosineInner = glm::cos(glm::radians(5.0f));
+    light->cutoffCosineOuter = glm::cos(glm::radians(12.0f));
+    light->constantFadeoff = 0.0f;
+    light->linearFadeoff = 0.2f;
+    light->quadraticFadeoff = 0.04f;
+    lightSphere.SetCenter(light->position);
 
-    lightSphere.SetCenter(light.position);
-    m_hitables.emplace_back(std::make_unique<Flame::SphereObject>(lightSphere, &m_materials[0]));
+    m_spotLights.emplace_back(std::move(light));
+    m_hitables.emplace_back(std::make_unique<Flame::SphereObject>(lightSphere, m_materials[0].get()));
   }
 
   // Direct lights
   {
-    Flame::DirectLight light;
-    light.color = glm::vec3(0.066666f, 0.070588f, 0.180392f);
-    light.direction = glm::vec3(0.0f, -1.0f, 0.0f);
-    light.intensity = 1.0f;
-    m_directLights.emplace_back(light);
+    auto light = std::make_unique<Flame::DirectLight>();
+    light->color = glm::vec3(0.066666f, 0.070588f, 0.180392f);
+    light->direction = glm::vec3(0.0f, -1.0f, 0.0f);
+    light->intensity = 1.0f;
+    m_directLights.emplace_back(std::move(light));
   }
 }
 
@@ -145,103 +145,103 @@ void MainScene::InitializeMaterials() {
   // Materials
   {
     // Light Visualizer
-    Flame::Material m;
-    m.albedo = glm::vec3(1.00f);
-    m.emissionColor = glm::vec3(1.0f);
-    m.emissionStrength = 1.0f;
-    m.debugMaterial = true;
-    m_materials.emplace_back(m);
+    auto m = std::make_unique<Flame::Material>();
+    m->albedo = glm::vec3(1.00f);
+    m->emissionColor = glm::vec3(1.0f);
+    m->emissionStrength = 1.0f;
+    m->debugMaterial = true;
+    m_materials.emplace_back(std::move(m));
   }
   {
     // Metal sphere
-    Flame::Material m;
-    m.albedo = glm::vec3(1.00f, 1.00f, 1.00f);
-    m.diffuse = 1.0f;
-    m.specular = 1.0f;
-    m.specularExponent = 32.0f;
-    m.roughness = 0.0f;
-    m.metallic = 0.8f;
-    m.emissionColor = glm::vec3(0.0f);
-    m.emissionStrength = 0.0f;
-    m_materials.emplace_back(m);
+    auto m = std::make_unique<Flame::Material>();
+    m->albedo = glm::vec3(1.00f, 1.00f, 1.00f);
+    m->diffuse = 1.0f;
+    m->specular = 1.0f;
+    m->specularExponent = 32.0f;
+    m->roughness = 0.0f;
+    m->metallic = 0.8f;
+    m->emissionColor = glm::vec3(0.0f);
+    m->emissionStrength = 0.0f;
+    m_materials.emplace_back(std::move(m));
   }
   {
     // Albedo sphere
-    Flame::Material m;
-    m.albedo = glm::vec3(0.28f, 1.0f, 0.5f);
-    m.diffuse = 1.0f;
-    m.specular = 1.0f;
-    m.specularExponent = 32.0f;
-    m.roughness = 1.0f;
-    m.metallic = 0.0f;
-    m.emissionColor = glm::vec3(0.28f, 1.0f, 0.5f);
-    m.emissionStrength = 0.0f;
-    m_materials.emplace_back(m);
+    auto m = std::make_unique<Flame::Material>();
+    m->albedo = glm::vec3(0.28f, 1.0f, 0.5f);
+    m->diffuse = 1.0f;
+    m->specular = 1.0f;
+    m->specularExponent = 32.0f;
+    m->roughness = 1.0f;
+    m->metallic = 0.0f;
+    m->emissionColor = glm::vec3(0.28f, 1.0f, 0.5f);
+    m->emissionStrength = 0.0f;
+    m_materials.emplace_back(std::move(m));
   }
   {
     // The big boi
-    Flame::Material m;
-    m.albedo = glm::vec3(1.0f, 0.28f, 0.5f);
-    m.diffuse = 1.0f;
-    m.specular = 1.0f;
-    m.specularExponent = 32.0f;
-    m.roughness = 1.0f;
-    m.metallic = 0.1f;
-    m.emissionColor = glm::vec3(0.0f);
-    m.emissionStrength = 0.0f;
-    m_materials.emplace_back(m);
+    auto m = std::make_unique<Flame::Material>();
+    m->albedo = glm::vec3(1.0f, 0.28f, 0.5f);
+    m->diffuse = 1.0f;
+    m->specular = 1.0f;
+    m->specularExponent = 32.0f;
+    m->roughness = 1.0f;
+    m->metallic = 0.1f;
+    m->emissionColor = glm::vec3(0.0f);
+    m->emissionStrength = 0.0f;
+    m_materials.emplace_back(std::move(m));
   }
   {
     // Plane
-    Flame::Material m;
-    m.albedo = glm::vec3(0.26f, 0.30f, 0.32f);
-    m.diffuse = 1.0f;
-    m.specular = 1.0f;
-    m.specularExponent = 32.0f;
-    m.roughness = 1.0f;
-    m.metallic = 0.2f;
-    m.emissionColor = glm::vec3(0.0f);
-    m.emissionStrength = 0.0f;
-    m_materials.emplace_back(m);
+    auto m = std::make_unique<Flame::Material>();
+    m->albedo = glm::vec3(0.26f, 0.30f, 0.32f);
+    m->diffuse = 1.0f;
+    m->specular = 1.0f;
+    m->specularExponent = 32.0f;
+    m->roughness = 1.0f;
+    m->metallic = 0.2f;
+    m->emissionColor = glm::vec3(0.0f);
+    m->emissionStrength = 0.0f;
+    m_materials.emplace_back(std::move(m));
   }
   {
     // TriangleObject
-    Flame::Material m;
-    m.albedo = glm::vec3(0.99f, 0.99f, 0.99f);
-    m.diffuse = 1.0f;
-    m.specular = 0.0f;
-    m.specularExponent = 0.0f;
-    m.roughness = 0.0f;
-    m.metallic = 1.0f;
-    m.emissionColor = glm::vec3(0.0f);
-    m.emissionStrength = 0.0f;
-    m_materials.emplace_back(m);
+    auto m = std::make_unique<Flame::Material>();
+    m->albedo = glm::vec3(0.99f, 0.99f, 0.99f);
+    m->diffuse = 1.0f;
+    m->specular = 0.0f;
+    m->specularExponent = 0.0f;
+    m->roughness = 0.0f;
+    m->metallic = 1.0f;
+    m->emissionColor = glm::vec3(0.0f);
+    m->emissionStrength = 0.0f;
+    m_materials.emplace_back(std::move(m));
   }
   {
     // Cube
-    Flame::Material m;
-    m.albedo = glm::vec3(0.95f, 0.95f, 0.95f);
-    m.diffuse = 1.0f;
-    m.specular = 1.0f;
-    m.specularExponent = 32.0f;
-    m.roughness = 0.001f;
-    m.metallic = 0.95f;
-    m.emissionColor = glm::vec3(0.0f);
-    m.emissionStrength = 0.0f;
-    m_materials.emplace_back(m);
+    auto m = std::make_unique<Flame::Material>();
+    m->albedo = glm::vec3(0.95f, 0.95f, 0.95f);
+    m->diffuse = 1.0f;
+    m->specular = 1.0f;
+    m->specularExponent = 32.0f;
+    m->roughness = 0.001f;
+    m->metallic = 0.95f;
+    m->emissionColor = glm::vec3(0.0f);
+    m->emissionStrength = 0.0f;
+    m_materials.emplace_back(std::move(m));
   }
   {
     // Albedo MuscleCar
-    Flame::Material m;
-    m.albedo = glm::vec3(0.99f, 0.99f, 0.99f);
-    m.diffuse = 1.0f;
-    m.specular = 0.0f;
-    m.specularExponent = 0.0f;
-    m.roughness = 0.1f;
-    m.metallic = 0.8f;
-    m.emissionColor = glm::vec3(0.0f);
-    m.emissionStrength = 0.0f;
-    m_materials.emplace_back(m);
+    auto m = std::make_unique<Flame::Material>();
+    m->albedo = glm::vec3(0.99f, 0.99f, 0.99f);
+    m->diffuse = 1.0f;
+    m->specular = 0.0f;
+    m->specularExponent = 0.0f;
+    m->roughness = 0.1f;
+    m->metallic = 0.8f;
+    m->emissionColor = glm::vec3(0.0f);
+    m->emissionStrength = 0.0f;
+    m_materials.emplace_back(std::move(m));
   }
 }
 

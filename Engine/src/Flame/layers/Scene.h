@@ -14,7 +14,7 @@
 
 namespace Flame {
   struct Scene : EventListener<WindowEvent> {
-    virtual ~Scene() override = default;
+    ~Scene() override = default;
 
     virtual void Initialize() {}
     virtual void Update(float deltaTime) {}
@@ -48,10 +48,10 @@ namespace Flame {
 
     // Scene
     std::vector<std::unique_ptr<IHitable>> m_hitables;
-    std::vector<Material> m_materials;
+    std::vector<std::unique_ptr<Material>> m_materials;
 
-    std::vector<DirectLight> m_directLights;
-    std::vector<PointLight> m_pointLights;
-    std::vector<SpotLight> m_spotLights;
+    std::vector<std::unique_ptr<DirectLight>> m_directLights;
+    std::vector<std::unique_ptr<PointLight>> m_pointLights;
+    std::vector<std::unique_ptr<SpotLight>> m_spotLights;
   };
 }
