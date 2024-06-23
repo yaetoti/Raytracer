@@ -3,16 +3,6 @@
 #include "Flame/math/Ray.h"
 
 namespace Flame {
-  // TODO Primitive::IsLightHittable
-
-  struct Primitive final {
-    bool Hit();
-
-    glm::vec3 position;
-    glm::mat4 modelMatrix;
-    glm::mat4 modelMatrixInversed;
-  };
-
   struct Material final {
     glm::vec3 albedo { 1.0f };
     float diffuse = 0.0f;
