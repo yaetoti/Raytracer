@@ -9,7 +9,9 @@ Application::Application() {
   // High performance mode
   m_window = std::make_shared<Flame::Window>(L"Flame 🔥", 160, 90, 1);
   m_input = &m_window->GetInputSystem();
+  m_scene = std::make_shared<MainScene>(*m_window);
   m_camera = std::make_shared<Flame::Camera>(m_window->GetFramebuffer().GetWidth(), m_window->GetFramebuffer().GetHeight(), 90.0f, 0.1f, 1000.0f);
+  m_renderer = std::make_unique<Flame::Renderer>(m_scene.get());
 }
 
 void Application::Run() {
@@ -48,11 +50,9 @@ void Application::Run() {
 }
 
 void Application::Init() {
-  m_scene = std::make_shared<MainScene>(*m_window);
   m_scene->Initialize();
 
   m_window->GetDispatcher().AddListener(this);
-  m_window->GetDispatcher().AddListener(m_scene.get());
 
   m_window->CreateResources();
   m_window->Show(SW_SHOW);
@@ -72,12 +72,13 @@ void Application::Update(float deltaTime) {
 }
 
 void Application::Render() {
-  m_scene->Render(m_window->GetFramebuffer(), *m_camera);
+  m_renderer->Render(m_window->GetFramebuffer(), *m_camera);
 }
 
 void Application::HandleEvent(const Flame::WindowEvent& e) {
   if (e.type == Flame::WindowEventType::RESIZE) {
     m_camera->Resize(m_window->GetFramebuffer().GetWidth(), m_window->GetFramebuffer().GetHeight());
+    m_renderer->Resize(m_window->GetFramebuffer().GetWidth(), m_window->GetFramebuffer().GetHeight());
     return;
   }
 }
@@ -145,7 +146,7 @@ void Application::UpdateCamera(float deltaTime) {
   }
 
   if (moved) {
-    m_scene->ResetAccumulatedData();
+    m_renderer->ResetAccumulatedData();
   }
 }
 
@@ -177,7 +178,7 @@ void Application::UpdateGrabbing(float deltaTime) {
   }
 
   if (sceneChanged) {
-    m_scene->ResetAccumulatedData();
+    m_renderer->ResetAccumulatedData();
   }
 }
 

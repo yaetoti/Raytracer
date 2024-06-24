@@ -32,6 +32,7 @@
     <ClInclude Include="src\Flame\objects\SphereObject.h" />
     <ClInclude Include="src\Flame\render\Framebuffer.h" />
     <ClInclude Include="src\Flame\render\Material.h" />
+    <ClInclude Include="src\Flame\render\Renderer.h" />
     <ClInclude Include="src\Flame\utils\draggers\IDragger.h" />
     <ClInclude Include="src\Flame\utils\EventDispatcher.h" />
     <ClInclude Include="src\Flame\utils\FunctionalDispatcher.h" />
@@ -62,6 +63,7 @@
     <ClCompile Include="src\Flame\objects\TriangleObject.cpp" />
     <ClCompile Include="src\Flame\objects\SphereObject.cpp" />
     <ClCompile Include="src\Flame\render\Framebuffer.cpp" />
+    <ClCompile Include="src\Flame\render\Renderer.cpp" />
     <ClCompile Include="src\Flame\window\events\MouseScrollWindowEvent.h" />
     <ClCompile Include="src\Flame\window\InputSystem.cpp" />
     <ClCompile Include="src\Flame\window\Window.cpp" />

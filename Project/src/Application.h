@@ -9,6 +9,8 @@
 #include <thread>
 #include <Windows.h>
 
+#include "Flame/render/Camera.h"
+#include "Flame/render/Renderer.h"
 #include "Flame/utils/draggers/IDragger.h"
 
 struct Application final : Flame::EventListener<Flame::WindowEvent> {
@@ -32,6 +34,7 @@ private:
 
   std::shared_ptr<Flame::Scene> m_scene;
   std::shared_ptr<Flame::Camera> m_camera;
+  std::shared_ptr<Flame::Renderer> m_renderer;
 
   uint32_t m_frames = 0;
   uint32_t m_lastFps = 0;

@@ -67,7 +67,6 @@ namespace Flame {
 
     InvalidateMatrices();
 
-    // TODO Start ray at near plane
     glm::vec2 coords(
       (static_cast<float>(x) + 0.5f) / static_cast<float>(m_width),
       (static_cast<float>(y) + 0.5f) / static_cast<float>(m_height)
