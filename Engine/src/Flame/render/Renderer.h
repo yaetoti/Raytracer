@@ -1,6 +1,7 @@
 #pragma once
 #include "Camera.h"
 #include "Flame/layers/Scene.h"
+#include "Flame/utils/ParallelExecutor.h"
 #include "Flame/window/Window.h"
 
 namespace Flame {
@@ -19,12 +20,11 @@ namespace Flame {
 
   private:
     const Scene* m_scene;
+    ParallelExecutor m_executor;
 
     // Render data
     uint32_t m_surfaceWidth = 0;
     uint32_t m_surfaceHeight = 0;
-    std::vector<uint32_t> m_rowIndices;
-    std::vector<uint32_t> m_columnIndices;
 
     uint32_t m_bounces = 4;
     float m_lightSmooth = 0.3f;

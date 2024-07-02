@@ -37,6 +37,7 @@
     <ClInclude Include="src\Flame\utils\EventDispatcher.h" />
     <ClInclude Include="src\Flame\utils\FunctionalDispatcher.h" />
     <ClInclude Include="src\Flame\utils\ObjUtils.h" />
+    <ClInclude Include="src\Flame\utils\ParallelExecutor.h" />
     <ClInclude Include="src\Flame\utils\Random.h" />
     <ClInclude Include="src\Flame\utils\ScopeTimer.h" />
     <ClInclude Include="src\Flame\utils\Timer.h" />
@@ -64,6 +65,7 @@
     <ClCompile Include="src\Flame\objects\SphereObject.cpp" />
     <ClCompile Include="src\Flame\render\Framebuffer.cpp" />
     <ClCompile Include="src\Flame\render\Renderer.cpp" />
+    <ClCompile Include="src\Flame\utils\ParallelExecutor.cpp" />
     <ClCompile Include="src\Flame\window\events\MouseScrollWindowEvent.h" />
     <ClCompile Include="src\Flame\window\InputSystem.cpp" />
     <ClCompile Include="src\Flame\window\Window.cpp" />

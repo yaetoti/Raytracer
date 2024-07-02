@@ -8,30 +8,32 @@
 
 namespace Flame {
   Renderer::Renderer(const Scene* scene)
-  : m_scene(scene) {
+  : m_scene(scene)
+  , m_executor(std::max(1, static_cast<int>(std::thread::hardware_concurrency()) - 1)) {
   }
 
   void Renderer::Render(Framebuffer& surface, const Camera& camera) {
-    std::for_each(std::execution::par, m_rowIndices.begin(), m_rowIndices.end(), [&](uint32_t row) {
-      std::for_each(std::execution::par, m_columnIndices.begin(), m_columnIndices.end(), [&](uint32_t col) {
-        glm::vec3 light(0.0f);
-        glm::vec3 color = ColorPerRay(camera, camera.GetRandomizedRay(col, row), 0, light);
-        color = glm::clamp(color, glm::vec3(0), glm::vec3(1));
+    m_executor.Execute([this, &surface, &camera](uint32_t threadIndex, uint32_t taskIndex) {
+      uint32_t row = taskIndex / m_surfaceWidth;
+      uint32_t col = taskIndex % m_surfaceWidth;
 
-        // Accumulate color
-        color.r = m_accumulatedData[(row * m_surfaceWidth + col) * 3 + 0] += color.r;
-        color.g = m_accumulatedData[(row * m_surfaceWidth + col) * 3 + 1] += color.g;
-        color.b = m_accumulatedData[(row * m_surfaceWidth + col) * 3 + 2] += color.b;
-        color *= 255.0f / static_cast<float>(m_framesCount);
+      glm::vec3 light(0.0f);
+      glm::vec3 color = ColorPerRay(camera, camera.GetRandomizedRay(col, row), 0, light);
+      color = glm::clamp(color, glm::vec3(0), glm::vec3(1));
 
-        surface.SetPixel(
-          col, row,
-          static_cast<BYTE>(color.r),
-          static_cast<BYTE>(color.g),
-          static_cast<BYTE>(color.b)
-        );
-      });
-    });
+      // Accumulate color
+      color.r = m_accumulatedData[(row * m_surfaceWidth + col) * 3 + 0] += color.r;
+      color.g = m_accumulatedData[(row * m_surfaceWidth + col) * 3 + 1] += color.g;
+      color.b = m_accumulatedData[(row * m_surfaceWidth + col) * 3 + 2] += color.b;
+      color *= 255.0f / static_cast<float>(m_framesCount);
+
+      surface.SetPixel(
+        col, row,
+        static_cast<BYTE>(color.r),
+        static_cast<BYTE>(color.g),
+        static_cast<BYTE>(color.b)
+      );
+    }, m_surfaceWidth * m_surfaceHeight, 20);
 
     ++m_framesCount;
   }
@@ -39,11 +41,6 @@ namespace Flame {
   void Renderer::Resize(uint32_t width, uint32_t height) {
     m_surfaceWidth = width;
     m_surfaceHeight = height;
-    m_columnIndices.resize(m_surfaceWidth);
-    m_rowIndices.resize(m_surfaceHeight);
-    std::iota(m_columnIndices.begin(), m_columnIndices.end(), 0);
-    std::iota(m_rowIndices.begin(), m_rowIndices.end(), 0);
-
     m_accumulatedData.resize(m_surfaceWidth * m_surfaceHeight * 3);
     ResetAccumulatedData();
   }
