@@ -4,9 +4,6 @@ namespace Flame {
   MeshObject::MeshObject(const Mesh* mesh, int materialId)
   : mesh(mesh)
   , materialId(materialId)
-  , m_position(0.0f)
-  , m_rotation(0.0f)
-  , m_scale(1.0f)
   , m_modelMatrix()
   , m_modelMatrixInv()
   , m_modelMatrixDirty(true) {
@@ -36,37 +33,37 @@ namespace Flame {
   }
 
   void MeshObject::SetPosition(glm::vec3 position) {
-    m_position = position;
+    m_transform.SetPosition(position);
     m_modelMatrixDirty = true;
   }
 
   void MeshObject::SetRotation(glm::vec3 rotation) {
-    m_rotation = rotation;
+    m_transform.SetRotation(rotation);
     m_modelMatrixDirty = true;
   }
 
   void MeshObject::SetScale(glm::vec3 scale) {
-    m_scale = scale;
+    m_transform.SetScale(scale);
     m_modelMatrixDirty = true;
   }
 
   void MeshObject::UpdateModelMatrix() const {
-    m_modelMatrix = glm::translate(m_position)
-      * glm::eulerAngleZXY(m_rotation.z, m_rotation.x, m_rotation.y)
-      * glm::scale(m_scale);
+    m_modelMatrix = glm::translate(m_transform.GetPosition())
+      * m_transform.GetRotationMat()
+      * glm::scale(m_transform.GetScale());
     m_modelMatrixInv = glm::inverse(m_modelMatrix);
     m_modelMatrixDirty = false;
   }
 
   glm::vec3 MeshObject::Position() const {
-    return m_position;
+    return m_transform.GetPosition();
   }
 
   glm::vec3 MeshObject::Rotation() const {
-    return m_rotation;
+    return m_transform.GetRotationEuler();
   }
 
   glm::vec3 MeshObject::Scale() const {
-    return m_scale;
+    return m_transform.GetScale();
   }
 }

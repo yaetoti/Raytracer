@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Flame/components/Transform.h"
 #include "Flame/math/IHitable.h"
 #include "Flame/math/Mesh.h"
 
@@ -24,9 +25,7 @@ namespace Flame {
 
   private:
     // TODO move to SceneObject
-    glm::vec3 m_position;
-    glm::vec3 m_rotation;
-    glm::vec3 m_scale;
+    Transform m_transform;
 
     mutable glm::mat4 m_modelMatrix;
     mutable glm::mat4 m_modelMatrixInv;
