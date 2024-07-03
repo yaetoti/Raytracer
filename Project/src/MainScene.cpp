@@ -48,6 +48,7 @@ void MainScene::Initialize() {
      4
    )
   );
+  // Triangle
   m_hitables.emplace_back(
    std::make_unique<Flame::TriangleObject>(
      glm::vec3(0, 2, -4),

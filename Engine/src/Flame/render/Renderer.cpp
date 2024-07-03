@@ -1,10 +1,12 @@
-#include "Renderer.h"
+#include "Renderer.h"+
 
 #include <algorithm>
 #include <execution>
 
 #include "Flame/math/MathUtils.h"
 #include "Flame/utils/Random.h"
+
+#include <iostream>
 
 namespace Flame {
   Renderer::Renderer(const Scene* scene)
@@ -13,6 +15,10 @@ namespace Flame {
   }
 
   void Renderer::Render(Framebuffer& surface, const Camera& camera) {
+    //glm::vec3 light;
+    //std::cout << ColorPerRay(camera, camera.GetRandomizedRay(20, 20), 0, light) << '\n';
+    //std::cout << "Light:" << light << '\n';
+
     m_executor.Execute([this, &surface, &camera](uint32_t threadIndex, uint32_t taskIndex) {
       uint32_t row = taskIndex / m_surfaceWidth;
       uint32_t col = taskIndex % m_surfaceWidth;
@@ -64,15 +70,20 @@ namespace Flame {
     }
 
     Material& material = *materials[record.materialId];
-    // glm::vec3 color = record.material->albedo;
     glm::vec3 color = material.albedo;
     glm::vec3 colorReflected(0.0f);
 
     // Lighting
-    glm::vec3 lightSurface = CalculatePointLightPerPoint(camera, record);
+    glm::vec3 lightSurface = glm::vec3(0.0f);
+    lightSurface += CalculatePointLightPerPoint(camera, record);
     lightSurface += CalculateSpotLightPerPoint(camera, record);
     lightSurface += CalculateDirectLightPerPoint(camera, record);
     lightSurface += material.emissionStrength * material.emissionColor;
+    // Quick reflection fix. Don't know how it should actually work
+    // Objects in the mirror are brighter than in reality
+    // That's because we calculate light in 100% cases for the surface on the contrary to reflected rays. Not enough samples (?)
+    lightSurface *= 1.0f - material.metallic;
+
 
     // TODO In Blender works differently
     // Calculate reflected color and light for metallic objects
@@ -80,7 +91,7 @@ namespace Flame {
       // TODO perform for emission
 
       // Don't perform calculations for non-reflective materials
-      // if (record.material->metallic > std::numeric_limits<float>::epsilon())
+      if (material.metallic > std::numeric_limits<float>::epsilon())
       {
         glm::vec3 normal = record.normal;
         // Don't perform calculations for smooth materials
@@ -96,7 +107,6 @@ namespace Flame {
       return glm::vec3(0.0f);
     }
 
-    // TODO Global Illumination. Try #2 (success ?)
     lightTotal += lightSurface + material.emissionStrength * material.emissionColor;
     color *= lightTotal;
 
@@ -127,9 +137,6 @@ namespace Flame {
 
       // Check for objects between point and light
       if (MathUtils::HitClosest(hitables.begin(), hitables.end(), rayLight, 0.0f, lightDistance, recordLight)) {
-        // TODO Global Illumination. Try #1 (failed)
-        // light += CalculatePointLightPerPoint(camera, recordLight, bounce + 1);
-        // light += recordLight.material->emissionStrength * recordLight.material->emissionColor;
         continue;
       }
 
@@ -180,9 +187,6 @@ namespace Flame {
 
       // Check for objects between point and light
       if (MathUtils::HitClosest(hitables.begin(), hitables.end(), rayLight, 0.0f, lightDistance, recordLight)) {
-        // TODO Global Illumination. Try #1 (failed)
-        // light += CalculatePointLightPerPoint(camera, recordLight, bounce + 1);
-        // light += recordLight.material->emissionStrength * recordLight.material->emissionColor;
         continue;
       }
 
