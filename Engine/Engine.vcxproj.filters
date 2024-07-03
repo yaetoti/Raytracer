@@ -185,5 +185,8 @@
     <ClCompile Include="src\Flame\utils\ParallelExecutor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Flame\objects\MeshObject.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

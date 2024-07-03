@@ -53,6 +53,7 @@
     <ClCompile Include="src\Flame\math\Bvh.cpp" />
     <ClCompile Include="src\Flame\math\Plane.cpp" />
     <ClCompile Include="src\Flame\math\Triangle.cpp" />
+    <ClCompile Include="src\Flame\objects\MeshObject.cpp" />
     <ClCompile Include="src\Flame\objects\PlaneObject.cpp" />
     <ClCompile Include="src\Flame\render\Camera.cpp" />
     <ClCompile Include="src\Flame\layers\Scene.cpp" />

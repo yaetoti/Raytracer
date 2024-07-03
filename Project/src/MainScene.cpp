@@ -48,15 +48,15 @@ void MainScene::Initialize() {
      4
    )
   );
-  //m_hitables.emplace_back(
-  // std::make_unique<Flame::TriangleObject>(
-  //   glm::vec3(0, 2, -4),
-  //   glm::vec3(2, 2, -4),
-  //   glm::vec3(1, 0, -4),
-  //   glm::vec3(0, 0, 1),
-  //   5
-  // )
-  //);
+  m_hitables.emplace_back(
+   std::make_unique<Flame::TriangleObject>(
+     glm::vec3(0, 2, -4),
+     glm::vec3(2, 2, -4),
+     glm::vec3(1, 0, -4),
+     glm::vec3(0, 0, 1),
+     5
+   )
+  );
 
   auto& cubeHitable = m_hitables.emplace_back(std::make_unique<Flame::MeshObject>(m_meshes[0].get(), 6));
   // TODO cringe
