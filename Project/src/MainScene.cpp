@@ -57,21 +57,23 @@ void MainScene::Initialize() {
      5
    )
   );
-
-  auto& cubeHitable = m_hitables.emplace_back(std::make_unique<Flame::MeshObject>(m_meshes[0].get(), 6));
-  // TODO cringe
-  Flame::MeshObject* cube = static_cast<Flame::MeshObject*>(cubeHitable.get());
-  cube->SetPosition(glm::vec3(1.0f, 1.0f, 2.0f));
-  cube->SetRotation(glm::radians(glm::vec3(37.0f, 45.0f, 12.0f)));
-
-  auto& carHitable = m_hitables.emplace_back(std::make_unique<Flame::MeshObject>(m_meshes[1].get(), 6));
-  // TODO cringe
-  Flame::MeshObject* car = static_cast<Flame::MeshObject*>(carHitable.get());
-  car->SetPosition(glm::vec3(5.0f, 0.0f, -3.0f));
-  //car->SetScale(glm::vec3(0.5f, 0.5f, 0.5f));
-  car->SetScale(glm::vec3(1.0f, 1.0f, 1.0f));
-  // Car has correct rotation. The plane is under 45deg
-  car->SetRotation(glm::radians(glm::vec3(0.0f, 0.0f, 0.0f)));
+  // Cube
+  {
+    auto object = std::make_unique<Flame::MeshObject>(m_meshes[0].get(), 6);
+    object->SetPosition(glm::vec3(1.0f, 1.0f, 2.0f));
+    object->SetRotation(glm::radians(glm::vec3(37.0f, 45.0f, 12.0f)));
+    m_hitables.emplace_back(std::move(object));
+  }
+  // Car
+  {
+    auto object = std::make_unique<Flame::MeshObject>(m_meshes[1].get(), 6);
+    object->SetPosition(glm::vec3(5.0f, 0.0f, -3.0f));
+    //object->SetScale(glm::vec3(0.5f, 0.5f, 0.5f));
+    object->SetScale(glm::vec3(1.0f, 1.0f, 1.0f));
+    // Car has correct rotation. The plane is at 45deg
+    object->SetRotation(glm::radians(glm::vec3(0.0f, 0.0f, 0.0f)));
+    m_hitables.emplace_back(std::move(object));
+  }
 
   // TODO separate debug rendering? Add automatically
   Flame::Sphere lightSphere(
