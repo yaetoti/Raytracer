@@ -75,6 +75,14 @@ void MainScene::Initialize() {
     object->SetRotation(glm::radians(glm::vec3(0.0f, 0.0f, 0.0f)));
     m_hitables.emplace_back(std::move(object));
   }
+  // StreetLamp
+  {
+    auto object = std::make_unique<Flame::MeshObject>(m_meshes[2].get(), 8);
+    object->SetPosition(glm::vec3(2.0f, 0.0f, 0.0f));
+    object->SetScale(glm::vec3(1.0f, 1.0f, 1.0f));
+    object->SetRotation(glm::radians(glm::vec3(0.0f, 0.0f, 0.0f)));
+    m_hitables.emplace_back(std::move(object));
+  }
 
   // TODO separate debug rendering? Add automatically
   Flame::Sphere lightSphere(
@@ -220,7 +228,7 @@ void MainScene::InitializeMaterials() {
     m_materials.emplace_back(std::move(m));
   }
   {
-    // Cube
+    // 6 Cube
     auto m = std::make_unique<Flame::Material>();
     m->albedo = glm::vec3(0.95f, 0.95f, 0.95f);
     m->diffuse = 1.0f;
@@ -233,7 +241,7 @@ void MainScene::InitializeMaterials() {
     m_materials.emplace_back(std::move(m));
   }
   {
-    // Albedo MuscleCar
+    // 7 Albedo MuscleCar
     auto m = std::make_unique<Flame::Material>();
     m->albedo = glm::vec3(0.99f, 0.99f, 0.99f);
     m->diffuse = 1.0f;
@@ -241,6 +249,19 @@ void MainScene::InitializeMaterials() {
     m->specularExponent = 0.0f;
     m->roughness = 0.1f;
     m->metallic = 0.8f;
+    m->emissionColor = glm::vec3(0.0f);
+    m->emissionStrength = 0.0f;
+    m_materials.emplace_back(std::move(m));
+  }
+  {
+    // 8 Street Lamp
+    auto m = std::make_unique<Flame::Material>();
+    m->albedo = glm::vec3(0.05f, 0.05f, 0.05f);
+    m->diffuse = 1.0f;
+    m->specular = 0.5f;
+    m->specularExponent = 32.0f;
+    m->roughness = 0.01f;
+    m->metallic = 0.6f;
     m->emissionColor = glm::vec3(0.0f);
     m->emissionStrength = 0.0f;
     m_materials.emplace_back(std::move(m));
@@ -262,6 +283,16 @@ void MainScene::InitializeMeshes() {
     Flame::MeshData meshData;
     // MuscleCar McLaren
     if (!Flame::ObjUtils::ParseObj(L"Assets/MuscleCar.obj", meshData)) {
+      std::wcout << L"Can't parse obj.\n";
+      __debugbreak();
+    }
+
+    m_meshes.emplace_back(std::make_unique<Flame::Mesh>(meshData));
+  }
+
+  {
+    Flame::MeshData meshData;
+    if (!Flame::ObjUtils::ParseObj(L"Assets/untitled.obj", meshData)) {
       std::wcout << L"Can't parse obj.\n";
       __debugbreak();
     }

@@ -7,6 +7,7 @@ namespace Flame {
   }
 
   Bvh::Bvh(std::vector<IHitableWithBounds*>& hitables): m_hitables(hitables) {
+    assert(m_hitables.size() != 0);
     InitBounds();
     // Reminder: program will crash if size == 0 => reserveSize == UINT_MAX.
     m_nodes.reserve(m_hitables.size() * 2 - 1);

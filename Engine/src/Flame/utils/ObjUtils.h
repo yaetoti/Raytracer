@@ -100,13 +100,14 @@ namespace Flame {
               return c == '/';
             });
 
-            if (faceTokens.size() != 2) {
+            int tokensCount = faceTokens.size();
+            if (tokensCount != 2 && tokensCount != 3) {
               innerError = true;
               break;
             }
 
             verticesId[tokenId] = std::stoul(faceTokens[0]) - 1;
-            normalId = std::stoul(faceTokens[1]) - 1;
+            normalId = std::stoul(faceTokens[tokensCount - 1]) - 1;
           }
 
           if (innerError) {

@@ -15,7 +15,6 @@
     <ClInclude Include="src\Flame\render\Camera.h" />
     <ClInclude Include="src\Flame\layers\Scene.h" />
     <ClInclude Include="src\Flame.h" />
-    <ClInclude Include="src\Flame\layers\SceneObject.h" />
     <ClInclude Include="src\Flame\math\Aabb.h" />
     <ClInclude Include="src\Flame\math\HitRecord.h" />
     <ClInclude Include="src\Flame\math\IHitable.h" />

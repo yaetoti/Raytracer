@@ -10,7 +10,7 @@ namespace Flame {
   }
 
   bool Triangle::Hit(const Ray& r, HitRecord& record, float tMin, float tMax) const {
-#if 1
+#if 0
     // Is parallel
     if (fabs(glm::dot(normal, r.direction)) <= 0.00001f) {
       return false;
