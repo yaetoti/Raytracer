@@ -81,5 +81,14 @@ namespace Flame {
         offset.x, offset.y, offset.z, 1.0f
       );
     }
+
+    static glm::mat4 Scale(const glm::vec3& scale) {
+      return glm::mat4(
+        scale.x, 0.0f, 0.0f, 0.0f,
+        0.0f, scale.y, 0.0f, 0.0f,
+        0.0f, 0.0f, scale.z, 0.0f,
+        0.0f, 0.0f, 0.0f, 1.0f
+      );
+    }
   };
 }

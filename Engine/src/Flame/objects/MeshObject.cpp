@@ -52,7 +52,7 @@ namespace Flame {
   void MeshObject::UpdateModelMatrix() const {
     m_modelMatrix = MathUtils::Translate(m_transform.GetPosition())
       * m_transform.GetRotationMat()
-      * glm::scale(m_transform.GetScale());
+      * MathUtils::Scale(m_transform.GetScale());
     m_modelMatrixInv = glm::inverse(m_modelMatrix);
     m_modelMatrixDirty = false;
   }
