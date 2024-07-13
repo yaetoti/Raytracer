@@ -1,5 +1,6 @@
 #include "Camera.h"
 
+#include "Flame/math/MathUtils.h"
 #include "Flame/utils/Random.h"
 
 namespace Flame {
@@ -99,13 +100,13 @@ namespace Flame {
     }
 
     // TODO Manual creation
-    m_projection = glm::perspective(
+    m_projection = MathUtils::Perspective(
       glm::radians(m_fov),
       static_cast<float>(m_width) / static_cast<float>(m_height),
       m_far, m_near
     );
     m_iProjection = glm::inverse(m_projection);
-    m_iView = glm::translate(m_transform.GetPosition()) * glm::mat4(m_transform.GetRotationMat());
+    m_iView = MathUtils::Translate(m_transform.GetPosition()) * glm::mat4(m_transform.GetRotationMat());
     m_view = glm::inverse(m_view);
 
     glm::vec4 target = m_iView * m_iProjection * glm::vec4(-1.0f, -1.0f, 1.0f, 1.0f);

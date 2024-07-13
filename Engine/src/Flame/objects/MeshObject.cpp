@@ -1,5 +1,7 @@
 #include "MeshObject.h"
 
+#include "Flame/math/MathUtils.h"
+
 namespace Flame {
   MeshObject::MeshObject(const Mesh* mesh, int materialId)
   : mesh(mesh)
@@ -48,7 +50,7 @@ namespace Flame {
   }
 
   void MeshObject::UpdateModelMatrix() const {
-    m_modelMatrix = glm::translate(m_transform.GetPosition())
+    m_modelMatrix = MathUtils::Translate(m_transform.GetPosition())
       * m_transform.GetRotationMat()
       * glm::scale(m_transform.GetScale());
     m_modelMatrixInv = glm::inverse(m_modelMatrix);

@@ -19,14 +19,8 @@ void Application::Run() {
   // TODO Create Engine::Logger
   Console::GetInstance()->RedirectStdHandles();
 
-  //{
-  //  Flame::ParallelExecutor executor(6);
-  //  // TODO Fix: threads start after notification
-  //  executor.ExecuteAsync([](uint32_t threadNumber, uint32_t taskNumber) {
-  //    std::cout << "Thread: " << threadNumber << " | taskNumber: " << taskNumber << '\n';
-  //  }, 10, 1);
-  //  std::this_thread::sleep_for(std::chrono::seconds(2));
-  //}
+  //glm::mat4 m = glm::translate(glm::vec3(2.0f, 3.0f, 4.0f));
+  //std::cout << m << '\n';
 
   //Console::GetInstance()->Pause();
   //return;

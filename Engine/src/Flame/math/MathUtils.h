@@ -6,6 +6,9 @@
 #include "Sphere.h"
 #include "Triangle.h"
 
+#undef near
+#undef far
+
 namespace Flame {
   struct MathUtils {
     template <typename It>
@@ -57,6 +60,26 @@ namespace Flame {
       }
 
       return Aabb(min, max);
+    }
+
+    // GLM temporary replacement
+    static glm::mat4 Perspective(float fov, float aspect, float near, float far) {
+      float ctgHalfFov = glm::cot(fov * 0.5f);
+      return glm::mat4(
+        ctgHalfFov / aspect, 0.0f, 0.0f, 0.0f,
+        0.0f, ctgHalfFov, 0.0f, 0.0f,
+        0.0f, 0.0f, -(far + near) / (far - near), -1.0f,
+        0.0f, 0.0f, -2.0f * far * near / (far - near), 0.0f
+      );
+    }
+
+    static glm::mat4 Translate(const glm::vec3& offset) {
+      return glm::mat4(
+        1.0f, 0.0f, 0.0f, 0.0f,
+        0.0f, 1.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 1.0f, 0.0f,
+        offset.x, offset.y, offset.z, 1.0f
+      );
     }
   };
 }
