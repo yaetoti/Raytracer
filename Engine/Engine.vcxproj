@@ -29,6 +29,7 @@
     <ClInclude Include="src\Flame\math\Triangle.h" />
     <ClInclude Include="src\Flame\objects\TriangleObject.h" />
     <ClInclude Include="src\Flame\objects\SphereObject.h" />
+    <ClInclude Include="src\Flame\render\DxContext.h" />
     <ClInclude Include="src\Flame\render\Framebuffer.h" />
     <ClInclude Include="src\Flame\render\Material.h" />
     <ClInclude Include="src\Flame\render\Renderer.h" />
@@ -63,6 +64,7 @@
     <ClCompile Include="src\Flame\components\Transform.cpp" />
     <ClCompile Include="src\Flame\objects\TriangleObject.cpp" />
     <ClCompile Include="src\Flame\objects\SphereObject.cpp" />
+    <ClCompile Include="src\Flame\render\DxContext.cpp" />
     <ClCompile Include="src\Flame\render\Framebuffer.cpp" />
     <ClCompile Include="src\Flame\render\Renderer.cpp" />
     <ClCompile Include="src\Flame\utils\ParallelExecutor.cpp" />
