@@ -65,6 +65,8 @@
     <ClCompile Include="src\Flame\objects\TriangleObject.cpp" />
     <ClCompile Include="src\Flame\objects\SphereObject.cpp" />
     <ClCompile Include="src\Flame\render\DxContext.cpp" />
+    <ClCompile Include="src\Flame\render\DxRenderer.cpp" />
+    <ClCompile Include="src\Flame\render\DxRenderer.h" />
     <ClCompile Include="src\Flame\render\Framebuffer.cpp" />
     <ClCompile Include="src\Flame\render\Renderer.cpp" />
     <ClCompile Include="src\Flame\utils\ParallelExecutor.cpp" />

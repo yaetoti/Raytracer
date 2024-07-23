@@ -13,6 +13,8 @@ Application::Application() {
   m_scene = std::make_shared<MainScene>(*m_window);
   m_camera = std::make_shared<Flame::Camera>(m_window->GetFramebuffer().GetWidth(), m_window->GetFramebuffer().GetHeight(), 90.0f, 0.1f, 1000.0f);
   m_renderer = std::make_unique<Flame::Renderer>(m_scene.get());
+
+  m_dxRenderer = std::make_unique<Flame::DxRenderer>(m_window.get());
 }
 
 void Application::Run() {
@@ -24,7 +26,6 @@ void Application::Run() {
 
   //Console::GetInstance()->Pause();
   //return;
-
   Init();
 
   // FPS limiter
@@ -49,7 +50,6 @@ void Application::Run() {
 
     Update(deltaTime);
     Render();
-    m_window->Blit();
 
     while (timer.GetTimeSinceTick() < targetDeltaTime) {
       std::this_thread::yield();
@@ -58,6 +58,7 @@ void Application::Run() {
 }
 
 void Application::Init() {
+  Flame::DxContext::Get()->Init();
   m_scene->Initialize();
 
   m_window->GetDispatcher().AddListener(this);
@@ -80,13 +81,21 @@ void Application::Update(float deltaTime) {
 }
 
 void Application::Render() {
+  // TODO special renderer only for task 3
+#if 1
+  m_dxRenderer->Render();
+  m_window->PresentSwapchain();
+#else
   m_renderer->Render(m_window->GetFramebuffer(), *m_camera);
+  m_window->BlitFramebuffer();
+#endif
 }
 
 void Application::HandleEvent(const Flame::WindowEvent& e) {
   if (e.type == Flame::WindowEventType::RESIZE) {
     m_camera->Resize(m_window->GetFramebuffer().GetWidth(), m_window->GetFramebuffer().GetHeight());
     m_renderer->Resize(m_window->GetFramebuffer().GetWidth(), m_window->GetFramebuffer().GetHeight());
+    m_dxRenderer->Resize(m_window->GetFramebuffer().GetWidth(), m_window->GetFramebuffer().GetHeight());
     return;
   }
 }
@@ -165,7 +174,8 @@ void Application::UpdateGrabbing(float deltaTime) {
   x /= m_window->GetResolutionDivisor();
   y /= m_window->GetResolutionDivisor();
   // TODO Fix window inversion
-  y = m_window->GetFramebuffer().GetHeight() - y;
+  // TODO assert failed
+  y = m_window->GetFramebuffer().GetHeight() - y - 1;
   Flame::Ray ray = m_camera->GetRay(static_cast<uint32_t>(x), static_cast<uint32_t>(y));
 
   if (m_input->IsMouseButtonPressed(Flame::MouseButton::RIGHT)) {
