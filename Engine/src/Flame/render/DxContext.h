@@ -2,6 +2,7 @@
 
 #include <wrl/client.h>
 #include "dxgi.h"
+#include "dxgi1_2.h"
 #include "d3d11.h"
 
 namespace Flame {
@@ -16,6 +17,7 @@ namespace Flame {
 
   public:
     ComPtr<IDXGIFactory> dxgiFactory;
+    ComPtr<IDXGIFactory2> dxgiFactory2;
     ComPtr<IDXGIAdapter> dxgiAdapter;
     ComPtr<IDXGIOutput> dxgiOutput;
 

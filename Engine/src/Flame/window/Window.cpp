@@ -70,18 +70,28 @@ namespace Flame {
     // Init swap chain
     HRESULT result;
     {
-      DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
-      swapChainDesc.BufferCount = 1;
-      swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM ;
-      swapChainDesc.BufferDesc.RefreshRate.Numerator = 0;
-      swapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
-      swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-      swapChainDesc.OutputWindow = m_hWnd;
-      swapChainDesc.SampleDesc.Count = 1;
-      swapChainDesc.SampleDesc.Quality = 0;
-      swapChainDesc.Windowed = true;
+      DXGI_SWAP_CHAIN_DESC1 desc {
+        0,
+        0,
+        DXGI_FORMAT_R8G8B8A8_UNORM,
+        FALSE,
+        { 1, 0 },
+        DXGI_USAGE_RENDER_TARGET_OUTPUT,
+        1,
+        DXGI_SCALING_STRETCH,
+        DXGI_SWAP_EFFECT_DISCARD,
+        DXGI_ALPHA_MODE_UNSPECIFIED,
+        0
+      };
 
-      result = DxContext::Get()->dxgiFactory->CreateSwapChain(DxContext::Get()->d3d11Device.Get(), &swapChainDesc, m_dxgiSwapChain.GetAddressOf());
+      result = DxContext::Get()->dxgiFactory2->CreateSwapChainForHwnd(
+        DxContext::Get()->d3d11Device.Get(),
+        m_hWnd,
+        &desc,
+        nullptr,
+        nullptr,
+        m_dxgiSwapChain.GetAddressOf()
+      );
       assert(SUCCEEDED(result));
       if (FAILED(result)) {
         return false;
@@ -178,7 +188,7 @@ namespace Flame {
     return m_dispatcher;
   }
 
-  IDXGISwapChain* Window::GetSwapChain() const {
+  IDXGISwapChain1* Window::GetSwapChain() const {
     return m_dxgiSwapChain.Get();
   }
 

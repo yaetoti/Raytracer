@@ -17,6 +17,12 @@ namespace Flame {
       if (FAILED(result)) {
         return false;
       }
+
+      result = dxgiFactory->QueryInterface(IID_PPV_ARGS(dxgiFactory2.GetAddressOf()));
+      assert(SUCCEEDED(result));
+      if (FAILED(result)) {
+        return false;
+      }
     }
 
     // Get primary adapter

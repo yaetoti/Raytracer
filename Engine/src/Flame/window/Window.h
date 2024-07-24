@@ -32,7 +32,7 @@ namespace Flame {
     Framebuffer& GetFramebuffer();
     InputSystem& GetInputSystem();
     EventDispatcher<WindowEvent>& GetDispatcher();
-    IDXGISwapChain* GetSwapChain() const;
+    IDXGISwapChain1* GetSwapChain() const;
     ID3D11Texture2D* GetRenderTexture() const;
     ID3D11RenderTargetView* GetTargetView() const;
 
@@ -68,7 +68,7 @@ namespace Flame {
 
   public:
     // TODO private and getters
-    ComPtr<IDXGISwapChain> m_dxgiSwapChain;
+    ComPtr<IDXGISwapChain1> m_dxgiSwapChain;
     ComPtr<ID3D11Texture2D> m_d3d11RenderTexture;
     ComPtr<ID3D11RenderTargetView> m_d3d11TargetView;
   };
