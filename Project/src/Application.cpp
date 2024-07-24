@@ -182,8 +182,16 @@ void Application::UpdateGrabbing(float deltaTime) {
   x /= m_window->GetResolutionDivisor();
   y /= m_window->GetResolutionDivisor();
   // TODO Fix window inversion
-  // TODO assert failed
-  y = m_window->GetFramebuffer().GetHeight() - y - 1;
+  y = m_window->GetFramebuffer().GetHeight() - y - 1.0f;
+
+  // TODO GetRay assert failed because y == windowHeight or y == -7. Create gain/lost focus window events
+  if (x >= m_window->GetFramebuffer().GetWidth()
+      || x < 0.0f
+      || y >= m_window->GetFramebuffer().GetHeight()
+      || y < 0.0f) {
+    return;
+  }
+
   Flame::Ray ray = m_camera->GetRay(static_cast<uint32_t>(x), static_cast<uint32_t>(y));
 
   if (m_input->IsMouseButtonPressed(Flame::MouseButton::RIGHT)) {
