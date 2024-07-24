@@ -15,11 +15,11 @@ Application::Application() {
   m_renderer = std::make_unique<Flame::Renderer>(m_scene.get());
 
   m_dxRenderer = std::make_unique<Flame::DxRenderer>(m_window.get());
+  m_dxRenderer->Init();
 }
 
 void Application::Run() {
   // TODO Create Engine::Logger
-  Console::GetInstance()->RedirectStdHandles();
 
   //glm::mat4 m = glm::translate(glm::vec3(2.0f, 3.0f, 4.0f));
   //std::cout << m << '\n';
@@ -36,8 +36,9 @@ void Application::Run() {
   MSG message;
   Flame::Timer timer;
   while (true) {
-    float deltaTime = std::max(timer.Tick(), targetDeltaTime);
-    CountFps(deltaTime);
+    m_deltaTime = std::max(timer.Tick(), targetDeltaTime);
+    m_time += m_deltaTime;
+    CountFps(m_deltaTime);
 
     while (PeekMessageW(&message, nullptr, 0, 0, PM_REMOVE)) {
       if (message.message == WM_QUIT) {
@@ -48,7 +49,7 @@ void Application::Run() {
       DispatchMessageW(&message);
     }
 
-    Update(deltaTime);
+    Update(m_deltaTime);
     Render();
 
     while (timer.GetTimeSinceTick() < targetDeltaTime) {
@@ -58,7 +59,6 @@ void Application::Run() {
 }
 
 void Application::Init() {
-  Flame::DxContext::Get()->Init();
   m_scene->Initialize();
 
   m_window->GetDispatcher().AddListener(this);
@@ -83,7 +83,7 @@ void Application::Update(float deltaTime) {
 void Application::Render() {
   // TODO special renderer only for task 3
 #if 1
-  m_dxRenderer->Render();
+  m_dxRenderer->Render(m_time, m_deltaTime);
   m_window->PresentSwapchain();
 #else
   m_renderer->Render(m_window->GetFramebuffer(), *m_camera);
@@ -98,6 +98,14 @@ void Application::HandleEvent(const Flame::WindowEvent& e) {
     m_dxRenderer->Resize(m_window->GetFramebuffer().GetWidth(), m_window->GetFramebuffer().GetHeight());
     return;
   }
+}
+
+float Application::GetTime() const {
+  return m_time;
+}
+
+float Application::GetDeltaTime() const {
+  return m_deltaTime;
 }
 
 void Application::UpdateCamera(float deltaTime) {

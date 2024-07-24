@@ -60,7 +60,7 @@ namespace Flame {
           continue;
         }
 
-        // Vertex
+        // PerVertex
         if (tokens[0] == L"v") {
           if (tokens.size() != 4) {
             continue;

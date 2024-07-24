@@ -81,6 +81,10 @@ namespace Flame {
     return true;
   }
 
+  void DxContext::Deinit() {
+
+  }
+
   DxContext* DxContext::Get() {
     if (!m_instance) {
       m_instance = new DxContext();

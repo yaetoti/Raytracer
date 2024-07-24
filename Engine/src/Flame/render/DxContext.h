@@ -10,6 +10,7 @@ namespace Flame {
     using ComPtr = Microsoft::WRL::ComPtr<T>;
 
     bool Init();
+    void Deinit();
 
     static DxContext* Get();
 
