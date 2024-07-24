@@ -25,13 +25,13 @@ namespace Flame {
     PerFrame perFrame { .time = time };
     memcpy(perFrame.resolution, m_resolution.data(), m_resolution.size() * sizeof(float));
     dc->UpdateSubresource(m_constantBuffer.Get(), 0, nullptr, &perFrame, 0, 0);
+    dc->VSSetConstantBuffers(0, 1, m_constantBuffer.GetAddressOf());
+    dc->PSSetConstantBuffers(0, 1, m_constantBuffer.GetAddressOf());
 
     // Draw triangle
     dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
     dc->IASetInputLayout(m_inputLayout.Get());
     dc->IASetVertexBuffers(0, 1, m_vbo.GetAddressOf(), &kDataStride, &kDataOffset);
-    dc->VSSetConstantBuffers(0, 1, m_constantBuffer.GetAddressOf());
-    dc->PSSetConstantBuffers(0, 1, m_constantBuffer.GetAddressOf());
     dc->VSSetShader(m_vertexShader.Get(), nullptr, 0);
     dc->PSSetShader(m_pixelShader.Get(), nullptr, 0);
     dc->Draw(3, 0);
