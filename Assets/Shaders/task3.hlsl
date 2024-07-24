@@ -1,3 +1,9 @@
+cbuffer ConstantBuffer : register(b0)
+{
+  float g_time; // 0-3
+  float4 g_resolution; // 16-31
+};
+
 //#define PART1
 #ifdef PART1
 
@@ -27,12 +33,6 @@ float4 PSMain(VSOutput input) : SV_TARGET
 }
 
 #else
-
-cbuffer ConstantBuffer : register(b0)
-{
-  float g_time; // 0-3
-  float4 g_resolution; // 16-31
-};
 
 struct VSInput
 {

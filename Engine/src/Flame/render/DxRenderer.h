@@ -40,7 +40,6 @@ namespace Flame {
     ComPtr<ID3D11Buffer> m_vbo;
     ComPtr<ID3D11Buffer> m_constantBuffer;
 
-
     std::vector<float> m_resolution;
 
     inline static const wchar_t* kShaderPath = L"Assets/Shaders/task3.hlsl";

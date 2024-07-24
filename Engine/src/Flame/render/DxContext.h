@@ -4,6 +4,7 @@
 #include "dxgi.h"
 #include "dxgi1_2.h"
 #include "d3d11.h"
+#include <dxgidebug.h>
 
 namespace Flame {
   struct DxContext final {
@@ -23,6 +24,8 @@ namespace Flame {
 
     ComPtr<ID3D11Device> d3d11Device;
     ComPtr<ID3D11DeviceContext> d3d11DeviceContext;
+
+    ComPtr<ID3D11Debug> d3d11Debug;
 
   private:
     DxContext() = default;

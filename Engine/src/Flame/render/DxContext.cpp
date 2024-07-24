@@ -18,7 +18,7 @@ namespace Flame {
         return false;
       }
 
-      result = dxgiFactory->QueryInterface(IID_PPV_ARGS(dxgiFactory2.GetAddressOf()));
+      result = dxgiFactory.As(&dxgiFactory2);
       assert(SUCCEEDED(result));
       if (FAILED(result)) {
         return false;
@@ -34,43 +34,13 @@ namespace Flame {
       }
     }
 
-    // Get output
-    //{
-    //  result = dxgiAdapter->EnumOutputs(0, dxgiOutput.GetAddressOf());
-    //  assert(SUCCEEDED(result));
-    //  if (FAILED(result)) {
-    //    return false;
-    //  }
-
-    //  // Get modes count
-    //  uint32_t modesNumber;
-    //  result = dxgiOutput->GetDisplayModeList(DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_ENUM_MODES_INTERLACED, &modesNumber, nullptr);
-    //  assert(SUCCEEDED(result));
-    //  if (FAILED(result)) {
-    //    return false;
-    //  }
-
-    //  // Get modes
-    //  std::vector<DXGI_MODE_DESC> modes;
-    //  modes.resize(modesNumber);
-    //  result = dxgiOutput->GetDisplayModeList(DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_ENUM_MODES_INTERLACED, &modesNumber, modes.data());
-    //  assert(SUCCEEDED(result));
-    //  if (FAILED(result)) {
-    //    return false;
-    //  }
-
-    //  for (uint32_t i = 0; i < modesNumber; ++i) {
-    //    
-    //  }
-    //}
-
     // Create D3D Device
     {
       result = D3D11CreateDevice(
         dxgiAdapter.Get(),
         D3D_DRIVER_TYPE_UNKNOWN,
         nullptr,
-        D3D11_CREATE_DEVICE_SINGLETHREADED,
+        D3D11_CREATE_DEVICE_SINGLETHREADED | D3D11_CREATE_DEVICE_DEBUG,
         nullptr,
         0,
         D3D11_SDK_VERSION,
@@ -82,13 +52,33 @@ namespace Flame {
       if (FAILED(result)) {
         return false;
       }
+
+      result = d3d11Device.As(&d3d11Debug);;
+      assert(SUCCEEDED(result));
+      if (FAILED(result)) {
+        return false;
+      }
+
+      result = d3d11Debug->ReportLiveDeviceObjects(D3D11_RLDO_SUMMARY);
+      assert(SUCCEEDED(result));
+      if (FAILED(result)) {
+        return false;
+      }
     }
 
     return true;
   }
 
   void DxContext::Deinit() {
-
+    d3d11Debug.Reset();
+    d3d11DeviceContext->ClearState();
+    d3d11DeviceContext->Flush();
+    d3d11DeviceContext.Reset();
+    d3d11Device.Reset();
+    dxgiOutput.Reset();
+    dxgiAdapter.Reset();
+    dxgiFactory2.Reset();
+    dxgiFactory.Reset();
   }
 
   DxContext* DxContext::Get() {
