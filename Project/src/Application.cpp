@@ -3,19 +3,28 @@
 #include "Flame/math/MeshData.h"
 #include "Flame/math/Mesh.h"
 #include "Flame/utils/ObjUtils.h"
+#include "Flame/utils/ParallelExecutor.h"
 
 Application::Application() {
   // m_window = std::make_shared<Flame::Window>(L"Flame 🔥", 1366, 768, 2);
   // High performance mode
   m_window = std::make_shared<Flame::Window>(L"Flame 🔥", 160, 90, 1);
   m_input = &m_window->GetInputSystem();
-  // TODO Pass width and height = mistake
+  m_scene = std::make_shared<MainScene>(*m_window);
   m_camera = std::make_shared<Flame::Camera>(m_window->GetFramebuffer().GetWidth(), m_window->GetFramebuffer().GetHeight(), 90.0f, 0.1f, 1000.0f);
+  m_renderer = std::make_unique<Flame::Renderer>(m_scene.get());
 }
 
 void Application::Run() {
   // TODO Create Engine::Logger
   Console::GetInstance()->RedirectStdHandles();
+
+  //glm::mat4 m = glm::translate(glm::vec3(2.0f, 3.0f, 4.0f));
+  //std::cout << m << '\n';
+
+  //Console::GetInstance()->Pause();
+  //return;
+
   Init();
 
   // FPS limiter
@@ -49,11 +58,9 @@ void Application::Run() {
 }
 
 void Application::Init() {
-  m_scene = std::make_shared<MainScene>(*m_window);
   m_scene->Initialize();
 
   m_window->GetDispatcher().AddListener(this);
-  m_window->GetDispatcher().AddListener(m_scene.get());
 
   m_window->CreateResources();
   m_window->Show(SW_SHOW);
@@ -73,13 +80,13 @@ void Application::Update(float deltaTime) {
 }
 
 void Application::Render() {
-  m_scene->Render(m_window->GetFramebuffer(), *m_camera);
+  m_renderer->Render(m_window->GetFramebuffer(), *m_camera);
 }
 
 void Application::HandleEvent(const Flame::WindowEvent& e) {
   if (e.type == Flame::WindowEventType::RESIZE) {
-    // TODO Do not cuff camera to a resolution
     m_camera->Resize(m_window->GetFramebuffer().GetWidth(), m_window->GetFramebuffer().GetHeight());
+    m_renderer->Resize(m_window->GetFramebuffer().GetWidth(), m_window->GetFramebuffer().GetHeight());
     return;
   }
 }
@@ -89,7 +96,7 @@ void Application::UpdateCamera(float deltaTime) {
   static float baseSpeed = 2.0f;
   bool moved = false;
   float speed = baseSpeed;
-  float rollSpeed = glm::radians(45.0f);
+  float rollSpeedDeg = 90.0f;
 
   // Movement speed
   if (m_input->IsKeyPressed(VK_SHIFT)) {
@@ -99,7 +106,7 @@ void Application::UpdateCamera(float deltaTime) {
     baseSpeed += baseSpeed * 0.05f * m_input->GetScrollDelta();
   }
 
-  /// Movement
+  // Movement
   if (m_input->IsKeyPressed('A')) {
     m_camera->SetPosition(m_camera->GetPosition() + m_camera->GetRightUnit() * -speed * deltaTime);
     moved = true;
@@ -126,28 +133,28 @@ void Application::UpdateCamera(float deltaTime) {
   }
   // DO A BARREL ROLL
   if (m_input->IsKeyPressed('Q')) {
-    m_camera->Rotate(glm::eulerAngleZ(rollSpeed * deltaTime));
+    m_camera->Rotate(0.0f, 0.0f, rollSpeedDeg * deltaTime);
     moved = true;
   }
   if (m_input->IsKeyPressed('E')) {
-    m_camera->Rotate(glm::eulerAngleZ(-rollSpeed * deltaTime));
+    m_camera->Rotate(0.0f, 0.0f, -rollSpeedDeg * deltaTime);
     moved = true;
   }
   // Rotation
   if (m_input->IsMouseButtonPressed(Flame::MouseButton::LEFT)) {
-    static float rotationSpeed = -glm::pi<float>();
+    static float rotationSpeedDeg = -180.0f;
     constexpr float sensitivity = 1.0f;
     auto[x, y] = m_input->GetCursorPos();
     auto[lastX, lastY] = m_input->GetLastCursorPos();
     float deltaX = ((x - lastX) / m_window->GetWidth()) * sensitivity;
     float deltaY = ((y - lastY) / m_window->GetHeight()) * sensitivity;
-    m_camera->Rotate(glm::eulerAngleY(deltaX * rotationSpeed));
-    m_camera->Rotate(glm::eulerAngleX(deltaY * rotationSpeed));
+
+    m_camera->Rotate(deltaY * rotationSpeedDeg, deltaX * rotationSpeedDeg, 0.0f);
     moved = true;
   }
 
   if (moved) {
-    m_scene->ResetAccumulatedData();
+    m_renderer->ResetAccumulatedData();
   }
 }
 
@@ -179,7 +186,7 @@ void Application::UpdateGrabbing(float deltaTime) {
   }
 
   if (sceneChanged) {
-    m_scene->ResetAccumulatedData();
+    m_renderer->ResetAccumulatedData();
   }
 }
 

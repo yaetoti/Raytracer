@@ -5,7 +5,7 @@
 #include "Flame/layers/Scene.h"
 #include "Flame/math/IHitable.h"
 #include "Flame/math/Mesh.h"
-#include "Flame/math/Sphere.h"
+#include "Flame/objects/SphereObject.h"
 #include "Flame/window/InputSystem.h"
 #include "Flame/window/Window.h"
 

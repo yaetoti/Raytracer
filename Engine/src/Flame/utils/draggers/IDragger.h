@@ -2,7 +2,7 @@
 
 #include <Flame/math/Sphere.h>
 
-#include "Flame/math/MeshObject.h"
+#include "Flame/objects/MeshObject.h"
 
 namespace Flame {
   struct IDragger {
@@ -15,11 +15,11 @@ namespace Flame {
     explicit ISphereDragger(Sphere* draggable, const HitRecord& record)
     : m_draggable(draggable)
     , m_hitTime(record.time)
-    , m_offset(draggable->Center() - record.point) {
+    , m_offset(draggable->center - record.point) {
     }
 
     void Drag(const Ray& r) override {
-      m_draggable->SetCenter(r.AtParameter(m_hitTime) + m_offset);
+      m_draggable->center = r.AtParameter(m_hitTime) + m_offset;
     }
 
   private:

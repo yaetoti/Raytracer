@@ -4,28 +4,11 @@
 
 namespace Flame {
   struct Plane final : IHitable {
-    Plane(const glm::vec3& position, const glm::vec3& normal, const Material* material)
-    : position(position)
-    , normal(normal)
-    , material(material) {
-    }
+    explicit Plane(const glm::vec3& position, const glm::vec3& normal);
 
-    bool Hit(const Ray& r, HitRecord& record, float tMin, float tMax) const override {
-      float t = glm::dot(normal, position - r.origin) / glm::dot(normal, r.direction);
-      if (t > tMin && t < tMax) {
-        record.point = r.AtParameter(t);
-        record.normal = normal;
-        record.time = t;
-        record.material = material;
-        record.hitable = const_cast<Plane*>(this);
-        return true;
-      }
-
-      return false;
-    }
+    bool Hit(const Ray& r, HitRecord& record, float tMin, float tMax) const override;
 
     glm::vec3 position;
     glm::vec3 normal;
-    const Material* material;
   };  
 }

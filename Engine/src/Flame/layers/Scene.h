@@ -4,56 +4,28 @@
 
 #include <memory>
 #include <vector>
-#include <Flame/math/Ray.h>
-#include <Flame/render/Framebuffer.h>
-#include <glm/glm.hpp>
-
-#include "Flame/camera/Camera.h"
-#include "Flame/utils/EventDispatcher.h"
-#include "Flame/window/events/WindowEvent.h"
 
 namespace Flame {
-  struct Scene : EventListener<WindowEvent> {
-    virtual ~Scene() override = default;
+  struct Scene {
+    virtual ~Scene() = default;
 
     virtual void Initialize() {}
     virtual void Update(float deltaTime) {}
     virtual void Cleanup() {}
 
-    void Render(Framebuffer& surface, const Camera& camera);
-    void HandleEvent(const WindowEvent& e) override;
-
-    void ResetAccumulatedData();
-
-    std::vector<std::unique_ptr<IHitable>>& GetHitables();
-
-  private:
-    glm::vec3 ColorPerRay(const Camera& camera, const Ray& ray, uint32_t bounce, glm::vec3& lightTotal);
-    glm::vec3 CalculatePointLightPerPoint(const Camera& camera, const HitRecord& record);
-    glm::vec3 CalculateSpotLightPerPoint(const Camera& camera, const HitRecord& record);
-    glm::vec3 CalculateDirectLightPerPoint(const Camera& camera, const HitRecord& record);
+    const std::vector<std::unique_ptr<IHitable>>& GetHitables() const;
+    std::vector<std::unique_ptr<IHitable>>& GetHitables(); // TODO remove. Replace MathUtils::HitClosest with scene method
+    const std::vector<std::unique_ptr<Material>>& GetMaterials() const;
+    const std::vector<std::unique_ptr<DirectLight>>& GetDirectLights() const;
+    const std::vector<std::unique_ptr<PointLight>>& GetPointLights() const;
+    const std::vector<std::unique_ptr<SpotLight>>& GetSpotLights() const;
 
   protected:
-    // TODO Renderer
-    uint32_t m_surfaceWidth = 0;
-    uint32_t m_surfaceHeight = 0;
-    std::vector<uint32_t> m_rowIndices;
-    std::vector<uint32_t> m_columnIndices;
-
-    uint32_t m_bounces = 4;
-    float m_lightSmooth = 0.3f;
-
-    std::vector<float> m_accumulatedData;
-    uint32_t m_framesCount = 1;
-
-    // TODO Accumulation instead of samples
-
-    // Scene
     std::vector<std::unique_ptr<IHitable>> m_hitables;
-    std::vector<Material> m_materials;
+    std::vector<std::unique_ptr<Material>> m_materials;
 
-    std::vector<DirectLight> m_directLights;
-    std::vector<PointLight> m_pointLights;
-    std::vector<SpotLight> m_spotLights;
+    std::vector<std::unique_ptr<DirectLight>> m_directLights;
+    std::vector<std::unique_ptr<PointLight>> m_pointLights;
+    std::vector<std::unique_ptr<SpotLight>> m_spotLights;
   };
 }
