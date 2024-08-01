@@ -4,13 +4,18 @@
 #include "Flame/render/Framebuffer.h"
 #include "Flame/utils/EventDispatcher.h"
 #include "InputSystem.h"
+#include "Flame/render/DxContext.h"
 
 #include <functional>
 #include <unordered_map>
 #include <Windows.h>
+#include <wrl/client.h>
 
 namespace Flame {
   struct Window final {
+    template <typename T>
+    using ComPtr = Microsoft::WRL::ComPtr<T>;
+
     explicit Window(const wchar_t* title, uint32_t width, uint32_t height, uint32_t resolutionDivisor);
     ~Window();
 
@@ -18,7 +23,8 @@ namespace Flame {
     void DiscardResources();
 
     void Show(int nCmdShow) const;
-    void Blit() const;
+    void PresentSwapchain() const;
+    void BlitFramebuffer() const;
 
     uint32_t GetWidth() const;
     uint32_t GetHeight() const;
@@ -26,6 +32,9 @@ namespace Flame {
     Framebuffer& GetFramebuffer();
     InputSystem& GetInputSystem();
     EventDispatcher<WindowEvent>& GetDispatcher();
+    IDXGISwapChain1* GetSwapChain() const;
+    ID3D11Texture2D* GetRenderTexture() const;
+    ID3D11RenderTargetView* GetTargetView() const;
 
     bool HandleWindowMessage(UINT msg, WPARAM wParam, LPARAM lParam) const;
 
@@ -56,5 +65,11 @@ namespace Flame {
     InputSystem m_input;
 
     inline constexpr const static wchar_t* kClassName = L"DlRaytracerWindow";
+
+  public:
+    // TODO private and getters
+    ComPtr<IDXGISwapChain1> m_dxgiSwapChain;
+    ComPtr<ID3D11Texture2D> m_d3d11RenderTexture;
+    ComPtr<ID3D11RenderTargetView> m_d3d11TargetView;
   };
 }

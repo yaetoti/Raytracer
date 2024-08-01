@@ -65,6 +65,74 @@ namespace Flame {
       return false;
     }
 
+    // D3D
+
+    // Init swap chain
+    HRESULT result;
+    {
+      DXGI_SWAP_CHAIN_DESC1 desc {
+        0,
+        0,
+        DXGI_FORMAT_R8G8B8A8_UNORM,
+        FALSE,
+        { 1, 0 },
+        DXGI_USAGE_BACK_BUFFER | DXGI_USAGE_RENDER_TARGET_OUTPUT,
+        2,
+        DXGI_SCALING_STRETCH,
+        DXGI_SWAP_EFFECT_DISCARD,
+        DXGI_ALPHA_MODE_UNSPECIFIED,
+        0
+      };
+
+      result = DxContext::Get()->dxgiFactory2->CreateSwapChainForHwnd(
+        DxContext::Get()->d3d11Device.Get(),
+        m_hWnd,
+        &desc,
+        nullptr,
+        nullptr,
+        m_dxgiSwapChain.GetAddressOf()
+      );
+      assert(SUCCEEDED(result));
+      if (FAILED(result)) {
+        return false;
+      }
+    }
+
+    // Retrieve render texture
+    {
+      result = m_dxgiSwapChain->GetBuffer(0, IID_PPV_ARGS(m_d3d11RenderTexture.GetAddressOf()));
+      assert(SUCCEEDED(result));
+      if (FAILED(result)) {
+        return false;
+      }
+    }
+
+    // Create render target view
+    {
+      result = DxContext::Get()->d3d11Device->CreateRenderTargetView(
+        m_d3d11RenderTexture.Get(),
+        nullptr,
+        m_d3d11TargetView.GetAddressOf()
+      );
+      assert(SUCCEEDED(result));
+      if (FAILED(result)) {
+        return false;
+      }
+    }
+
+    DxContext::Get()->d3d11DeviceContext->OMSetRenderTargets(1, m_d3d11TargetView.GetAddressOf(), nullptr);
+
+    D3D11_VIEWPORT viewport;
+    viewport.Width = static_cast<float>(m_width);
+    viewport.Height = static_cast<float>(m_height);
+    viewport.MinDepth = 0.0f;
+    viewport.MaxDepth = 1.0f;
+    viewport.TopLeftX = 0.0f;
+    viewport.TopLeftY = 0.0f;
+    DxContext::Get()->d3d11DeviceContext->RSSetViewports(1, &viewport);
+
+    // \D3D
+
     InitHandlers();
     m_dispatcher.AddListener(&m_input);
 
@@ -72,6 +140,9 @@ namespace Flame {
   }
 
   void Window::DiscardResources() {
+    m_d3d11TargetView.Reset();
+    m_d3d11RenderTexture.Reset();
+    m_dxgiSwapChain.Reset();
     DestroyWindow(m_hWnd);
     UnregisterClassW(kClassName, GetModuleHandleW(nullptr));
   }
@@ -81,7 +152,11 @@ namespace Flame {
     UpdateWindow(m_hWnd);
   }
 
-  void Window::Blit() const {
+  void Window::PresentSwapchain() const {
+    m_dxgiSwapChain->Present(0, 0);
+  }
+
+  void Window::BlitFramebuffer() const {
     HDC dc = GetDC(m_hWnd);
     StretchDIBits(
       dc,
@@ -111,6 +186,18 @@ namespace Flame {
 
   EventDispatcher<WindowEvent>& Window::GetDispatcher() {
     return m_dispatcher;
+  }
+
+  IDXGISwapChain1* Window::GetSwapChain() const {
+    return m_dxgiSwapChain.Get();
+  }
+
+  ID3D11Texture2D* Window::GetRenderTexture() const {
+    return m_d3d11RenderTexture.Get();
+  }
+
+  ID3D11RenderTargetView* Window::GetTargetView() const {
+    return m_d3d11TargetView.Get();
   }
 
   uint32_t Window::GetWidth() const {
@@ -143,6 +230,51 @@ namespace Flame {
     m_framebuffer.Resize(m_width / m_resolutionDivisor, m_height / m_resolutionDivisor);
     m_framebufferInfo.bmiHeader.biWidth = static_cast<LONG>(m_framebuffer.GetWidth());
     m_framebufferInfo.bmiHeader.biHeight = static_cast<LONG>(m_framebuffer.GetHeight());
+
+    HRESULT result;
+    m_d3d11TargetView.Reset();
+    m_d3d11RenderTexture.Reset();
+    // Resize buffers
+    {
+      result = m_dxgiSwapChain->ResizeBuffers(0, m_width, m_height, DXGI_FORMAT_UNKNOWN, 0);
+      assert(SUCCEEDED(result));
+      if (FAILED(result)) {
+        return;
+      }
+    }
+
+    // Retrieve render texture
+    {
+      result = m_dxgiSwapChain->GetBuffer(0, IID_PPV_ARGS(m_d3d11RenderTexture.GetAddressOf()));
+      assert(SUCCEEDED(result));
+      if (FAILED(result)) {
+        return;
+      }
+    }
+
+    // Recreate render target view
+    {
+      result = DxContext::Get()->d3d11Device->CreateRenderTargetView(
+        m_d3d11RenderTexture.Get(),
+        nullptr,
+        m_d3d11TargetView.GetAddressOf()
+      );
+      assert(SUCCEEDED(result));
+      if (FAILED(result)) {
+        return;
+      }
+    }
+
+    DxContext::Get()->d3d11DeviceContext->OMSetRenderTargets(1, m_d3d11TargetView.GetAddressOf(), nullptr);
+
+    D3D11_VIEWPORT viewport;
+    viewport.Width = static_cast<float>(m_width);
+    viewport.Height = static_cast<float>(m_height);
+    viewport.MinDepth = 0.0f;
+    viewport.MaxDepth = 1.0f;
+    viewport.TopLeftX = 0.0f;
+    viewport.TopLeftY = 0.0f;
+    DxContext::Get()->d3d11DeviceContext->RSSetViewports(1, &viewport);
   }
 
   void Window::InitHandlers() {
