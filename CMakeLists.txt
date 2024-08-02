@@ -23,7 +23,9 @@ add_subdirectory(src/ConsoleLib)
 add_subdirectory(src/Engine)
 add_subdirectory(src/Project)
 
+message(INFO "LOOOOOOOOOOOOOOOL")
+message(INFO "${PROJECT_BINARY_DIR}/bin/${CMAKE_BUILD_TYPE}/Assets")
 add_custom_target(copy_resources ALL
-  COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different "${PROJECT_SOURCE_DIR}/Assets" "${PROJECT_BINARY_DIR}/bin/$<CONFIG>/Assets"
+  COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different "${PROJECT_SOURCE_DIR}/Assets" "${PROJECT_BINARY_DIR}/bin/${CMAKE_BUILD_TYPE}/Assets"
   COMMENT "Copying resources to the build directory..."
 )
