@@ -5,6 +5,8 @@
 #include <memory>
 #include <vector>
 
+#include "Flame/graphics/Material.h"
+
 namespace Flame {
   struct Scene {
     virtual ~Scene() = default;

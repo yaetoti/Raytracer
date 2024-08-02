@@ -1,5 +1,5 @@
 #pragma once
-#include "AlignedCamera.h"
+#include "Flame/camera/AlignedCamera.h"
 #include "Flame/layers/Scene.h"
 #include "Flame/utils/ParallelExecutor.h"
 #include "Flame/window/Window.h"

@@ -2,7 +2,7 @@
 #include <cassert>
 #include <d3dcompiler.h>
 
-#include "Flame/render/DxContext.h"
+#include "Flame/graphics/DxContext.h"
 
 namespace Flame {
   ID3DBlob* VertexShader::GetBlob() const {

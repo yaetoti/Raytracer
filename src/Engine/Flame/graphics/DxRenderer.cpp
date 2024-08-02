@@ -1,17 +1,15 @@
 #include "DxRenderer.h"
-#include <d3dcompiler.h>
-#include <iostream>
-#include <glm/ext/matrix_transform.hpp>
-
-#include "AlignedCamera.h"
-#include "Flame/components/Transform.h"
+#include "Flame/engine/MeshSystem.h"
+#include "Flame/engine/OpaqueGroup.h"
+#include "Flame/math/HitRecord.h"
 #include "Flame/utils/PtrProxy.h"
 
 #include <assimp/Importer.hpp>
-#include <assimp/scene.h>
 #include <assimp/postprocess.h>
-
-#include "Flame/systems/ModelManager.h"
+#include <assimp/scene.h>
+#include <d3dcompiler.h>
+#include <glm/ext/matrix_transform.hpp>
+#include <iostream>
 
 namespace Flame {
   DxRenderer::DxRenderer(Window* window)

@@ -56,6 +56,7 @@ namespace Flame {
 
   void MeshSystem::Cleanup() {
     m_opaqueGroup.Cleanup();
+    m_hologramGroup.Cleanup();
   }
 
   void MeshSystem::Update(float deltaTime) {

@@ -1,8 +1,9 @@
 #include "PixelShader.h"
 
+#include <cassert>
 #include <d3dcompiler.h>
 
-#include "Flame/render/DxRenderer.h"
+#include "Flame/graphics/DxContext.h"
 
 namespace Flame {
   ID3DBlob* PixelShader::GetBlob() const {

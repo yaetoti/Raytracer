@@ -1,7 +1,6 @@
+#include "ConsoleLib.h"
 #include "Application.h"
 #include <Windows.h>
-
-#include "Flame/systems/Engine.h"
 
 int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
   Console::Get()->RedirectStdHandles();

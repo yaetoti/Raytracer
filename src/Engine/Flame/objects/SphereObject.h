@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Flame/math/AabbOld.h"
 #include "Flame/math/IHitable.h"
 #include "Flame/math/Sphere.h"
 

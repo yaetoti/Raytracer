@@ -4,7 +4,7 @@
 #include <iostream>
 #include <wrl/client.h>
 
-#include "Flame/render/DxContext.h"
+#include "Flame/graphics/DxContext.h"
 
 namespace Flame {
   struct IndexBuffer final {

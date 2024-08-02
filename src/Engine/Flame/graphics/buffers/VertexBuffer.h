@@ -1,7 +1,7 @@
 #pragma once
 #include <cassert>
 
-#include "Flame/render/DxContext.h"
+#include "Flame/graphics/DxContext.h"
 
 namespace Flame {
   template <typename T>

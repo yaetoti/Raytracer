@@ -1,15 +1,16 @@
 ﻿#pragma once
 
-#include "events/WindowEvent.h"
-#include "Flame/render/Framebuffer.h"
 #include "Flame/utils/EventDispatcher.h"
+#include "Flame/graphics/Framebuffer.h"
+#include "Flame/graphics/DxContext.h"
+#include "events/WindowEvent.h"
 #include "InputSystem.h"
-#include "Flame/render/DxContext.h"
 
 #include <functional>
 #include <unordered_map>
 #include <Windows.h>
 #include <wrl/client.h>
+
 
 namespace Flame {
   struct Window final {

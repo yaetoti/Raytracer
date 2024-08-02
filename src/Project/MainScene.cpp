@@ -1,14 +1,5 @@
 #include "MainScene.h"
 
-#include "Flame/math/MathUtils.h"
-#include "Flame/math/MeshOld.h"
-#include "Flame/objects/MeshObject.h"
-#include "Flame/math/Plane.h"
-#include "Flame/objects/PlaneObject.h"
-#include "Flame/objects/TriangleObject.h"
-#include "Flame/objects/SphereObject.h"
-#include "Flame/utils/ObjUtils.h"
-
 MainScene::MainScene(Flame::Window& window)
 : m_window(window)
 , m_input(window.GetInputSystem()) {

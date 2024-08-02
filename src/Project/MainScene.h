@@ -1,13 +1,8 @@
 #pragma once
 
-#include <memory>
+#include "Flame.h"
 
-#include "Flame/layers/Scene.h"
-#include "Flame/math/IHitable.h"
-#include "Flame/math/MeshOld.h"
-#include "Flame/objects/SphereObject.h"
-#include "Flame/window/InputSystem.h"
-#include "Flame/window/Window.h"
+#include <memory>
 
 struct MainScene : Flame::Scene {
   explicit MainScene(Flame::Window& window);

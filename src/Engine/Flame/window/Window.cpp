@@ -3,9 +3,9 @@
 #include "events/MouseButtonWindowEvent.h"
 #include "events/MouseMoveWindowEvent.h"
 #include "events/ResizeWindowEvent.h"
-#include <windowsx.h>
-
 #include "events/MouseScrollWindowEvent.h"
+
+#include <windowsx.h>
 
 namespace Flame {
   Window::Window(const wchar_t* title, uint32_t width, uint32_t height, uint32_t resolutionDivisor)

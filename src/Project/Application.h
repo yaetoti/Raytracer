@@ -1,19 +1,13 @@
 ﻿#pragma once
 
 #include "MainScene.h"
+#include "Flame.h"
+#include "ConsoleLib.h"
 
 #include <chrono>
-#include <ConsoleLib.h>
-#include <Flame.h>
 #include <random>
 #include <thread>
 #include <Windows.h>
-
-#include "Flame/render/AlignedCamera.h"
-#include "Flame/render/DxRenderer.h"
-#include "Flame/render/Renderer.h"
-#include "Flame/systems/MeshSystem.h"
-#include "Flame/utils/draggers/IDragger.h"
 
 struct Application final : Flame::EventListener<Flame::WindowEvent> {
   Application();

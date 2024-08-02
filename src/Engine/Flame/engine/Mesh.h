@@ -5,9 +5,9 @@
 #include <assimp/mesh.h>
 #include <assimp/vector3.h>
 #include <glm/vec3.hpp>
-
-#include "Aabb.h"
 #include "MeshBvh.h"
+#include "Flame/math/Aabb.h"
+#include "Flame/math/HitRecord.h"
 
 namespace Flame {
   struct Face final {

@@ -2,8 +2,7 @@
 #include <cstdint>
 #include <vector>
 
-#include "Aabb.h"
-#include "HitRecord.h"
+#include "Flame/math/Aabb.h"
 #include "Flame/math/Ray.h"
 
 namespace Flame {

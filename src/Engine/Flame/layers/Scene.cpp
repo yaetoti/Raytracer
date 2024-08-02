@@ -1,5 +1,7 @@
 #include "Scene.h"
 
+#include "Flame/graphics/Material.h"
+
 namespace Flame {
   const std::vector<std::unique_ptr<IHitable>>& Scene::GetHitables() const {
     return m_hitables;

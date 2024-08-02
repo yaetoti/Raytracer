@@ -1,19 +1,12 @@
 #pragma once
 
-#include <memory>
-
 #include "Flame/window/Window.h"
+
+#include <memory>
 #include <wrl/client.h>
 
-#include "AlignedCamera.h"
-#include "Flame/systems/ConstantBuffer.h"
-#include "Flame/systems/IndexBuffer.h"
-#include "Flame/systems/Mesh.h"
-#include "Flame/systems/MeshSystem.h"
-#include "Flame/systems/Model.h"
-#include "Flame/systems/PixelShader.h"
-#include "Flame/systems/VertexBuffer.h"
-#include "Flame/systems/VertexShader.h"
+#include "buffers/ConstantBuffer.h"
+#include "Flame/camera/AlignedCamera.h"
 
 namespace Flame {
   struct DxRenderer final {

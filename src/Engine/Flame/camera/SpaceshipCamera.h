@@ -4,22 +4,21 @@
 #include <glm/detail/type_quat.hpp>
 
 #include "Flame/math/Ray.h"
-#include "Flame/components/Transform.h"
+#include "Flame/engine/Transform.h"
 
 namespace Flame {
-  struct AlignedCamera final {
+  struct SpaceshipCamera final {
     /**
      * \param fov FOV in degrees
      */
-    AlignedCamera(uint32_t width, uint32_t height, float fov, float nearPlane, float farPlane);
+    SpaceshipCamera(uint32_t width, uint32_t height, float fov, float nearPlane, float farPlane);
 
     void Resize(uint32_t width, uint32_t height);
-    void Rotate(float pitch, float yaw);
+    void Rotate(float pitch, float yaw, float roll);
     void SetPosition(const glm::vec3& position);
 
+    const Transform& GetTransform() const;
     const glm::vec3& GetPosition() const;
-    const glm::quat& GetRotationQuat() const;
-    glm::mat4 GetRotationMat() const;
 
     Ray GetRay(uint32_t x, uint32_t y) const;
     Ray GetRandomizedRay(uint32_t x, uint32_t y) const;
@@ -44,8 +43,7 @@ namespace Flame {
     float m_far;
 
     // Position
-    glm::vec3 m_position;
-    glm::quat m_rotation;
+    Transform m_transform;
 
     // Matrices
     mutable glm::mat4 m_projection;

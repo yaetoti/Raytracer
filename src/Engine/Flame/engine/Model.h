@@ -3,10 +3,10 @@
 #include <vector>
 #include <assimp/scene.h>
 
-#include "IndexBuffer.h"
 #include "Mesh.h"
-#include "Vertex.h"
-#include "VertexBuffer.h"
+#include "Flame/graphics/Vertex.h"
+#include "Flame/graphics/buffers/IndexBuffer.h"
+#include "Flame/graphics/buffers/VertexBuffer.h"
 
 namespace Flame {
   struct Model final {

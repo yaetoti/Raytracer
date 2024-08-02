@@ -4,13 +4,17 @@
 #include <glm/glm.hpp>
 
 #include "Model.h"
-#include "VertexShader.h"
-#include "PixelShader.h"
+#include "Flame/graphics/buffers/VertexBuffer.h"
+#include "Flame/graphics/shaders/PixelShader.h"
+#include "Flame/graphics/shaders/VertexShader.h"
+#include "Flame/math/HitRecord.h"
 
 namespace Flame {
-  struct OpaqueGroup final {
+  struct HologramGroup final {
     struct InstanceData final {
       glm::mat4 modelMatrix;
+      glm::vec3 mainColor;
+      glm::vec3 secondaryColor;
     };
 
     struct MaterialData final {
@@ -76,6 +80,6 @@ namespace Flame {
     VertexShader m_vertexShader;
     PixelShader m_pixelShader;
 
-    inline static const wchar_t* kShaderPath = L"Assets/Shaders/opaque.hlsl";
+    inline static const wchar_t* kShaderPath = L"Assets/Shaders/hologram.hlsl";
   };
 }

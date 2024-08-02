@@ -1,13 +1,6 @@
 ﻿#include "Application.h"
 
-#include "Flame/math/MeshData.h"
-#include "Flame/math/MeshOld.h"
-#include "Flame/utils/ObjUtils.h"
-#include "Flame/utils/ParallelExecutor.h"
-
 Application::Application() {
-  // m_window = std::make_shared<Flame::Window>(L"Flame 🔥", 1366, 768, 2);
-  // High performance mode
   m_window = std::make_shared<Flame::Window>(L"Flame 🔥", 160, 90, 1);
   m_input = &m_window->GetInputSystem();
   m_scene = std::make_shared<MainScene>(*m_window);
