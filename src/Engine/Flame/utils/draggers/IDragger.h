@@ -12,7 +12,7 @@ namespace Flame {
   };
 
   struct ISphereDragger : IDragger {
-    explicit ISphereDragger(Sphere* draggable, const HitRecord& record)
+    explicit ISphereDragger(Sphere* draggable, const HitRecordOld& record)
     : m_draggable(draggable)
     , m_hitTime(record.time)
     , m_offset(draggable->center - record.point) {
@@ -29,7 +29,7 @@ namespace Flame {
   };
 
   struct IMeshDragger : IDragger {
-    explicit IMeshDragger(MeshObject* draggable, const HitRecord& record)
+    explicit IMeshDragger(MeshObject* draggable, const HitRecordOld& record)
     : m_draggable(draggable)
     , m_hitTime(record.time)
     , m_offset(draggable->Position() - record.point) {
@@ -46,7 +46,7 @@ namespace Flame {
   };
 
   struct DraggerFactory final {
-    static std::unique_ptr<IDragger> CreateDragger(const HitRecord& record) {
+    static std::unique_ptr<IDragger> CreateDragger(const HitRecordOld& record) {
       if (auto sphere = dynamic_cast<Flame::Sphere*>(record.hitable)) {
         return std::make_unique<ISphereDragger>(sphere, record);
       }

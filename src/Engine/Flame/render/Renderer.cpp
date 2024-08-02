@@ -12,7 +12,7 @@ namespace Flame {
   , m_executor(std::max(1, static_cast<int>(std::thread::hardware_concurrency()) - 1)) {
   }
 
-  void Renderer::Render(Framebuffer& surface, const Camera& camera) {
+  void Renderer::Render(Framebuffer& surface, const AlignedCamera& camera) {
     //glm::vec3 light;
     //std::cout << ColorPerRay(camera, camera.GetRandomizedRay(20, 20), 0, light) << '\n';
     //std::cout << "Light:" << light << '\n';
@@ -54,10 +54,10 @@ namespace Flame {
     m_framesCount = 1;
   }
 
-  glm::vec3 Renderer::ColorPerRay(const Camera& camera, const Ray& ray, uint32_t bounce, glm::vec3& lightTotal) {
+  glm::vec3 Renderer::ColorPerRay(const AlignedCamera& camera, const Ray& ray, uint32_t bounce, glm::vec3& lightTotal) {
     const auto& hitables = m_scene->GetHitables();
     const auto& materials = m_scene->GetMaterials();
-    HitRecord record;
+    HitRecordOld record;
 
     // Find surface for which the color will be calculated
     if (!MathUtils::HitClosest(hitables.begin(), hitables.end(), ray, 0.001f, std::numeric_limits<float>::max(), record)) {
@@ -114,7 +114,7 @@ namespace Flame {
     return color;
   }
 
-  glm::vec3 Renderer::CalculatePointLightPerPoint(const Camera& camera, const HitRecord& record) {
+  glm::vec3 Renderer::CalculatePointLightPerPoint(const AlignedCamera& camera, const HitRecordOld& record) {
     const auto& hitables = m_scene->GetHitables();
     const auto& materials = m_scene->GetMaterials();
     const auto& pointLights = m_scene->GetPointLights();
@@ -131,7 +131,7 @@ namespace Flame {
       float lightDistance = glm::length(lightVec);
       glm::vec3 lightDir = glm::normalize(lightVec);
       Ray rayLight(record.point + record.normal * 0.01f, lightDir);
-      HitRecord recordLight;
+      HitRecordOld recordLight;
 
       // Check for objects between point and light
       if (MathUtils::HitClosest(hitables.begin(), hitables.end(), rayLight, 0.0f, lightDistance, recordLight)) {
@@ -156,7 +156,7 @@ namespace Flame {
     return light;
   }
 
-  glm::vec3 Renderer::CalculateSpotLightPerPoint(const Camera& camera, const HitRecord& record) {
+  glm::vec3 Renderer::CalculateSpotLightPerPoint(const AlignedCamera& camera, const HitRecordOld& record) {
     const auto& hitables = m_scene->GetHitables();
     const auto& materials = m_scene->GetMaterials();
     const auto& spotLights = m_scene->GetSpotLights();
@@ -181,7 +181,7 @@ namespace Flame {
       }
 
       Ray rayLight(record.point + record.normal * 0.01f, lightDir);
-      HitRecord recordLight;
+      HitRecordOld recordLight;
 
       // Check for objects between point and light
       if (MathUtils::HitClosest(hitables.begin(), hitables.end(), rayLight, 0.0f, lightDistance, recordLight)) {
@@ -206,7 +206,7 @@ namespace Flame {
     return light;
   }
 
-  glm::vec3 Renderer::CalculateDirectLightPerPoint(const Camera& camera, const HitRecord& record) {
+  glm::vec3 Renderer::CalculateDirectLightPerPoint(const AlignedCamera& camera, const HitRecordOld& record) {
     const auto& materials = m_scene->GetMaterials();
     const auto& directLights = m_scene->GetDirectLights();
     Material& material = *materials[record.materialId];

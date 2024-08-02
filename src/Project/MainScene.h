@@ -4,7 +4,7 @@
 
 #include "Flame/layers/Scene.h"
 #include "Flame/math/IHitable.h"
-#include "Flame/math/Mesh.h"
+#include "Flame/math/MeshOld.h"
 #include "Flame/objects/SphereObject.h"
 #include "Flame/window/InputSystem.h"
 #include "Flame/window/Window.h"
@@ -26,5 +26,5 @@ private:
   Flame::InputSystem& m_input;
 
   // TODO move to scene?
-  std::vector<std::unique_ptr<Flame::Mesh>> m_meshes; 
+  std::vector<std::unique_ptr<Flame::MeshOld>> m_meshes; 
 };

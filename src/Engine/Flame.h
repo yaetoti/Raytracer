@@ -5,7 +5,7 @@
 
 #include "Flame/layers/Scene.h"
 
-#include "Flame/math/HitRecord.h"
+#include "Flame/math/HitRecordOld.h"
 #include "Flame/math/IHitable.h"
 #include "Flame/math/MathUtils.h"
 #include "Flame/math/Ray.h"

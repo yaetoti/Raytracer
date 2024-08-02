@@ -44,7 +44,7 @@ namespace Flame {
       return false;
     }
 
-    RECT windowRect { 0, 0, m_width, m_height };
+    RECT windowRect { 0, 0, static_cast<LONG>(m_width), static_cast<LONG>(m_height) };
     AdjustWindowRectEx(&windowRect, WS_OVERLAPPEDWINDOW, 0, 0);
 
     m_hWnd = CreateWindowExW(
@@ -75,7 +75,7 @@ namespace Flame {
         0,
         DXGI_FORMAT_R8G8B8A8_UNORM,
         FALSE,
-        { 1, 0 },
+        { 4, 0 },
         DXGI_USAGE_BACK_BUFFER | DXGI_USAGE_RENDER_TARGET_OUTPUT,
         2,
         DXGI_SCALING_STRETCH,
@@ -120,7 +120,60 @@ namespace Flame {
       }
     }
 
-    DxContext::Get()->d3d11DeviceContext->OMSetRenderTargets(1, m_d3d11TargetView.GetAddressOf(), nullptr);
+    // Create reversed depth buffer
+    {
+      D3D11_TEXTURE2D_DESC desc {
+        m_width,
+        m_height,
+        1,
+        1,
+        DXGI_FORMAT_D24_UNORM_S8_UINT,
+        { 4, 0 },
+        D3D11_USAGE_DEFAULT,
+        D3D11_BIND_DEPTH_STENCIL,
+        0,
+        0
+      };
+
+      result = DxContext::Get()->d3d11Device->CreateTexture2D(&desc, nullptr, m_d3d11DepthTexture.GetAddressOf());
+      assert(SUCCEEDED(result));
+      if (FAILED(result)) {
+        return false;
+      }
+    }
+
+    // Create DepthStencilView
+    {
+      D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc {};
+      depthStencilViewDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+      depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;
+      depthStencilViewDesc.Texture2D.MipSlice = 0;
+
+      result = DxContext::Get()->d3d11Device->CreateDepthStencilView(m_d3d11DepthTexture.Get(), &depthStencilViewDesc, m_d3d11DepthStencilView.GetAddressOf());
+      assert(SUCCEEDED(result));
+      if (FAILED(result)) {
+        return false;
+      }
+    }
+
+    // Create State
+    {
+      D3D11_DEPTH_STENCIL_DESC desc {
+        TRUE,
+        D3D11_DEPTH_WRITE_MASK_ALL,
+        D3D11_COMPARISON_GREATER,
+        FALSE,
+        0,
+        0,
+        {},
+        {}
+      };
+      result = DxContext::Get()->d3d11Device->CreateDepthStencilState(&desc, m_d3d11DepthStencilState.GetAddressOf());
+      assert(SUCCEEDED(result));
+      if (FAILED(result)) {
+        return false;
+      }
+    }
 
     D3D11_VIEWPORT viewport;
     viewport.Width = static_cast<float>(m_width);
@@ -196,8 +249,16 @@ namespace Flame {
     return m_d3d11RenderTexture.Get();
   }
 
-  ID3D11RenderTargetView* Window::GetTargetView() const {
-    return m_d3d11TargetView.Get();
+  Window::ComPtr<ID3D11RenderTargetView> Window::GetTargetView() const {
+    return ComPtr(m_d3d11TargetView);
+  }
+
+  Window::ComPtr<ID3D11DepthStencilView> Window::GetDepthStencilView() const {
+    return ComPtr(m_d3d11DepthStencilView);
+  }
+
+  Window::ComPtr<ID3D11DepthStencilState> Window::GetDepthStencilState() const {
+    return ComPtr(m_d3d11DepthStencilState);
   }
 
   uint32_t Window::GetWidth() const {
@@ -227,6 +288,10 @@ namespace Flame {
   }
 
   void Window::InvalidateFramebufferSize() {
+    if (m_width == 0 || m_height == 0) {
+      return;
+    }
+
     m_framebuffer.Resize(m_width / m_resolutionDivisor, m_height / m_resolutionDivisor);
     m_framebufferInfo.bmiHeader.biWidth = static_cast<LONG>(m_framebuffer.GetWidth());
     m_framebufferInfo.bmiHeader.biHeight = static_cast<LONG>(m_framebuffer.GetHeight());
@@ -234,6 +299,8 @@ namespace Flame {
     HRESULT result;
     m_d3d11TargetView.Reset();
     m_d3d11RenderTexture.Reset();
+    m_d3d11DepthStencilView.Reset();
+    m_d3d11DepthTexture.Reset();
     // Resize buffers
     {
       result = m_dxgiSwapChain->ResizeBuffers(0, m_width, m_height, DXGI_FORMAT_UNKNOWN, 0);
@@ -265,8 +332,43 @@ namespace Flame {
       }
     }
 
-    DxContext::Get()->d3d11DeviceContext->OMSetRenderTargets(1, m_d3d11TargetView.GetAddressOf(), nullptr);
+    // Create reversed depth buffer
+    {
+      D3D11_TEXTURE2D_DESC desc {
+        m_width,
+        m_height,
+        1,
+        1,
+        DXGI_FORMAT_D24_UNORM_S8_UINT,
+        { 4, 0 },
+        D3D11_USAGE_DEFAULT,
+        D3D11_BIND_DEPTH_STENCIL,
+        0,
+        0
+      };
 
+      result = DxContext::Get()->d3d11Device->CreateTexture2D(&desc, nullptr, m_d3d11DepthTexture.GetAddressOf());
+      assert(SUCCEEDED(result));
+      if (FAILED(result)) {
+        return;
+      }
+    }
+
+    // Create DepthStencilView
+    {
+      D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc {};
+      depthStencilViewDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+      depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;
+      depthStencilViewDesc.Texture2D.MipSlice = 0;
+
+      result = DxContext::Get()->d3d11Device->CreateDepthStencilView(m_d3d11DepthTexture.Get(), &depthStencilViewDesc, m_d3d11DepthStencilView.GetAddressOf());
+      assert(SUCCEEDED(result));
+      if (FAILED(result)) {
+        return;
+      }
+    }
+
+    // Set viewport
     D3D11_VIEWPORT viewport;
     viewport.Width = static_cast<float>(m_width);
     viewport.Height = static_cast<float>(m_height);

@@ -1,7 +1,7 @@
 #include "MainScene.h"
 
 #include "Flame/math/MathUtils.h"
-#include "Flame/math/Mesh.h"
+#include "Flame/math/MeshOld.h"
 #include "Flame/objects/MeshObject.h"
 #include "Flame/math/Plane.h"
 #include "Flame/objects/PlaneObject.h"
@@ -48,7 +48,7 @@ void MainScene::Initialize() {
      4
    )
   );
-  // Triangle
+  // TriangleOld
   m_hitables.emplace_back(
    std::make_unique<Flame::TriangleObject>(
      glm::vec3(0, 2, -4),
@@ -255,7 +255,7 @@ void MainScene::InitializeMeshes() {
       __debugbreak();
     }
 
-    m_meshes.emplace_back(std::make_unique<Flame::Mesh>(meshData));
+    m_meshes.emplace_back(std::make_unique<Flame::MeshOld>(meshData));
   }
 
   {
@@ -266,6 +266,6 @@ void MainScene::InitializeMeshes() {
       __debugbreak();
     }
 
-    m_meshes.emplace_back(std::make_unique<Flame::Mesh>(meshData));
+    m_meshes.emplace_back(std::make_unique<Flame::MeshOld>(meshData));
   }
 }

@@ -30,6 +30,7 @@ namespace Flame {
     const glm::quat& GetRotation() const;
     glm::vec3 GetRotationEuler() const;
     glm::mat4 GetRotationMat() const;
+    glm::mat4 GetMat() const;
     /// \return Pitch in degrees
     float GetPitch() const;
     /// \return Yaw in degrees

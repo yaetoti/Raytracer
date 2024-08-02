@@ -1,5 +1,5 @@
 #pragma once
-#include "Camera.h"
+#include "AlignedCamera.h"
 #include "Flame/layers/Scene.h"
 #include "Flame/utils/ParallelExecutor.h"
 #include "Flame/window/Window.h"
@@ -8,15 +8,15 @@ namespace Flame {
   struct Renderer final {
     explicit Renderer(const Scene* scene);
 
-    void Render(Framebuffer& surface, const Camera& camera);
+    void Render(Framebuffer& surface, const AlignedCamera& camera);
     void Resize(uint32_t width, uint32_t height);
     void ResetAccumulatedData();
 
   private:
-    glm::vec3 ColorPerRay(const Camera& camera, const Ray& ray, uint32_t bounce, glm::vec3& lightTotal);
-    glm::vec3 CalculatePointLightPerPoint(const Camera& camera, const HitRecord& record);
-    glm::vec3 CalculateSpotLightPerPoint(const Camera& camera, const HitRecord& record);
-    glm::vec3 CalculateDirectLightPerPoint(const Camera& camera, const HitRecord& record);
+    glm::vec3 ColorPerRay(const AlignedCamera& camera, const Ray& ray, uint32_t bounce, glm::vec3& lightTotal);
+    glm::vec3 CalculatePointLightPerPoint(const AlignedCamera& camera, const HitRecordOld& record);
+    glm::vec3 CalculateSpotLightPerPoint(const AlignedCamera& camera, const HitRecordOld& record);
+    glm::vec3 CalculateDirectLightPerPoint(const AlignedCamera& camera, const HitRecordOld& record);
 
   private:
     const Scene* m_scene;

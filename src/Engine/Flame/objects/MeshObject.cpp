@@ -3,7 +3,7 @@
 #include "Flame/math/MathUtils.h"
 
 namespace Flame {
-  MeshObject::MeshObject(const Mesh* mesh, int materialId)
+  MeshObject::MeshObject(const MeshOld* mesh, int materialId)
   : mesh(mesh)
   , materialId(materialId)
   , m_modelMatrix()
@@ -11,7 +11,7 @@ namespace Flame {
   , m_modelMatrixDirty(true) {
   }
 
-  bool MeshObject::Hit(const Ray& r, HitRecord& record, float tMin, float tMax) const {
+  bool MeshObject::Hit(const Ray& r, HitRecordOld& record, float tMin, float tMax) const {
     if (m_modelMatrixDirty) {
       UpdateModelMatrix();
     }

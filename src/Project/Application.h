@@ -9,9 +9,10 @@
 #include <thread>
 #include <Windows.h>
 
-#include "Flame/render/Camera.h"
+#include "Flame/render/AlignedCamera.h"
 #include "Flame/render/DxRenderer.h"
 #include "Flame/render/Renderer.h"
+#include "Flame/systems/MeshSystem.h"
 #include "Flame/utils/draggers/IDragger.h"
 
 struct Application final : Flame::EventListener<Flame::WindowEvent> {
@@ -37,9 +38,10 @@ private:
   Flame::InputSystem* m_input;
 
   std::shared_ptr<Flame::Scene> m_scene;
-  std::shared_ptr<Flame::Camera> m_camera;
+  std::shared_ptr<Flame::AlignedCamera> m_camera;
   std::shared_ptr<Flame::Renderer> m_renderer;
 
+  std::shared_ptr<Flame::MeshSystem> m_meshSystem;
   std::unique_ptr<Flame::DxRenderer> m_dxRenderer;
 
   uint32_t m_frames = 0;

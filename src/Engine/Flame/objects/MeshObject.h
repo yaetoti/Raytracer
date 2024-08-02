@@ -2,13 +2,13 @@
 
 #include "Flame/components/Transform.h"
 #include "Flame/math/IHitable.h"
-#include "Flame/math/Mesh.h"
+#include "Flame/math/MeshOld.h"
 
 namespace Flame {
   struct MeshObject final : IHitable {
-    MeshObject(const Mesh* mesh, int materialId);
+    MeshObject(const MeshOld* mesh, int materialId);
 
-    bool Hit(const Ray& r, HitRecord& record, float tMin, float tMax) const override;
+    bool Hit(const Ray& r, HitRecordOld& record, float tMin, float tMax) const override;
 
     void SetPosition(glm::vec3 position);
     void SetRotation(glm::vec3 rotation);
@@ -20,7 +20,7 @@ namespace Flame {
     glm::vec3 Scale() const;
 
   public:
-    const Mesh* mesh;
+    const MeshOld* mesh;
     int materialId;
 
   private:

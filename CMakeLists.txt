@@ -25,5 +25,5 @@ add_subdirectory(src/Project)
 
 add_custom_target(copy_resources ALL
   COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different "${PROJECT_SOURCE_DIR}/Assets" "${PROJECT_BINARY_DIR}/bin/$<CONFIG>/Assets"
-  COMMENT Copying resources to the build directory...
+  COMMENT "Copying resources to the build directory..."
 )

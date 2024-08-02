@@ -9,7 +9,7 @@ namespace Flame {
   , materialId(materialId) {
   }
 
-  bool TriangleObject::Hit(const Ray& r, HitRecord& record, float tMin, float tMax) const {
+  bool TriangleObject::Hit(const Ray& r, HitRecordOld& record, float tMin, float tMax) const {
     constexpr float epsilon = std::numeric_limits<float>::epsilon();
     glm::vec3 edge1 = point2 - point1;
     glm::vec3 edge2 = point3 - point1;

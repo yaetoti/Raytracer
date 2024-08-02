@@ -27,7 +27,7 @@ namespace Flame {
   }
 
   void Transform::SetRotation(float pitch, float yaw, float roll) {
-    m_rotation = glm::eulerAngleYXZ(yaw, pitch, roll);
+    m_rotation = glm::eulerAngleYXZ(glm::radians(yaw), glm::radians(pitch), glm::radians(roll));
   }
 
   void Transform::SetRotation(const glm::vec3& rotation) {
@@ -86,6 +86,13 @@ namespace Flame {
 
   glm::mat4 Transform::GetRotationMat() const {
     return glm::mat4(m_rotation);
+  }
+
+  glm::mat4 Transform::GetMat() const {
+    glm::mat4 result = glm::translate(glm::mat4(1.0f), m_position)
+      * GetRotationMat()
+      * glm::scale(glm::mat4(1.0f), m_scale);
+    return result;
   }
 
   float Transform::GetPitch() const {
