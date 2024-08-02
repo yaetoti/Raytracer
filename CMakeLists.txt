@@ -5,6 +5,9 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 set(BUILD_SHARED_LIBS OFF)
 set(GLM_BUILD_TESTS OFF)
+set(ASSIMP_BUILD_TESTS OFF)
+set(ASSIMP_BUILD_ZLIB ON)
+set(ASSIMP_INSTALL OFF)
 
 add_definitions(
   -DUNICODE
@@ -15,6 +18,7 @@ add_definitions(
 )
 
 add_subdirectory(vendor/glm)
+add_subdirectory(vendor/assimp)
 add_subdirectory(src/ConsoleLib)
 add_subdirectory(src/Engine)
 add_subdirectory(src/Project)
