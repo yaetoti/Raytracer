@@ -117,10 +117,10 @@ namespace Flame {
       if (!dragger) {
         HitRecord<MeshSystem::HitResult> record;
         if (MeshSystem::Get()->Hit(ray, record, 0.0f, 1000.0f)) {
-          dragger = DraggerFactory::CreateDragger(record);
+          dragger = DraggerFactory::CreateDragger(record, m_camera->GetPosition(), m_camera->GetFrontUnit());
         }
       } else {
-        dragger->Drag(ray);
+        dragger->Drag(ray, m_camera->GetFrontUnit());
       }
     } else {
       if (dragger != nullptr) {
