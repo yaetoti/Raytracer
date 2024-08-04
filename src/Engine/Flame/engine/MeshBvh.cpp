@@ -79,8 +79,8 @@ namespace Flame {
       record.time = t;
       record.point = r.AtParameter(t);
       // Interpolate normal
-      record.normal = barycentric.x * normals[0] + barycentric.y * normals[1] + barycentric.z * normals[2];
-      //record.normal = glm::cross(v0v1, v0v2);
+      //record.normal = barycentric.x * normals[0] + barycentric.y * normals[1] + barycentric.z * normals[2];
+      record.normal = glm::cross(v0v1, v0v2);
 	    return true;
     }
 

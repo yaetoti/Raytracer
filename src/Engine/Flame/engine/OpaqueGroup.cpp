@@ -115,8 +115,8 @@ namespace Flame {
           const glm::mat4& modelMat = perInstance->data.transform.GetMat();
           glm::mat4 modelMatInv = glm::inverse(modelMat);
           glm::vec4 position = modelMatInv * glm::vec4(ray.origin, 1.0f);
-          glm::vec3 direction = glm::normalize(modelMatInv * glm::vec4(ray.direction, 0.0f));
-          Ray rayModel { position / position.w, glm::normalize(direction) };
+          glm::vec3 direction = modelMatInv * glm::vec4(ray.direction, 0.0f);
+          Ray rayModel { position / position.w, direction };
 
           // Hit model in model space
           if (model.Hit(rayModel, record0, tMin, tMax)) {

@@ -118,14 +118,14 @@ namespace Flame {
           glm::mat4 modelMatInv = glm::inverse(modelMat);
           glm::vec4 position = modelMatInv * glm::vec4(ray.origin, 1.0f);
           glm::vec3 direction = modelMatInv * glm::vec4(ray.direction, 0.0f);
-          Ray rayModel { position / position.w, glm::normalize(direction) };
+          Ray rayModel { position / position.w, direction };
 
           // Hit model in model space
           if (model.Hit(rayModel, record0, tMin, tMax)) {
             // If hit - update tMax and InvTransform the results
             tMax = record0.time;
+            record.time = record0.time;
             position = modelMat * glm::vec4(record0.point, 1.0f);
-            record.time = tMax;
             record.point = position / position.w;
             record.normal = glm::normalize(modelMat * glm::vec4(record0.normal, 0.0f));
             record.data = perInstance.get();

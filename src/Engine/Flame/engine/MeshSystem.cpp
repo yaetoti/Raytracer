@@ -46,7 +46,7 @@ namespace Flame {
     {
       auto& model = m_hologramGroup.AddModel("Samurai", ModelManager::Get()->GetModel("Assets/Models/Samurai/Samurai1.obj"));
       auto& material1 = model->AddMaterial("Default", {});
-      material1->AddInstance("Po", { Transform { glm::vec3(0.0f) }, glm::vec3(0, 1, 1), glm::vec3(1, 0, 0) });
+      material1->AddInstance("Po", { Transform { glm::vec3(0.0f), glm::vec3(0.5f) }, glm::vec3(0, 1, 1), glm::vec3(1, 0, 0) });
       material1->AddInstance("Lmao", { Transform { glm::vec3(1.25f, 0.0f, 0.0f) }, glm::vec3(0, 1, 0), glm::vec3(0, 1, 1) });
     }
 
@@ -69,8 +69,8 @@ namespace Flame {
   }
 
   bool MeshSystem::Hit(const Ray& ray, HitRecord<HitResult>& record, float tMin, float tMax) const {
-    HitRecord<Flame::OpaqueGroup::PerInstance*> opaqueResult;
-    HitRecord<Flame::HologramGroup::PerInstance*> hologramResult;
+    HitRecord<OpaqueGroup::PerInstance*> opaqueResult;
+    HitRecord<HologramGroup::PerInstance*> hologramResult;
     bool wasHit = false;
 
     if (m_opaqueGroup.HitInstance(ray, opaqueResult, tMin, tMax)) {
