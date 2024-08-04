@@ -21,23 +21,20 @@ namespace Flame {
       float time;
     };
 
-    explicit DxRenderer(Window* window);
+    explicit DxRenderer(std::shared_ptr<Window> window, std::shared_ptr<AlignedCamera> camera);
 
     void Init();
     void Cleanup();
-    void UpdateCamera(float deltaTime);
     void Update(float deltaTime);
     void Render(float time, float deltaTime);
     void Resize(uint32_t width, uint32_t height);
 
   private:
-    Window* m_window;
+    std::shared_ptr<Window> m_window;
+    std::shared_ptr<AlignedCamera> m_camera;
     ComPtr<ID3D11RasterizerState> m_rasterizerState;
     ConstantBuffer<PerFrame> m_constantBuffer;
-
-    // AlignedCamera test
     InputSystem* m_input;
-    std::shared_ptr<AlignedCamera> m_camera;
 
     std::vector<float> m_resolution;
   };

@@ -14,13 +14,11 @@
 #include "Flame/utils/draggers/IDragger.h"
 
 namespace Flame {
-  DxRenderer::DxRenderer(Window* window)
-  : m_window(window) {
+  DxRenderer::DxRenderer(std::shared_ptr<Window> window, std::shared_ptr<AlignedCamera> camera)
+  : m_window(std::move(window))
+  , m_camera(std::move(camera)) {
     m_input = &m_window->GetInputSystem();
     m_resolution.resize(4);
-
-    m_camera = std::make_shared<AlignedCamera>(m_window->GetWidth(), m_window->GetHeight(), 90.0f, 0.01f, 1000.0f);
-    m_camera->SetPosition(glm::vec3(0, 0, 2));
 
     Resize(m_window->GetWidth(), m_window->GetHeight());
   }
@@ -52,85 +50,7 @@ namespace Flame {
     m_constantBuffer.Reset();
   }
 
-  void DxRenderer::UpdateCamera(float deltaTime) {
-    static float baseSpeed = 0.5f;
-    float speed = baseSpeed;
-    float rollSpeedDeg = 90.0f;
-
-    // Movement speed
-    if (m_input->IsKeyPressed(VK_SHIFT)) {
-      speed *= 5;
-    }
-    if (m_input->GetScrollDelta() != 0.0f) {
-      baseSpeed += baseSpeed * 0.05f * m_input->GetScrollDelta();
-    }
-
-    // Movement
-    if (m_input->IsKeyPressed('A')) {
-      m_camera->SetPosition(m_camera->GetPosition() + m_camera->GetRightUnit() * -speed * deltaTime);
-    }
-    if (m_input->IsKeyPressed('D')) {
-      m_camera->SetPosition(m_camera->GetPosition() + m_camera->GetRightUnit() * speed * deltaTime);
-    }
-    if (m_input->IsKeyPressed('W')) {
-      m_camera->SetPosition(m_camera->GetPosition() + m_camera->GetFrontUnit() * speed * deltaTime);
-    }
-    if (m_input->IsKeyPressed('S')) {
-      m_camera->SetPosition(m_camera->GetPosition() + m_camera->GetFrontUnit() * -speed * deltaTime);
-    }
-    if (m_input->IsKeyPressed('Q')) {
-      m_camera->SetPosition(m_camera->GetPosition() + m_camera->GetUpUnit() * -speed * deltaTime);
-    }
-    if (m_input->IsKeyPressed('E')) {
-      m_camera->SetPosition(m_camera->GetPosition() + m_camera->GetUpUnit() * speed * deltaTime);
-    }
-
-    // Rotation
-    if (m_input->IsMouseButtonPressed(MouseButton::LEFT)) {
-      static float rotationSpeedDeg = -180.0f;
-      constexpr float sensitivity = 1.0f;
-      auto[x, y] = m_input->GetCursorPos();
-      float width = m_window->GetWidth();
-      float height = m_window->GetHeight();
-      float halfWidth = width * 0.5f;
-      float halfHeight = height * 0.5f;
-
-#if 1
-      float deltaX = (x - halfWidth) / width * sensitivity;
-      float deltaY = (y - halfHeight) / height * sensitivity;
-      m_camera->Rotate(deltaY * rotationSpeedDeg * deltaTime, deltaX * rotationSpeedDeg * deltaTime);
-#else
-      auto[lastX, lastY] = m_input->GetLastCursorPos();
-      float deltaX = ((x - lastX) / width) * sensitivity;
-      float deltaY = ((y - lastY) / height) * sensitivity;
-      m_camera->Rotate(deltaY * rotationSpeedDeg, deltaX * rotationSpeedDeg);
-#endif
-    }
-
-    // Dragging
-    static std::unique_ptr<IDragger> dragger = nullptr;
-
-    if (m_input->IsMouseButtonPressed(MouseButton::RIGHT)) {
-      auto[x, y] = m_input->GetCursorPos();
-      Ray ray = m_camera->GetRay(static_cast<uint32_t>(x), static_cast<uint32_t>(y));
-
-      if (!dragger) {
-        HitRecord<MeshSystem::HitResult> record;
-        if (MeshSystem::Get()->Hit(ray, record, 0.0f, 1000.0f)) {
-          dragger = DraggerFactory::CreateDragger(record, m_camera->GetPosition(), m_camera->GetFrontUnit());
-        }
-      } else {
-        dragger->Drag(ray, m_camera->GetFrontUnit());
-      }
-    } else {
-      if (dragger != nullptr) {
-        dragger = nullptr;
-      }
-    }
-  }
-
   void DxRenderer::Update(float deltaTime) {
-    UpdateCamera(deltaTime);
   }
 
   void DxRenderer::Render(float time, float deltaTime) {
