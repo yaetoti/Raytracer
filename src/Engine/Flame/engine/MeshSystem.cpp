@@ -11,10 +11,10 @@ namespace Flame {
     {
       auto& model1 = m_opaqueGroup.AddModel("Samurai", ModelManager::Get()->GetModel("Assets/Models/Samurai/Samurai1.obj"));
       auto& material1 = model1->AddMaterial("Default", {});
-      material1->AddInstance("Wu", { Transform(glm::vec3(-2, -2, 0)) });
-      material1->AddInstance("Wu", { Transform(glm::vec3(-2, 2, 0)) });
+      material1->AddInstance("Yu", { Transform(glm::vec3(-2, -2, 0)) });
+      material1->AddInstance("Chu", { Transform(glm::vec3(-2, 2, 0)) });
       material1->AddInstance("Wu", { Transform(glm::vec3(2, -2, 0)) });
-      material1->AddInstance("Wu", { Transform(glm::vec3(2, 2, 0)) });
+      material1->AddInstance("Po", { Transform(glm::vec3(2, 2, 0)) });
       auto& material2 = model1->AddMaterial("Custom", {});
       material2->AddInstance("Yan", { Transform(glm::vec3(0, 0, 2)) });
       material2->AddInstance("Chen", { Transform(glm::vec3(0, 0, -2)) });
