@@ -31,7 +31,7 @@ private:
   std::shared_ptr<Flame::Window> m_window;
   Flame::InputSystem* m_input;
 
-  std::shared_ptr<Flame::Scene> m_scene;
+  std::shared_ptr<Flame::SceneOld> m_scene;
   std::shared_ptr<Flame::AlignedCamera> m_camera;
   std::shared_ptr<Flame::Renderer> m_renderer;
 

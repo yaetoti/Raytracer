@@ -106,7 +106,7 @@ namespace Flame {
     }
 
     // Dragging
-    static OpaqueGroup::PerInstance* captured = nullptr;
+    static std::unique_ptr<MeshSystem::HitResult> captured = nullptr;
     static float time = 0.0f;
 
     if (m_input->IsMouseButtonPressed(MouseButton::RIGHT)) {
@@ -114,7 +114,7 @@ namespace Flame {
       Ray ray = m_camera->GetRay(static_cast<uint32_t>(x), static_cast<uint32_t>(y));
 
       if (!captured) {
-        HitRecord record {};
+        HitRecord<MeshSystem::HitResult> record;
         std::cout << "\nStart Direction: " << ray.direction << '\n';
 
         bool hit = MeshSystem::Get()->Hit(ray, record, 0.0f, 1000.0f);
@@ -122,13 +122,21 @@ namespace Flame {
         std::cout << "Time: " << record.time << '\n';
         std::cout << "Point: " << record.point << '\n';
         std::cout << "Normal: " << record.normal << '\n';
-        std::cout << "Hitable: " << record.hitable << '\n';
+        std::cout << "Group: " << static_cast<uint32_t>(record.data.groupType) << '\n';
         if (hit) {
-          captured = static_cast<OpaqueGroup::PerInstance*>(record.hitable);
+          captured = std::make_unique<MeshSystem::HitResult>(record.data);
           time = record.time;
         }
       } else {
-        captured->data.modelMatrix = glm::translate(ray.AtParameter(time));
+        glm::mat4* modelMatrix;
+        if (captured->groupType == GroupType::OPAQUE_GROUP) {
+          modelMatrix = &captured->perInstanceOpaque->data.modelMatrix;
+        }
+        else if (captured->groupType == GroupType::HOLOGRAM_GROUP) {
+          modelMatrix = &captured->perInstanceHologram->data.modelMatrix;
+        }
+
+        *modelMatrix = glm::translate(ray.AtParameter(time));
       }
     } else {
       if (captured != nullptr) {

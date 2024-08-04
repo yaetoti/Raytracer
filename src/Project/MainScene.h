@@ -4,7 +4,7 @@
 
 #include <memory>
 
-struct MainScene : Flame::Scene {
+struct MainScene : Flame::SceneOld {
   explicit MainScene(Flame::Window& window);
   ~MainScene() override = default;
 

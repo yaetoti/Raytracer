@@ -7,7 +7,7 @@
 #include "Flame/utils/Random.h"
 
 namespace Flame {
-  Renderer::Renderer(const Scene* scene)
+  Renderer::Renderer(const SceneOld* scene)
   : m_scene(scene)
   , m_executor(std::max(1, static_cast<int>(std::thread::hardware_concurrency()) - 1)) {
   }

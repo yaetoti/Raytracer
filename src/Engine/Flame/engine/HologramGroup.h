@@ -4,6 +4,7 @@
 #include <glm/glm.hpp>
 
 #include "Model.h"
+#include "Transform.h"
 #include "Flame/graphics/buffers/VertexBuffer.h"
 #include "Flame/graphics/shaders/PixelShader.h"
 #include "Flame/graphics/shaders/VertexShader.h"
@@ -11,10 +12,15 @@
 
 namespace Flame {
   struct HologramGroup final {
-    struct InstanceData final {
+    struct InstanceShaderData final {
       glm::mat4 modelMatrix;
       glm::vec3 mainColor;
       glm::vec3 secondaryColor;
+    };
+
+    struct InstanceData final {
+      Transform transform;
+      // Working there
     };
 
     struct MaterialData final {
@@ -23,7 +29,9 @@ namespace Flame {
 
     struct PerInstance final {
       std::string name;
-      InstanceData data;
+      InstanceShaderData data;
+      //InstanceData entityData;
+      // Working there
     };
 
     struct PerMaterial final {
@@ -33,7 +41,7 @@ namespace Flame {
       const std::vector<std::shared_ptr<PerInstance>>& GetInstances() const;
 
       std::shared_ptr<PerInstance> GetInstance(const std::string& name);
-      std::shared_ptr<PerInstance>& AddInstance(const std::string& name, const InstanceData& data);
+      std::shared_ptr<PerInstance>& AddInstance(const std::string& name, const InstanceShaderData& data);
 
     public:
       std::string name;
@@ -67,14 +75,14 @@ namespace Flame {
     void Cleanup();
 
     /// HitRecord.hitable = PerInstance
-    bool HitInstance(const Ray& ray, HitRecord& record, float tMin, float tMax) const;
+    bool HitInstance(const Ray& ray, HitRecord<PerInstance*>& record, float tMin, float tMax) const;
     uint32_t GetInstanceCount() const;
     void UpdateInstanceBuffer();
     void Render();
 
   private:
     std::vector<std::shared_ptr<PerModel>> m_perModel;
-    VertexBuffer<InstanceData> m_instanceBuffer;
+    VertexBuffer<InstanceShaderData> m_instanceBuffer;
     bool m_instanceBufferDirty = true;
 
     VertexShader m_vertexShader;

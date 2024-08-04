@@ -7,7 +7,21 @@
 #include "Flame/window/Window.h"
 
 namespace Flame {
+  enum class GroupType {
+    OPAQUE_GROUP,
+    HOLOGRAM_GROUP,
+    COUNT
+  };
+
   struct MeshSystem final {
+    struct HitResult final {
+      union {
+        HologramGroup::PerInstance* perInstanceHologram;
+        OpaqueGroup::PerInstance* perInstanceOpaque;
+      };
+      GroupType groupType;
+    };
+
     MeshSystem();
 
     void Init();
@@ -15,7 +29,7 @@ namespace Flame {
     void Update(float deltaTime);
     void Render(float deltaTime);
 
-    bool Hit(const Ray& ray, HitRecord& record, float tMin, float tMax) const;
+    bool Hit(const Ray& ray, HitRecord<HitResult>& record, float tMin, float tMax) const;
 
     static MeshSystem* Get();
 

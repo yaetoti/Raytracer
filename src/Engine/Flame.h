@@ -22,7 +22,7 @@
 #include "Flame/graphics/shaders/PixelShader.h"
 #include "Flame/graphics/shaders/VertexShader.h"
 #include "Flame/graphics/Vertex.h"
-#include "Flame/layers/Scene.h"
+#include "Flame/layers/SceneOld.h"
 #include "Flame/math/Aabb.h"
 #include "Flame/math/AabbOld.h"
 #include "Flame/math/BvhOld.h"

@@ -16,7 +16,7 @@ namespace Flame {
   struct Aabb final {
     explicit Aabb(glm::vec3 min = glm::vec3(0.0f), glm::vec3 max = glm::vec3(0.0f));
 
-    bool Hit(const Ray& r, HitRecord& record, float tMin, float tMax) const;
+    bool Hit(const Ray& r, HitRecord<const Aabb*>& record, float tMin, float tMax) const;
 
     bool Intersects(const Aabb& other) const;
 

@@ -68,12 +68,25 @@ namespace Flame {
     m_hologramGroup.Render();
   }
 
-  bool MeshSystem::Hit(const Ray& ray, HitRecord& record, float tMin, float tMax) const {
-    bool wasHit = m_opaqueGroup.HitInstance(ray, record, tMin, tMax);
-    if (wasHit) {
-      tMax = record.time;
+  bool MeshSystem::Hit(const Ray& ray, HitRecord<HitResult>& record, float tMin, float tMax) const {
+    HitRecord<Flame::OpaqueGroup::PerInstance*> opaqueResult;
+    HitRecord<Flame::HologramGroup::PerInstance*> hologramResult;
+    bool wasHit = false;
+
+    if (m_opaqueGroup.HitInstance(ray, opaqueResult, tMin, tMax)) {
+      wasHit |= true;
+      tMax = opaqueResult.time;
+      record = opaqueResult;
+      record.data.groupType = GroupType::OPAQUE_GROUP;
+      record.data.perInstanceOpaque = opaqueResult.data;
     }
-    wasHit |= m_hologramGroup.HitInstance(ray, record, tMin, tMax);
+    if (m_hologramGroup.HitInstance(ray, hologramResult, tMin, tMax)) {
+      wasHit |= true;
+      tMax = hologramResult.time;
+      record = hologramResult;
+      record.data.groupType = GroupType::HOLOGRAM_GROUP;
+      record.data.perInstanceHologram = hologramResult.data;
+    }
 
     return wasHit;
   }

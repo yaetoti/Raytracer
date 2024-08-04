@@ -19,12 +19,12 @@ namespace Flame {
     : bvh(this) {
     }
 
-    bool Hit(const Ray& r, HitRecord& record, float tMin, float tMax) const {
+    bool Hit(const Ray& r, HitRecord<const Mesh*>& record, float tMin, float tMax) const {
       if (!bvh.Hit(r, record, tMin, tMax)) {
         return false;
       }
 
-      record.hitable = const_cast<Mesh*>(this);
+      record.data = this;
       return true;
     }
 

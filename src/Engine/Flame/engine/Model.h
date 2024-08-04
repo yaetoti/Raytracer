@@ -21,24 +21,25 @@ namespace Flame {
 
 		Model() = default;
 
-		bool Hit(const Ray& r, HitRecord& record, float tMin, float tMax) const {
+		bool Hit(const Ray& r, HitRecord<const Model*>& record, float tMin, float tMax) const {
 		  if (m_meshes.empty()) {
 		    return false;
 		  }
 
-			bool wasHit = false;
+			HitRecord<const Mesh*> record0;
 			for (const auto& mesh : m_meshes) {
-			  if (mesh.Hit(r, record, tMin, tMax)) {
-					wasHit = true;
-			    tMax = record.time;
+			  if (mesh.Hit(r, record0, tMin, tMax)) {
+			    tMax = record0.time;
 			  }
 			}
 
-			if (wasHit) {
-				record.hitable = const_cast<Model*>(this);
+			if (record0.data != nullptr) {
+				record = record0;
+				record.data = this;
+				return true;
 			}
 
-			return wasHit;
+			return false;
 		}
 
 		void Reset() {

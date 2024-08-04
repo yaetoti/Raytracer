@@ -21,12 +21,12 @@ namespace Flame {
     explicit MeshBvh(const Mesh* mesh);
 
     void Build();
-    bool Hit(const Ray& r, HitRecord& record, float tMin, float tMax) const;
+    bool Hit(const Ray& r, HitRecord<const Mesh*>& record, float tMin, float tMax) const;
 
   private:
     // Really really hard
-    bool HitFace(uint32_t faceId, const Ray& r, HitRecord& record, float tMin, float tMax) const;
-    bool HitNode(uint32_t nodeId, const Ray& r, HitRecord& record, float tMin, float tMax) const;
+    bool HitFace(uint32_t faceId, const Ray& r, HitRecord<const Mesh*>& record, float tMin, float tMax) const;
+    bool HitNode(uint32_t nodeId, const Ray& r, HitRecord<const Mesh*>& record, float tMin, float tMax) const;
 
     void InitBounds();
     uint32_t InitNodes(std::vector<uint32_t>&& boundsId, bool shouldSubdivide = true);

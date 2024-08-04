@@ -100,11 +100,11 @@ namespace Flame {
     m_perModel.clear();
   }
 
-  bool OpaqueGroup::HitInstance(const Ray& ray, HitRecord& record, float tMin, float tMax) const {
+  bool OpaqueGroup::HitInstance(const Ray& ray, HitRecord<PerInstance*>& record, float tMin, float tMax) const {
     // TODO BVH for objects? Maybe if I know that some objects are static
-    bool wasHit = false;
+    HitRecord<const Model*> record0;
 
-    // Go through all instances and the closest one
+    // Go through all instances and find the closest one
     for (const auto & perModel : m_perModel) {
       const auto& model = *perModel->model;
 
@@ -115,24 +115,24 @@ namespace Flame {
           const glm::mat4& modelMat = perInstance->data.modelMatrix;
           glm::mat4 modelMatInv = glm::inverse(modelMat);
           glm::vec4 position = modelMatInv * glm::vec4(ray.origin, 1.0f);
-          glm::vec3 direction = modelMatInv * glm::vec4(ray.direction, 0.0f);
+          glm::vec3 direction = glm::normalize(modelMatInv * glm::vec4(ray.direction, 0.0f));
           Ray rayModel { position / position.w, glm::normalize(direction) };
 
           // Hit model in model space
-          if (model.Hit(rayModel, record, tMin, tMax)) {
+          if (model.Hit(rayModel, record0, tMin, tMax)) {
             // If hit - update tMax and InvTransform the results
-            wasHit = true;
-            tMax = record.time;
-            position = modelMat * glm::vec4(record.point, 1.0f);
+            tMax = record0.time;
+            position = modelMat * glm::vec4(record0.point, 1.0f);
+            record.time = tMax;
             record.point = position / position.w;
-            record.normal = glm::normalize(modelMat * glm::vec4(record.normal, 0.0f));
-            record.hitable = perInstance.get();
+            record.normal = glm::normalize(modelMat * glm::vec4(record0.normal, 0.0f));
+            record.data = perInstance.get();
           }
         }
       }
     }
 
-    return wasHit;
+    return record.data != nullptr;
   }
 
   uint32_t OpaqueGroup::GetInstanceCount() const {

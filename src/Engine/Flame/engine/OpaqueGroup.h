@@ -63,7 +63,7 @@ namespace Flame {
     void Cleanup();
 
     /// HitRecord.hitable = PerInstance
-    bool HitInstance(const Ray& ray, HitRecord& record, float tMin, float tMax) const;
+    bool HitInstance(const Ray& ray, HitRecord<PerInstance*>& record, float tMin, float tMax) const;
     uint32_t GetInstanceCount() const;
     void UpdateInstanceBuffer();
     void Render();

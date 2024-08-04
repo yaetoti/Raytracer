@@ -1,5 +1,6 @@
 #include "MeshBvh.h"
 
+#include <iostream>
 #include <numeric>
 
 #include "Mesh.h"
@@ -32,11 +33,11 @@ namespace Flame {
     m_nodes.shrink_to_fit();
   }
 
-  bool MeshBvh::Hit(const Ray& r, HitRecord& record, float tMin, float tMax) const {
+  bool MeshBvh::Hit(const Ray& r, HitRecord<const Mesh*>& record, float tMin, float tMax) const {
     return HitNode(0, r, record, tMin, tMax);
   }
 
-  bool MeshBvh::HitFace(uint32_t faceId, const Ray& r, HitRecord& record, float tMin, float tMax) const {
+  bool MeshBvh::HitFace(uint32_t faceId, const Ray& r, HitRecord<const Mesh*>& record, float tMin, float tMax) const {
     glm::vec3 vertices[3] = {
       m_mesh->vertices[m_mesh->faces[faceId].indices[0]],
       m_mesh->vertices[m_mesh->faces[faceId].indices[1]],
@@ -86,7 +87,7 @@ namespace Flame {
 	  return false;
   }
 
-  bool MeshBvh::HitNode(uint32_t nodeId, const Ray& r, HitRecord& record, float tMin, float tMax) const {
+  bool MeshBvh::HitNode(uint32_t nodeId, const Ray& r, HitRecord<const Mesh*>& record, float tMin, float tMax) const {
     // BVH hit algorithm:
     // 1. Determine if current box is even being hit
     // 1.1.If not - return false
@@ -103,7 +104,7 @@ namespace Flame {
 
     // If bound wasn't hit - no hit
     {
-      HitRecord record0;
+      HitRecord<const Aabb*> record0;
       if (!node.box.Hit(r, record0, tMin, tMax)) {
         return false;
       }
@@ -111,20 +112,26 @@ namespace Flame {
 
     // If leaf
     if (!node.boxesId.empty()) {
-      HitRecord record0 { .time = tMax };
+      HitRecord<const Mesh*> record0;
+      record0.time = tMax;
       bool anyHit = false;
       for (uint32_t id : node.boxesId) {
         if (HitFace(id, r, record0, tMin, record0.time)) {
-          record = record0;
           anyHit = true;
         }
       }
 
-      return anyHit;
+      if (anyHit) {
+        record = record0;
+        return true;
+      }
+
+      return false;
     }
 
     // If compound
-    HitRecord record0 { .time = tMax };
+    HitRecord<const Mesh*> record0;
+    record0.time = tMax;
     bool anyHit = HitNode(node.leftId, r, record0, tMin, record0.time);
     anyHit |= HitNode(node.rightId, r, record0, tMin, record0.time);
     if (anyHit) {

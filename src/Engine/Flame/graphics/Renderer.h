@@ -1,12 +1,12 @@
 #pragma once
 #include "Flame/camera/AlignedCamera.h"
-#include "Flame/layers/Scene.h"
+#include "Flame/layers/SceneOld.h"
 #include "Flame/utils/ParallelExecutor.h"
 #include "Flame/window/Window.h"
 
 namespace Flame {
   struct Renderer final {
-    explicit Renderer(const Scene* scene);
+    explicit Renderer(const SceneOld* scene);
 
     void Render(Framebuffer& surface, const AlignedCamera& camera);
     void Resize(uint32_t width, uint32_t height);
@@ -19,7 +19,7 @@ namespace Flame {
     glm::vec3 CalculateDirectLightPerPoint(const AlignedCamera& camera, const HitRecordOld& record);
 
   private:
-    const Scene* m_scene;
+    const SceneOld* m_scene;
     ParallelExecutor m_executor;
 
     // Render data
