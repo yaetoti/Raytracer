@@ -107,6 +107,7 @@ namespace Flame {
 
     // Dragging
     static std::unique_ptr<MeshSystem::HitResult> captured = nullptr;
+    static glm::vec3 offset;
     static float time = 0.0f;
 
     if (m_input->IsMouseButtonPressed(MouseButton::RIGHT)) {
@@ -126,17 +127,25 @@ namespace Flame {
         if (hit) {
           captured = std::make_unique<MeshSystem::HitResult>(record.data);
           time = record.time;
+          Transform* transform;
+          if (captured->groupType == GroupType::OPAQUE_GROUP) {
+            transform = &captured->perInstanceOpaque->data.transform;
+          }
+          else if (captured->groupType == GroupType::HOLOGRAM_GROUP) {
+            transform = &captured->perInstanceHologram->data.transform;
+          }
+          offset = transform->GetPosition() - record.point;
         }
       } else {
-        glm::mat4* modelMatrix;
+        Transform* transform;
         if (captured->groupType == GroupType::OPAQUE_GROUP) {
-          modelMatrix = &captured->perInstanceOpaque->data.modelMatrix;
+          transform = &captured->perInstanceOpaque->data.transform;
         }
         else if (captured->groupType == GroupType::HOLOGRAM_GROUP) {
-          modelMatrix = &captured->perInstanceHologram->data.modelMatrix;
+          transform = &captured->perInstanceHologram->data.transform;
         }
 
-        *modelMatrix = glm::translate(ray.AtParameter(time));
+        transform->SetPosition(ray.AtParameter(time) + offset);
       }
     } else {
       if (captured != nullptr) {

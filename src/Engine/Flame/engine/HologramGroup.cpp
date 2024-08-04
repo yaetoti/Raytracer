@@ -20,7 +20,7 @@ namespace Flame {
     return nullptr;
   }
 
-  std::shared_ptr<HologramGroup::PerInstance>& HologramGroup::PerMaterial::AddInstance(const std::string& name, const InstanceShaderData& data) {
+  std::shared_ptr<HologramGroup::PerInstance>& HologramGroup::PerMaterial::AddInstance(const std::string& name, const InstanceData& data) {
     assert(GetInstance(name) == nullptr);
 
     return m_perInstance.emplace_back(std::make_shared<PerInstance>(name, data));
@@ -114,7 +114,7 @@ namespace Flame {
         for (const auto & perInstance : perMaterial->GetInstances()) {
           // TODO we could store these as we use them often, but definitely not in PerInstance as we copy it entirely into the buffer
           // Transform ray
-          const glm::mat4& modelMat = perInstance->data.modelMatrix;
+          const glm::mat4& modelMat = perInstance->data.transform.GetMat();
           glm::mat4 modelMatInv = glm::inverse(modelMat);
           glm::vec4 position = modelMatInv * glm::vec4(ray.origin, 1.0f);
           glm::vec3 direction = modelMatInv * glm::vec4(ray.direction, 0.0f);
@@ -152,13 +152,13 @@ namespace Flame {
     // Fill buffer
     auto mapping = m_instanceBuffer.Map(D3D11_MAP_WRITE_DISCARD);
     {
-      auto destPtr = static_cast<InstanceShaderData*>(mapping.pData);
+      auto destPtr = static_cast<InstanceData::ShaderData*>(mapping.pData);
       uint32_t numCopied = 0;
 
       for (const auto & perModel : m_perModel) {
         for (const auto & perMaterial : perModel->GetMaterials()) {
           for (const auto & perInstance : perMaterial->GetInstances()) {
-            destPtr[numCopied++] = perInstance->data;
+            destPtr[numCopied++] = perInstance->data.GetShaderData();
           }
         }
       }

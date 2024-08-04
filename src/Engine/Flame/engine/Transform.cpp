@@ -4,10 +4,10 @@
 #include <glm/gtx/string_cast.hpp>
 
 namespace Flame {
-  Transform::Transform()
-  : m_position(0.0f)
-  , m_scale(1.0f)
-  , m_rotation(1.0f, 0.0f, 0.0f, 0.0f) {
+  Transform::Transform(const glm::vec3& position, const glm::vec3& scale, const glm::quat& rotation)
+  : m_position(position)
+  , m_scale(scale)
+  , m_rotation(rotation) {
   }
 
   void Transform::SetPosition(const glm::vec3& position) {

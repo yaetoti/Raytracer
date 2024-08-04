@@ -4,13 +4,25 @@
 #include <glm/glm.hpp>
 
 #include "Model.h"
+#include "Transform.h"
 #include "Flame/graphics/shaders/PixelShader.h"
 #include "Flame/graphics/shaders/VertexShader.h"
 
 namespace Flame {
   struct OpaqueGroup final {
     struct InstanceData final {
-      glm::mat4 modelMatrix;
+      struct ShaderData final {
+        glm::mat4 modelMatrix;
+      };
+
+      ShaderData GetShaderData() const {
+        ShaderData data;
+        data.modelMatrix = transform.GetMat();
+        return data;
+      }
+
+    public:
+      Transform transform;
     };
 
     struct MaterialData final {
@@ -70,7 +82,7 @@ namespace Flame {
 
   private:
     std::vector<std::shared_ptr<PerModel>> m_perModel;
-    VertexBuffer<InstanceData> m_instanceBuffer;
+    VertexBuffer<InstanceData::ShaderData> m_instanceBuffer;
     bool m_instanceBufferDirty = true;
 
     VertexShader m_vertexShader;

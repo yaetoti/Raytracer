@@ -12,15 +12,25 @@
 
 namespace Flame {
   struct HologramGroup final {
-    struct InstanceShaderData final {
-      glm::mat4 modelMatrix;
+    struct InstanceData final {
+      struct ShaderData final {
+        glm::mat4 modelMatrix;
+        glm::vec3 mainColor;
+        glm::vec3 secondaryColor;
+      };
+
+      ShaderData GetShaderData() const {
+        ShaderData data;
+        data.modelMatrix = transform.GetMat();
+        data.mainColor = mainColor;
+        data.secondaryColor = secondaryColor;
+        return data;
+      }
+
+    public:
+      Transform transform;
       glm::vec3 mainColor;
       glm::vec3 secondaryColor;
-    };
-
-    struct InstanceData final {
-      Transform transform;
-      // Working there
     };
 
     struct MaterialData final {
@@ -29,9 +39,7 @@ namespace Flame {
 
     struct PerInstance final {
       std::string name;
-      InstanceShaderData data;
-      //InstanceData entityData;
-      // Working there
+      InstanceData data;
     };
 
     struct PerMaterial final {
@@ -41,7 +49,7 @@ namespace Flame {
       const std::vector<std::shared_ptr<PerInstance>>& GetInstances() const;
 
       std::shared_ptr<PerInstance> GetInstance(const std::string& name);
-      std::shared_ptr<PerInstance>& AddInstance(const std::string& name, const InstanceShaderData& data);
+      std::shared_ptr<PerInstance>& AddInstance(const std::string& name, const InstanceData& data);
 
     public:
       std::string name;
@@ -82,7 +90,7 @@ namespace Flame {
 
   private:
     std::vector<std::shared_ptr<PerModel>> m_perModel;
-    VertexBuffer<InstanceShaderData> m_instanceBuffer;
+    VertexBuffer<InstanceData::ShaderData> m_instanceBuffer;
     bool m_instanceBufferDirty = true;
 
     VertexShader m_vertexShader;

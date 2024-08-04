@@ -6,7 +6,7 @@
 
 namespace Flame {
   struct Transform final {
-    explicit Transform();
+    explicit Transform(const glm::vec3& position = glm::vec3 { 0.0f }, const glm::vec3& scale = glm::vec3 { 1.0f }, const glm::quat& rotation = { 1.0f, 0.0f, 0.0f, 0.0f });
 
     void SetPosition(const glm::vec3& position);
     void SetPosition(float x, float y, float z);
@@ -40,8 +40,8 @@ namespace Flame {
 
     friend std::ostream& operator<<(std::ostream& out, const Transform& t);
   private:
-    glm::vec3 m_position;
-    glm::vec3 m_scale;
-    glm::quat m_rotation;
+    glm::vec3 m_position = glm::vec3 { 0.0f };
+    glm::vec3 m_scale = glm::vec3 { 1.0f };
+    glm::quat m_rotation = glm::quat { 1.0f, 0.0f, 0.0f, 0.0f };
   };
 }
