@@ -190,22 +190,22 @@ void Application::UpdateGrabbing(float deltaTime) {
 
   Flame::Ray ray = m_camera->GetRay(static_cast<uint32_t>(x), static_cast<uint32_t>(y));
 
-  if (m_input->IsMouseButtonPressed(Flame::MouseButton::RIGHT)) {
-    if (m_dragger == nullptr) {
-      Flame::HitRecordOld record;
-      std::vector<std::unique_ptr<Flame::IHitable>>& hitables = m_scene->GetHitables();
-      if (Flame::MathUtils::HitClosest(hitables.begin(), hitables.end(), ray, 0.0f, 1000.0f, record)) {
-        m_dragger = Flame::DraggerFactory::CreateDragger(record);
-      }
-    }
-  } else {
-    m_dragger = nullptr;
-  }
+  //if (m_input->IsMouseButtonPressed(Flame::MouseButton::RIGHT)) {
+  //  if (m_dragger == nullptr) {
+  //    Flame::HitRecordOld record;
+  //    std::vector<std::unique_ptr<Flame::IHitable>>& hitables = m_scene->GetHitables();
+  //    if (Flame::MathUtils::HitClosest(hitables.begin(), hitables.end(), ray, 0.0f, 1000.0f, record)) {
+  //      m_dragger = Flame::DraggerFactory::CreateDragger(record);
+  //    }
+  //  }
+  //} else {
+  //  m_dragger = nullptr;
+  //}
 
-  if (m_dragger != nullptr) {
-    m_dragger->Drag(ray);
-    sceneChanged = true;
-  }
+  //if (m_dragger != nullptr) {
+  //  m_dragger->Drag(ray);
+  //  sceneChanged = true;
+  //}
 
   if (sceneChanged) {
     m_renderer->ResetAccumulatedData();

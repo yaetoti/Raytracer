@@ -11,6 +11,8 @@
 #include <glm/ext/matrix_transform.hpp>
 #include <iostream>
 
+#include "Flame/utils/draggers/IDragger.h"
+
 namespace Flame {
   DxRenderer::DxRenderer(Window* window)
   : m_window(window) {
@@ -106,50 +108,23 @@ namespace Flame {
     }
 
     // Dragging
-    static std::unique_ptr<MeshSystem::HitResult> captured = nullptr;
-    static glm::vec3 offset;
-    static float time = 0.0f;
+    static std::unique_ptr<IDragger> dragger = nullptr;
 
     if (m_input->IsMouseButtonPressed(MouseButton::RIGHT)) {
       auto[x, y] = m_input->GetCursorPos();
       Ray ray = m_camera->GetRay(static_cast<uint32_t>(x), static_cast<uint32_t>(y));
 
-      if (!captured) {
+      if (!dragger) {
         HitRecord<MeshSystem::HitResult> record;
-        std::cout << "\nStart Direction: " << ray.direction << '\n';
-
-        bool hit = MeshSystem::Get()->Hit(ray, record, 0.0f, 1000.0f);
-        std::cout << "Hit: " << hit << '\n';
-        std::cout << "Time: " << record.time << '\n';
-        std::cout << "Point: " << record.point << '\n';
-        std::cout << "Normal: " << record.normal << '\n';
-        std::cout << "Group: " << static_cast<uint32_t>(record.data.groupType) << '\n';
-        if (hit) {
-          captured = std::make_unique<MeshSystem::HitResult>(record.data);
-          time = record.time;
-          Transform* transform;
-          if (captured->groupType == GroupType::OPAQUE_GROUP) {
-            transform = &captured->perInstanceOpaque->data.transform;
-          }
-          else if (captured->groupType == GroupType::HOLOGRAM_GROUP) {
-            transform = &captured->perInstanceHologram->data.transform;
-          }
-          offset = transform->GetPosition() - record.point;
+        if (MeshSystem::Get()->Hit(ray, record, 0.0f, 1000.0f)) {
+          dragger = DraggerFactory::CreateDragger(record);
         }
       } else {
-        Transform* transform;
-        if (captured->groupType == GroupType::OPAQUE_GROUP) {
-          transform = &captured->perInstanceOpaque->data.transform;
-        }
-        else if (captured->groupType == GroupType::HOLOGRAM_GROUP) {
-          transform = &captured->perInstanceHologram->data.transform;
-        }
-
-        transform->SetPosition(ray.AtParameter(time) + offset);
+        dragger->Drag(ray);
       }
     } else {
-      if (captured != nullptr) {
-        captured = nullptr;
+      if (dragger != nullptr) {
+        dragger = nullptr;
       }
     }
   }

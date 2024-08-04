@@ -44,5 +44,5 @@ private:
   float m_time = 0.0f;
   float m_deltaTime = 0.0f;
 
-  std::unique_ptr<Flame::IDragger> m_dragger;
+  //std::unique_ptr<Flame::IDragger> m_dragger;
 };

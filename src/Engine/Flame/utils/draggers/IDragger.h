@@ -11,50 +11,50 @@ namespace Flame {
     virtual void Drag(const Ray& r) = 0;
   };
 
-  struct ISphereDragger : IDragger {
-    explicit ISphereDragger(Sphere* draggable, const HitRecordOld& record)
-    : m_draggable(draggable)
+  struct OpaqueInstanceDragger final : IDragger {
+    explicit OpaqueInstanceDragger(const HitRecord<MeshSystem::HitResult>& record)
+    : m_draggable(record.data.perInstanceOpaque)
     , m_hitTime(record.time)
-    , m_offset(draggable->center - record.point) {
+    , m_offset(m_draggable->data.transform.GetPosition() - record.point) {
     }
 
     void Drag(const Ray& r) override {
-      m_draggable->center = r.AtParameter(m_hitTime) + m_offset;
+      m_draggable->data.transform.SetPosition(r.AtParameter(m_hitTime) + m_offset);
     }
 
   private:
-    Sphere* m_draggable;
+    OpaqueGroup::PerInstance* m_draggable;
     float m_hitTime;
     glm::vec3 m_offset;
   };
 
-  struct IMeshDragger : IDragger {
-    explicit IMeshDragger(MeshObject* draggable, const HitRecordOld& record)
-    : m_draggable(draggable)
+  struct HologramInstanceDragger final : IDragger {
+    explicit HologramInstanceDragger(const HitRecord<MeshSystem::HitResult>& record)
+    : m_draggable(record.data.perInstanceHologram)
     , m_hitTime(record.time)
-    , m_offset(draggable->Position() - record.point) {
+    , m_offset(m_draggable->data.transform.GetPosition() - record.point) {
     }
 
     void Drag(const Ray& r) override {
-      m_draggable->SetPosition(r.AtParameter(m_hitTime) + m_offset);
+      m_draggable->data.transform.SetPosition(r.AtParameter(m_hitTime) + m_offset);
     }
 
   private:
-    MeshObject* m_draggable;
+    HologramGroup::PerInstance* m_draggable;
     float m_hitTime;
     glm::vec3 m_offset;
   };
 
   struct DraggerFactory final {
-    static std::unique_ptr<IDragger> CreateDragger(const HitRecordOld& record) {
-      if (auto sphere = dynamic_cast<Flame::Sphere*>(record.hitable)) {
-        return std::make_unique<ISphereDragger>(sphere, record);
+    static std::unique_ptr<IDragger> CreateDragger(const HitRecord<MeshSystem::HitResult>& record) {
+      switch (record.data.groupType) {
+        case GroupType::OPAQUE_GROUP:
+          return std::make_unique<OpaqueInstanceDragger>(record);
+        case GroupType::HOLOGRAM_GROUP:
+          return std::make_unique<HologramInstanceDragger>(record);
+        default:
+          return nullptr;
       }
-      if (auto sphere = dynamic_cast<Flame::MeshObject*>(record.hitable)) {
-        return std::make_unique<IMeshDragger>(sphere, record);
-      }
-
-      return nullptr;
     }
   };
 }
