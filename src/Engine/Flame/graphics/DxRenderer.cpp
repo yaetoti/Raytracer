@@ -1,6 +1,5 @@
 #include "DxRenderer.h"
 #include "Flame/engine/MeshSystem.h"
-#include "Flame/engine/OpaqueGroup.h"
 #include "Flame/math/HitRecord.h"
 #include "Flame/utils/PtrProxy.h"
 

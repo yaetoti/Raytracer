@@ -3,34 +3,28 @@
 #include <vector>
 #include <glm/glm.hpp>
 
-#include "Model.h"
-#include "Transform.h"
+#include "Flame/engine/Transform.h"
 #include "Flame/graphics/buffers/VertexBuffer.h"
 #include "Flame/graphics/shaders/PixelShader.h"
 #include "Flame/graphics/shaders/VertexShader.h"
 #include "Flame/math/HitRecord.h"
 
 namespace Flame {
-  struct HologramGroup final {
+  struct TesselationGroup final {
     struct InstanceData final {
       struct ShaderData final {
         glm::mat4 modelMatrix;
-        glm::vec3 mainColor;
-        glm::vec3 secondaryColor;
       };
 
       ShaderData GetShaderData() const {
+        
         ShaderData data;
         data.modelMatrix = transform.GetMat();
-        data.mainColor = mainColor;
-        data.secondaryColor = secondaryColor;
         return data;
       }
 
     public:
       Transform transform;
-      glm::vec3 mainColor;
-      glm::vec3 secondaryColor;
     };
 
     struct MaterialData final {
