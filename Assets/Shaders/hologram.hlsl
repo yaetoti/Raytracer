@@ -7,6 +7,7 @@ cbuffer ConstantBuffer : register(b0)
   float4 g_resolution;
   float4 g_cameraPosition;
   float g_time;
+  bool g_isNormalVisMode;
 };
 
 struct VSInput
@@ -232,11 +233,16 @@ void GSMain(triangle VSOutput input[3] : SV_POSITION, inout TriangleStream<VSOut
 float4 PSMain(VSOutput input) : SV_TARGET
 {
   float2 uv = (input.position.xy - (g_resolution.xy / 2.0)) / g_resolution.x;
-    
-  float4 color1 = float4(0.05, 0.05, 0.05, 1.0);
-  float4 color2 = float4((input.normal + 1.0.rrr) * 0.5.rrr, 0.0);
   float4 distortedColor = float4(colorDistortion(input.mainColor, input.secondaryColor, mul(input.modelMatrix, float4(input.positionLocal, 1.0)).xyz, input.normal), 1.0);
   
-  return color1 + distortedColor;
-  //return distortedColor;
+  if (g_isNormalVisMode)
+  {
+    float4 color = float4((input.normal + 1.0.rrr) * 0.5.rrr, 0.0);
+    return color + distortedColor;
+  }
+  else
+  {
+    float4 color = float4(0.05, 0.05, 0.05, 1.0);
+    return color + distortedColor;
+  }
 }

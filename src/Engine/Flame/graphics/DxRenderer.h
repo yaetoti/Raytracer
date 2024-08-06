@@ -19,6 +19,7 @@ namespace Flame {
       float resolution[4];
       float cameraPosition[4];
       float time;
+      bool isNormalVisMode;
     };
 
     explicit DxRenderer(std::shared_ptr<Window> window, std::shared_ptr<AlignedCamera> camera);
@@ -29,6 +30,9 @@ namespace Flame {
     void Render(float time, float deltaTime);
     void Resize(uint32_t width, uint32_t height);
 
+    void SetNormalVisMode(bool isNormalVisMode);
+    bool GetNormalVisMode() const;
+
   private:
     std::shared_ptr<Window> m_window;
     std::shared_ptr<AlignedCamera> m_camera;
@@ -37,5 +41,6 @@ namespace Flame {
     InputSystem* m_input;
 
     std::vector<float> m_resolution;
+    bool m_isNormalVisMode = false;
   };
 }

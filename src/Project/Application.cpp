@@ -74,6 +74,12 @@ void Application::HandleEvent(const Flame::WindowEvent& e) {
     m_dxRenderer->Resize(m_window->GetFramebuffer().GetWidth(), m_window->GetFramebuffer().GetHeight());
     return;
   }
+  if (e.type == Flame::WindowEventType::KEY) {
+    const auto& event = static_cast<const Flame::KeyWindowEvent&>(e);
+    if (event.vkCode == 'N' && event.isPressed && !event.wasPressed) {
+      m_dxRenderer->SetNormalVisMode(!m_dxRenderer->GetNormalVisMode());
+    }
+  }
 }
 
 float Application::GetTime() const {
