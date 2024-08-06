@@ -7,6 +7,7 @@
 #include "Flame/engine/Transform.h"
 #include "Flame/engine/Model.h"
 #include "Flame/graphics/buffers/VertexBuffer.h"
+#include "Flame/graphics/shaders/GeometryShader.h"
 #include "Flame/graphics/shaders/PixelShader.h"
 #include "Flame/graphics/shaders/VertexShader.h"
 #include "Flame/math/HitRecord.h"
@@ -51,6 +52,7 @@ namespace Flame {
 
     VertexShader m_vertexShader;
     PixelShader m_pixelShader;
+    GeometryShader m_geometryShader;
 
     inline static const wchar_t* kShaderPath = L"Assets/Shaders/hologram.hlsl";
   };

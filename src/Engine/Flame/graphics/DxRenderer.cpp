@@ -87,6 +87,7 @@ namespace Flame {
 
     dc->VSSetConstantBuffers(0, 1, m_constantBuffer.GetAddressOf());
     dc->PSSetConstantBuffers(0, 1, m_constantBuffer.GetAddressOf());
+    dc->GSSetConstantBuffers(0, 1, m_constantBuffer.GetAddressOf());
 
     MeshSystem::Get()->Render(deltaTime);
   }

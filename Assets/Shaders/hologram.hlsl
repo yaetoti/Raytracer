@@ -200,6 +200,21 @@ VSOutput VSMain(VSInput input)
   return result;
 }
 
+// Geometry
+
+[maxvertexcount(3)]
+void GSMain(triangle VSOutput input[3] : SV_POSITION, inout TriangleStream<VSOutput> output)
+{
+  for (int i = 0; i < 3; ++i)
+  {
+    VSOutput o = input[i];
+    o.position.x += 0.1 * cos(g_time);
+    output.Append(o);
+  }
+  
+  output.RestartStrip();
+}
+
 // Pixel
 
 float4 PSMain(VSOutput input) : SV_TARGET
