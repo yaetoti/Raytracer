@@ -1,14 +1,6 @@
-// Data
+#include "buffer.hlsl"
 
-cbuffer ConstantBuffer : register(b0)
-{
-  float4x4 viewMatrix;
-  float4x4 projectionMatrix;
-  float4 g_resolution;
-  float4 g_cameraPosition;
-  float g_time;
-  bool g_isNormalVisMode;
-};
+// Data
 
 struct VSInput
 {
@@ -28,6 +20,12 @@ struct VSOutput
   float3 normalLocal : NORMAL_LOCAL;
   nointerpolation float3 mainColor : MAIN_COLOR;
   nointerpolation float3 secondaryColor : SECONDARY_COLOR;
+};
+
+struct PatchOutput
+{
+  float EdgeFactors[3] : SV_TessFactor;
+  float InsideFactor : SV_InsideTessFactor;
 };
 
 // BEGIN ShaderToy https://www.shadertoy.com/view/WttcRB
@@ -198,6 +196,53 @@ VSOutput VSMain(VSInput input)
   result.normalLocal = input.normal;
   result.mainColor = input.mainColor;
   result.secondaryColor = input.secondaryColor;
+  return result;
+}
+
+// Hull
+[outputcontrolpoints(3)]
+[domain("tri")]
+[outputtopology("triangle_cw")]
+[partitioning("integer")]
+[patchconstantfunc("PatchMain")]
+VSOutput HSMain(InputPatch<VSOutput, 3> input, uint pointId : SV_OutputControlPointID, uint patchId : SV_PrimitiveID)
+{
+  return input[pointId];
+}
+
+// Patch
+
+PatchOutput PatchMain(InputPatch<VSOutput, 3> input, uint patchId : SV_PrimitiveID)
+{
+  PatchOutput output;
+  float3 positionWorld[3];
+  positionWorld[0] = mul(input[0].modelMatrix, input[0].positionLocal).xyz;
+  positionWorld[1] = mul(input[1].modelMatrix, input[1].positionLocal).xyz;
+  positionWorld[2] = mul(input[2].modelMatrix, input[2].positionLocal).xyz;
+  float3 v0v1 = positionWorld[1] - positionWorld[0];
+  float3 v0v2 = positionWorld[2] - positionWorld[0];
+  float3 v1v2 = positionWorld[2] - positionWorld[1];
+  
+  output.EdgeFactors[0] = length(v0v1) * 100;
+  output.EdgeFactors[1] = length(v0v2) * 100;
+  output.EdgeFactors[2] = length(v1v2) * 100;
+  output.InsideFactor = max(max(output.EdgeFactors[0], output.EdgeFactors[1]), output.EdgeFactors[2]);
+  return output;
+}
+
+// Domain
+
+[domain("tri")]
+VSOutput DSMain(PatchOutput control, float3 loc : SV_DomainLocation, const OutputPatch<VSOutput, 3> input)
+{
+  VSOutput result;
+  result.position = loc.x * input[0].position + loc.y * input[1].position + loc.z * input[2].position;
+  result.normal = loc.x * input[0].normal + loc.y * input[1].normal + loc.z * input[2].normal;
+  result.positionLocal = loc.x * input[0].positionLocal + loc.y * input[1].positionLocal + loc.z * input[2].positionLocal;
+  result.normalLocal = loc.x * input[0].normalLocal + loc.y * input[1].normalLocal + loc.z * input[2].normalLocal;
+  result.mainColor = input[0].mainColor;
+  result.secondaryColor = input[0].secondaryColor;
+  result.modelMatrix = input[0].modelMatrix;
   return result;
 }
 

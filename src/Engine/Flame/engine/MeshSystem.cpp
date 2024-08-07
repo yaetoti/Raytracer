@@ -50,11 +50,11 @@ namespace Flame {
       material1->AddInstance({ Transform(glm::vec3(0.0f), glm::vec3(0.5f)), glm::vec3(0, 1, 1), glm::vec3(1, 0, 0) });
       material1->AddInstance({ Transform(glm::vec3(1.25f, 0.0f, 0.0f)), glm::vec3(0, 1, 0), glm::vec3(0, 1, 1) });
       
-      //auto model2 = m_hologramGroup.AddModel(ModelManager::Get()->GetModel("Assets/Cube.obj"));
-      //auto material2 = model2->AddMaterial({});
-      //material2->AddInstance({ Transform(glm::vec3(0.0f, -8.0f, 0.0f), glm::vec3(2.5f)), glm::vec3(1, 0, 1), glm::vec3(1, 0, 1) });
-      //material2->AddInstance({ Transform(glm::vec3(-8.0f, 0.0f, 0.0f), glm::vec3(3.5f)), glm::vec3(1, 0, 0), glm::vec3(1, 0, 0) });
-      //material2->AddInstance({ Transform(glm::vec3(0.0f, 0.0f, -8.0f), glm::vec3(1.5f)), glm::vec3(0, 0, 1), glm::vec3(0, 0, 1) });
+      auto model2 = m_hologramGroup.AddModel(ModelManager::Get()->GetModel("Assets/Cube.obj"));
+      auto material2 = model2->AddMaterial({});
+      material2->AddInstance({ Transform(glm::vec3(0.0f, -8.0f, 0.0f), glm::vec3(2.5f)), glm::vec3(1, 0, 1), glm::vec3(1, 0, 1) });
+      material2->AddInstance({ Transform(glm::vec3(-8.0f, 0.0f, 0.0f), glm::vec3(3.5f)), glm::vec3(1, 0, 0), glm::vec3(1, 0, 0) });
+      material2->AddInstance({ Transform(glm::vec3(0.0f, 0.0f, -8.0f), glm::vec3(1.5f)), glm::vec3(0, 0, 1), glm::vec3(0, 0, 1) });
 
     }
 

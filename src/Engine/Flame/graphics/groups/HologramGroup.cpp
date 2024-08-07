@@ -21,6 +21,8 @@ namespace Flame {
     // Load other shaders
     m_pixelShader.Init(kShaderPath);
     m_geometryShader.Init(kShaderPath);
+    m_hullShader.Init(kShaderPath);
+    m_domainShader.Init(kShaderPath);
 
     // TODO FIX. This creates the need for initialization only after parsing the scene graph
     // Create instance buffer
@@ -31,6 +33,8 @@ namespace Flame {
 
   void HologramGroup::Cleanup() {
     m_instanceBufferDirty = true;
+    m_domainShader.Reset();
+    m_hullShader.Reset();
     m_geometryShader.Reset();
     m_pixelShader.Reset();
     m_vertexShader.Reset();
@@ -100,8 +104,10 @@ namespace Flame {
     dc->VSSetShader(m_vertexShader.GetShader(), nullptr, 0);
     dc->PSSetShader(m_pixelShader.GetShader(), nullptr, 0);
     dc->GSSetShader(m_geometryShader.GetShader(), nullptr, 0);
+    dc->HSSetShader(m_hullShader.GetShader(), nullptr, 0);
+    dc->DSSetShader(m_domainShader.GetShader(), nullptr, 0);
     dc->IASetInputLayout(m_vertexShader.GetInputLayout());
-    dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_3_CONTROL_POINT_PATCHLIST);
 
     uint32_t numRenderedInstances = 0;
     for (const auto & perModel : GetModels()) {
@@ -141,5 +147,7 @@ namespace Flame {
     dc->VSSetShader(nullptr, nullptr, 0);
     dc->PSSetShader(nullptr, nullptr, 0);
     dc->GSSetShader(nullptr, nullptr, 0);
+    dc->HSSetShader(nullptr, nullptr, 0);
+    dc->DSSetShader(nullptr, nullptr, 0);
   }
 }

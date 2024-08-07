@@ -1,12 +1,4 @@
-cbuffer ConstantBuffer : register(b0)
-{
-  float4x4 viewMatrix;
-  float4x4 projectionMatrix;
-  float4 g_resolution;
-  float4 g_cameraPosition;
-  float g_time;
-  bool g_isNormalVisMode;
-};
+#include "buffer.hlsl"
 
 //#define PART1
 #ifdef PART1
@@ -153,7 +145,7 @@ float4 PSMain(VSOutput input) : SV_TARGET
   else
   {
     float4 color = float4(0.95, 0.95, 0.85, 1.0);
-    return color * dot(g_cameraPosition - mul(input.modelMatrix, float4(input.positionLocal, 1.0)), mul(input.modelMatrix, float4(input.normalLocal, 0.0)));
+    return color * dot(normalize(g_cameraPosition - mul(input.modelMatrix, float4(input.positionLocal, 1.0))), normalize(input.normal));
   }
 }
 

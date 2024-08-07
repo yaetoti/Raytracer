@@ -8,6 +8,8 @@
 #include "Flame/engine/Model.h"
 #include "Flame/graphics/buffers/VertexBuffer.h"
 #include "Flame/graphics/shaders/GeometryShader.h"
+#include "Flame/graphics/shaders/HullShader.h"
+#include "Flame/graphics/shaders/DomainShader.h"
 #include "Flame/graphics/shaders/PixelShader.h"
 #include "Flame/graphics/shaders/VertexShader.h"
 #include "Flame/math/HitRecord.h"
@@ -18,6 +20,10 @@ namespace Flame {
       glm::mat4 modelMatrix;
       glm::vec3 mainColor;
       glm::vec3 secondaryColor;
+    };
+
+    struct ShaderNormalData final {
+      
     };
 
     ShaderData GetShaderData() const {
@@ -53,6 +59,8 @@ namespace Flame {
     VertexShader m_vertexShader;
     PixelShader m_pixelShader;
     GeometryShader m_geometryShader;
+    HullShader m_hullShader;
+    DomainShader m_domainShader;
 
     inline static const wchar_t* kShaderPath = L"Assets/Shaders/hologram.hlsl";
   };
