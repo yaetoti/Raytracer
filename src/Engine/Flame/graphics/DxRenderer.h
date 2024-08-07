@@ -16,6 +16,9 @@ namespace Flame {
     struct PerFrame final {
       glm::mat4 viewMatrix;
       glm::mat4 projectionMatrix;
+      float frustumTL[4];
+      float frustumBR[4];
+      float frustumBL[4];
       float resolution[4];
       float cameraPosition[4];
       float time;

@@ -1,4 +1,4 @@
-#include "buffer.hlsl"
+#include "globals.hlsl"
 
 //#define PART1
 #ifdef PART1
@@ -50,7 +50,7 @@ VSOutput VSMain(VSInput input)
 {
   VSOutput result;
   // RHS multiplication since matrices are column-major
-  result.position = mul(projectionMatrix, mul(viewMatrix, mul(input.modelMatrix, float4(input.position, 1.0))));
+  result.position = mul(g_projectionMatrix, mul(g_viewMatrix, mul(input.modelMatrix, float4(input.position, 1.0))));
   
   float3 axisX = normalize(input.modelMatrix[0].xyz);
   float3 axisY = normalize(input.modelMatrix[1].xyz);

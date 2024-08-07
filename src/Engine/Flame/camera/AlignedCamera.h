@@ -56,6 +56,8 @@ namespace Flame {
 
     // Near plane vectors
     mutable glm::vec3 m_cornerTl;
+    mutable glm::vec3 m_cornerBl;
+    mutable glm::vec3 m_cornerBr;
     mutable glm::vec3 m_toRightCorner;
     mutable glm::vec3 m_toBottomCorner;
   };

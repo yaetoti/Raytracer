@@ -74,6 +74,13 @@ namespace Flame {
   void MeshSystem::Render(float deltaTime) {
     m_opaqueGroup.Render();
     m_hologramGroup.Render();
+    // TODO Render Skybox:
+    // Bind empty layout
+    // Bind VS and PS shaders
+    // Draw 3 vertices
+
+    // Pass camera frustum vectors to a constant buffer
+    // In VS assign VSOutput direction that will be interpolated
   }
 
   bool MeshSystem::Hit(const Ray& ray, HitRecord<HitResult>& record, float tMin, float tMax) const {
