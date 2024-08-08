@@ -1,6 +1,12 @@
 #include "MeshSystem.h"
 
+#include "Flame/engine/TextureManager.h"
+#include "Flame/graphics/DxContext.h"
+#include "Flame/graphics/shaders/PixelShader.h"
+#include "Flame/graphics/shaders/VertexShader.h"
 #include "ModelManager.h"
+#include <d3dcommon.h>
+#include <wrl/client.h>
 
 namespace Flame {
   MeshSystem::MeshSystem() {
@@ -60,6 +66,11 @@ namespace Flame {
 
     m_opaqueGroup.Init();
     m_hologramGroup.Init();
+
+    // Init skybox shaders
+    m_skyVertexShader.Init(L"Assets/Shaders/sky.hlsl", nullptr, 0);
+    m_skyPixelShader.Init(L"Assets/Shaders/sky.hlsl");
+    m_textureView = TextureManager::Get()->GetTexture(kSkyboxPath)->GetResourceView();
   }
 
   void MeshSystem::Cleanup() {
@@ -74,13 +85,8 @@ namespace Flame {
   void MeshSystem::Render(float deltaTime) {
     m_opaqueGroup.Render();
     m_hologramGroup.Render();
-    // TODO Render Skybox:
-    // Bind empty layout
-    // Bind VS and PS shaders
-    // Draw 3 vertices
 
-    // Pass camera frustum vectors to a constant buffer
-    // In VS assign VSOutput direction that will be interpolated
+    RenderSkybox(deltaTime);
   }
 
   bool MeshSystem::Hit(const Ray& ray, HitRecord<HitResult>& record, float tMin, float tMax) const {
@@ -109,5 +115,15 @@ namespace Flame {
   MeshSystem* MeshSystem::Get() {
     static MeshSystem instance;
     return &instance;
+  }
+
+  void MeshSystem::RenderSkybox(float deltaTime) {
+    auto dc = DxContext::Get()->d3d11DeviceContext.Get();
+    dc->VSSetShader(m_skyVertexShader.GetShader(), nullptr, 0);
+    dc->PSSetShader(m_skyPixelShader.GetShader(), nullptr, 0);
+    dc->IASetInputLayout(nullptr);
+    dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    dc->PSSetShaderResources(0, 1, &m_textureView);
+    dc->Draw(3, 0);
   }
 }

@@ -3,17 +3,18 @@
 
 namespace Flame {
   std::shared_ptr<Texture> TextureManager::GetTexture(const std::wstring& path) {
-    if (!m_textures.contains(path) && !LoadTexture(path)) {
-      return nullptr;
+    if (m_textures.contains(path) || LoadTexture(path)) {
+      return m_textures[path];
     }
 
-    return m_textures[path];
+    return nullptr;
   }
 
   bool TextureManager::LoadTexture(const std::wstring& path) {
     auto texture = std::make_shared<Texture>();
     if (texture->InitFromFile(path.c_str())) {
       m_textures[path] = std::move(texture);
+      return true;
     }
 
     return false;

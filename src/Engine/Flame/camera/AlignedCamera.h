@@ -32,6 +32,12 @@ namespace Flame {
     glm::mat4 GetViewMatrix() const;
     glm::mat4 GetInversedViewMatrix() const;
 
+    glm::vec3 GetToFrustumTlNear() const;
+    glm::vec3 GetToFrustumBlNear() const;
+    glm::vec3 GetToFrustumBrNear() const;
+
+    glm::vec4 ClipToWorld(glm::vec4 position) const;
+
   private:
     void InvalidateMatrices() const;
 
@@ -54,10 +60,13 @@ namespace Flame {
     mutable glm::mat4 m_iView;
     mutable bool m_matricesDirty;
 
-    // Near plane vectors
+    // Near plane points and vectors
     mutable glm::vec3 m_cornerTl;
     mutable glm::vec3 m_cornerBl;
     mutable glm::vec3 m_cornerBr;
+    mutable glm::vec3 m_toCornerTl;
+    mutable glm::vec3 m_toCornerBl;
+    mutable glm::vec3 m_toCornerBr;
     mutable glm::vec3 m_toRightCorner;
     mutable glm::vec3 m_toBottomCorner;
   };

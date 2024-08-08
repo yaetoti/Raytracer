@@ -58,6 +58,10 @@ namespace Flame {
     }
 
     // Input layout
+    if (!inputDesc) {
+      return;
+    }
+    
     result = DxContext::Get()->d3d11Device->CreateInputLayout(
       inputDesc,
       descSize,

@@ -74,15 +74,35 @@ namespace Flame {
 
       m_constantBuffer.data.viewMatrix = view;
       m_constantBuffer.data.projectionMatrix = projection;
+      
+      glm::vec3 toTl = glm::vec3(m_camera->ClipToWorld(glm::vec4(-1.0f, 3.0f, 0.0f, 1.0f))) - m_camera->GetPosition();
+      glm::vec3 toBl = glm::vec3(m_camera->ClipToWorld(glm::vec4(-1.0f, -1.0f, 0.0f, 1.0f))) - m_camera->GetPosition();
+      glm::vec3 toBr = glm::vec3(m_camera->ClipToWorld(glm::vec4(3.0f, -1.0f, 0.0f, 1.0f))) - m_camera->GetPosition();
+      m_constantBuffer.data.frustumTL[0] = toTl.x;
+      m_constantBuffer.data.frustumTL[1] = toTl.y;
+      m_constantBuffer.data.frustumTL[2] = toTl.z;
+      m_constantBuffer.data.frustumTL[3] = 1;
 
-      m_constantBuffer.data.time = time;
+      m_constantBuffer.data.frustumBL[0] = toBl.x;
+      m_constantBuffer.data.frustumBL[1] = toBl.y;
+      m_constantBuffer.data.frustumBL[2] = toBl.z;
+      m_constantBuffer.data.frustumBL[3] = 1;
+
+      m_constantBuffer.data.frustumBR[0] = toBr.x;
+      m_constantBuffer.data.frustumBR[1] = toBr.y;
+      m_constantBuffer.data.frustumBR[2] = toBr.z;
+      m_constantBuffer.data.frustumBR[3] = 1;
+
       const glm::vec3& cameraPos = m_camera->GetPosition();
       m_constantBuffer.data.cameraPosition[0] = cameraPos.x;
       m_constantBuffer.data.cameraPosition[1] = cameraPos.y;
       m_constantBuffer.data.cameraPosition[2] = cameraPos.z;
       m_constantBuffer.data.cameraPosition[3] = 1;
       std::memcpy(m_constantBuffer.data.resolution, m_resolution.data(), m_resolution.size() * sizeof(float));
+
+      m_constantBuffer.data.time = time;
       m_constantBuffer.data.isNormalVisMode = m_isNormalVisMode;
+
       m_constantBuffer.ApplyChanges();
     }
 

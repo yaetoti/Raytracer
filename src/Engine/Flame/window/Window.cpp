@@ -5,6 +5,7 @@
 #include "events/ResizeWindowEvent.h"
 #include "events/MouseScrollWindowEvent.h"
 
+#include <d3d11.h>
 #include <windowsx.h>
 
 namespace Flame {
@@ -161,7 +162,7 @@ namespace Flame {
       D3D11_DEPTH_STENCIL_DESC desc {
         TRUE,
         D3D11_DEPTH_WRITE_MASK_ALL,
-        D3D11_COMPARISON_GREATER,
+        D3D11_COMPARISON_GREATER_EQUAL,
         FALSE,
         0,
         0,

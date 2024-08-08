@@ -1,4 +1,5 @@
 #pragma once
+#include <d3d11.h>
 #include <memory>
 #include <glm/glm.hpp>
 #include "Model.h"
@@ -34,9 +35,18 @@ namespace Flame {
     static MeshSystem* Get();
 
   private:
+    void RenderSkybox(float deltaTime);
+
+  private:
     Window* m_window;
 
     OpaqueGroup m_opaqueGroup;
     HologramGroup m_hologramGroup;
+    // Skybox
+    VertexShader m_skyVertexShader;
+    PixelShader m_skyPixelShader;
+    ID3D11ShaderResourceView* m_textureView;
+
+    static constexpr const wchar_t* kSkyboxPath = L"Assets/Textures/lake_beach.dds";
   };  
 }

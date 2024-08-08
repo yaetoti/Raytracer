@@ -33,3 +33,4 @@ add_custom_target(copy_resources ALL
   COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different "${PROJECT_SOURCE_DIR}/Assets" "${PROJECT_BINARY_DIR}/bin/${CMAKE_BUILD_TYPE}/Assets"
   COMMENT "Copying resources to the build directory..."
 )
+add_dependencies(Project copy_resources)

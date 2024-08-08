@@ -8,6 +8,7 @@
 #include "Flame/engine/MeshSystem.h"
 #include "Flame/engine/Model.h"
 #include "Flame/engine/ModelManager.h"
+#include "Flame/engine/TextureManager.h"
 #include "Flame/engine/Transform.h"
 #include "Flame/graphics/buffers/ConstantBuffer.h"
 #include "Flame/graphics/buffers/IndexBuffer.h"
@@ -69,6 +70,7 @@ namespace Flame {
     }
 
     static void Cleanup() {
+      TextureManager::Get()->Cleanup();
       MeshSystem::Get()->Cleanup();
       MeshSystem::Get()->Cleanup();
       ModelManager::Get()->Cleanup();
