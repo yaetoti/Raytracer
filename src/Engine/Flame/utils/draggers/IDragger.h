@@ -1,5 +1,8 @@
 #pragma once
 
+#include "Flame/graphics/groups/TextureOnlyGroup.h"
+#include "Flame/math/Ray.h"
+#include "Flame/engine/MeshSystem.h"
 namespace Flame {
   struct IDragger {
     virtual ~IDragger() = default;
@@ -45,6 +48,25 @@ namespace Flame {
     float m_distanceToPlane;
   };
 
+  struct TextureOnlyInstanceDragger final : IDragger {
+    explicit TextureOnlyInstanceDragger(const HitRecord<MeshSystem::HitResult>& record, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
+    : m_draggable(record.data.perInstanceTextureOnly)
+    , m_offset(m_draggable->GetData().transform.GetPosition() - record.point)
+    , m_distanceToPlane(glm::dot(cameraDirection, record.point - cameraPosition)) {
+    }
+
+    void Drag(const Ray& r, const glm::vec3& cameraDirection) override {
+      float approachToPlane = glm::dot(r.direction, cameraDirection);
+      float approachTime = m_distanceToPlane / approachToPlane;
+      m_draggable->GetData().transform.SetPosition(r.AtParameter(approachTime) + m_offset);
+    }
+
+  private:
+    TextureOnlyGroup::PerInstance* m_draggable;
+    glm::vec3 m_offset;
+    float m_distanceToPlane;
+  };
+
   struct DraggerFactory final {
     static std::unique_ptr<IDragger> CreateDragger(const HitRecord<MeshSystem::HitResult>& record, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection) {
       switch (record.data.groupType) {
@@ -52,6 +74,8 @@ namespace Flame {
           return std::make_unique<OpaqueInstanceDragger>(record, cameraPosition, cameraDirection);
         case GroupType::HOLOGRAM_GROUP:
           return std::make_unique<HologramInstanceDragger>(record, cameraPosition, cameraDirection);
+        case GroupType::TEXTURE_ONLY_GROUP:
+          return std::make_unique<TextureOnlyInstanceDragger>(record, cameraPosition, cameraDirection);
         default:
           return nullptr;
       }

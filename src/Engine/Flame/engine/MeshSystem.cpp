@@ -2,6 +2,7 @@
 
 #include "Flame/engine/TextureManager.h"
 #include "Flame/graphics/DxContext.h"
+#include "Flame/graphics/groups/TextureOnlyGroup.h"
 #include "Flame/graphics/shaders/PixelShader.h"
 #include "Flame/graphics/shaders/VertexShader.h"
 #include "ModelManager.h"
@@ -61,11 +62,20 @@ namespace Flame {
       material2->AddInstance({ Transform(glm::vec3(0.0f, -8.0f, 0.0f), glm::vec3(2.5f)), glm::vec3(1, 0, 1), glm::vec3(1, 0, 1) });
       material2->AddInstance({ Transform(glm::vec3(-8.0f, 0.0f, 0.0f), glm::vec3(3.5f)), glm::vec3(1, 0, 0), glm::vec3(1, 0, 0) });
       material2->AddInstance({ Transform(glm::vec3(0.0f, 0.0f, -8.0f), glm::vec3(1.5f)), glm::vec3(0, 0, 1), glm::vec3(0, 0, 1) });
+    }
 
+    // TextureOnly group
+    {
+      auto model = m_textureOnlyGroup.AddModel(ModelManager::Get()->GetModel("Assets/Models/OtherCube/OtherCube.obj"));
+      auto material0 = model->AddMaterial({ TextureManager::Get()->GetTexture(L"Assets/Models/OtherCube/OtherCube.dds")->GetResourceView() });
+      material0->AddInstance({ Transform(glm::vec3(0.0f, 6.0f, 20.0f), glm::vec3(10.0f)) });
+      auto material1 = model->AddMaterial({ TextureManager::Get()->GetTexture(L"Assets/Models/OtherCube/AnotherCube.dds")->GetResourceView() });
+      material1->AddInstance({ Transform(glm::vec3(3.0f, 7.0f, 3.0f), glm::vec3(1.5f)) });
     }
 
     m_opaqueGroup.Init();
     m_hologramGroup.Init();
+    m_textureOnlyGroup.Init();
 
     // Init skybox shaders
     m_skyVertexShader.Init(L"Assets/Shaders/sky.hlsl", nullptr, 0);
@@ -76,6 +86,7 @@ namespace Flame {
   void MeshSystem::Cleanup() {
     m_opaqueGroup.Cleanup();
     m_hologramGroup.Cleanup();
+    m_textureOnlyGroup.Cleanup();
   }
 
   void MeshSystem::Update(float deltaTime) {
@@ -85,6 +96,7 @@ namespace Flame {
   void MeshSystem::Render(float deltaTime) {
     m_opaqueGroup.Render();
     m_hologramGroup.Render();
+    m_textureOnlyGroup.Render();
 
     RenderSkybox(deltaTime);
   }
@@ -92,6 +104,7 @@ namespace Flame {
   bool MeshSystem::Hit(const Ray& ray, HitRecord<HitResult>& record, float tMin, float tMax) const {
     HitRecord<OpaqueGroup::PerInstance*> opaqueResult;
     HitRecord<HologramGroup::PerInstance*> hologramResult;
+    HitRecord<TextureOnlyGroup::PerInstance*> textureOnlyResult;
     bool wasHit = false;
 
     if (m_opaqueGroup.HitInstance(ray, opaqueResult, tMin, tMax)) {
@@ -107,6 +120,13 @@ namespace Flame {
       record = hologramResult;
       record.data.groupType = GroupType::HOLOGRAM_GROUP;
       record.data.perInstanceHologram = hologramResult.data;
+    }
+    if (m_textureOnlyGroup.HitInstance(ray, textureOnlyResult, tMin, tMax)) {
+      wasHit |= true;
+      tMax = textureOnlyResult.time;
+      record = textureOnlyResult;
+      record.data.groupType = GroupType::TEXTURE_ONLY_GROUP;
+      record.data.perInstanceTextureOnly = textureOnlyResult.data;
     }
 
     return wasHit;

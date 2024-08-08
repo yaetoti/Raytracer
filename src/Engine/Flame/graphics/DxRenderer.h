@@ -43,6 +43,10 @@ namespace Flame {
     ConstantBuffer<PerFrame> m_constantBuffer;
     InputSystem* m_input;
 
+    ComPtr<ID3D11SamplerState> m_pointSampler;
+    ComPtr<ID3D11SamplerState> m_linearSampler;
+    ComPtr<ID3D11SamplerState> m_anisotropicSampler;
+
     std::vector<float> m_resolution;
     bool m_isNormalVisMode = false;
   };

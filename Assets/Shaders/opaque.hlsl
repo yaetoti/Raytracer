@@ -5,8 +5,9 @@
 
 struct VSInput
 {
-  float4 position : POSITION;
-  float4 color : COLOR;
+  float3 position : POSITION;
+  float3 color : COLOR;
+  float2 uv : TEXCOORD;
 };
 
 struct VSOutput
@@ -18,8 +19,8 @@ struct VSOutput
 VSOutput VSMain(VSInput input)
 {
   VSOutput result;
-  result.position = input.position;
-  result.color = input.color;
+  result.position = float4(input.position, 1.0);
+  result.color = float4(input.color, 1.0);
   return result;
 }
 

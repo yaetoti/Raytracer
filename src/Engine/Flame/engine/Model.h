@@ -61,6 +61,7 @@ namespace Flame {
 			for (uint32_t meshId = 0; meshId < scene.mNumMeshes; ++meshId) {
 			  auto& mesh = m_meshes.emplace_back();
 				mesh.Parse(*scene.mMeshes[meshId]);
+				// TODO Parse textures
 			}
 
 			//ParseNode = [this, &scene, &ParseNode](const aiNode& node) {
@@ -129,7 +130,7 @@ namespace Flame {
 					const auto& mesh = m_meshes[rangeId];
 
 					for (uint32_t verticeId = 0; verticeId < range.vertexNum; ++verticeId) {
-						vertexData.emplace_back(mesh.vertices[verticeId], mesh.normals[verticeId]);
+						vertexData.emplace_back(mesh.vertices[verticeId], mesh.normals[verticeId], mesh.uvs[verticeId]);
 					}
 
 					assert(reinterpret_cast<const char*>(indexData.data() + indexOffset) + range.indexNum * sizeof(uint32_t) <= reinterpret_cast<const char*>(indexData.data() + indexData.size()));

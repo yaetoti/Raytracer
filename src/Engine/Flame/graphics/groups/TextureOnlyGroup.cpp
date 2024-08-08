@@ -1,7 +1,7 @@
-#include "OpaqueGroup.h"
+#include "TextureOnlyGroup.h"
 
 namespace Flame {
-  void OpaqueGroup::Init() {
+  void TextureOnlyGroup::Init() {
     // Load vertex shader
     {
       D3D11_INPUT_ELEMENT_DESC desc[] = {
@@ -27,7 +27,7 @@ namespace Flame {
     assert(SUCCEEDED(result));
   }
 
-  void OpaqueGroup::Cleanup() {
+  void TextureOnlyGroup::Cleanup() {
     m_instanceBufferDirty = true;
     m_pixelShader.Reset();
     m_vertexShader.Reset();
@@ -35,7 +35,7 @@ namespace Flame {
     GetModels().clear();
   }
 
-  bool OpaqueGroup::HitInstance(const Ray& ray, HitRecord<PerInstance*>& record, float tMin, float tMax) const {
+  bool TextureOnlyGroup::HitInstance(const Ray& ray, HitRecord<PerInstance*>& record, float tMin, float tMax) const {
     HitRecord<const Model*> record0;
 
     // Go through all instances and find the closest one
@@ -69,11 +69,11 @@ namespace Flame {
     return record.data != nullptr;
   }
 
-  void OpaqueGroup::UpdateInstanceBuffer() {
+  void TextureOnlyGroup::UpdateInstanceBuffer() {
     // Fill buffer
     auto mapping = m_instanceBuffer.Map(D3D11_MAP_WRITE_DISCARD);
     {
-      auto destPtr = static_cast<OpaqueInstanceData::ShaderData*>(mapping.pData);
+      auto destPtr = static_cast<TextureOnlyInstanceData::ShaderData*>(mapping.pData);
       uint32_t numCopied = 0;
 
       for (const auto& perModel : GetModels()) {
@@ -88,7 +88,7 @@ namespace Flame {
     m_instanceBuffer.Unmap();
   }
 
-  void OpaqueGroup::Render() {
+  void TextureOnlyGroup::Render() {
     UpdateInstanceBuffer();
 
     ID3D11DeviceContext* dc = DxContext::Get()->d3d11DeviceContext.Get();
@@ -125,6 +125,9 @@ namespace Flame {
         if (numInstances == 0) {
           continue;
         }
+
+        // Set texture
+        dc->PSSetShaderResources(0, 1, &perMaterial->GetData().textureView);
 
         // Aaah, so that's why we have MeshRange... Finally
         // TODO replace Model index offsetting with correct draw call parameters

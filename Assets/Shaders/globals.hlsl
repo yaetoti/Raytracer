@@ -12,24 +12,6 @@ cbuffer ConstantBuffer : register(b0)
   bool g_isNormalVisMode;
 };
 
-SamplerState g_pointWrap {
-  Filter = MIN_MAG_MIP_POINT;
-  AddressU = Wrap;
-  AddressV = Wrap;
-  AddressW = Wrap;
-};
-
-SamplerState g_linearWrap {
-  Filter = MIN_MAG_MIP_LINEAR;
-  AddressU = Wrap;
-  AddressV = Wrap;
-  AddressW = Wrap;
-};
-
-SamplerState g_anisotropicWrap {
-  Filter = ANISOTROPIC;
-  MaxAnisotropy = 8;
-  AddressU = Wrap;
-  AddressV = Wrap;
-  AddressW = Wrap;
-};
+SamplerState g_pointWrap : register(s0);
+SamplerState g_linearWrap : register(s1);
+SamplerState g_anisotropicWrap : register(s2);

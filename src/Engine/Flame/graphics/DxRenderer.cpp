@@ -6,6 +6,7 @@
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
+#include <d3d11.h>
 #include <d3dcompiler.h>
 #include <glm/ext/matrix_transform.hpp>
 #include <iostream>
@@ -43,9 +44,48 @@ namespace Flame {
     // Create constant buffer
     result = m_constantBuffer.Init();
     assert(SUCCEEDED(result));
+
+    // Create samplers
+    {
+      D3D11_SAMPLER_DESC desc {};
+      desc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
+      desc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+      desc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+      desc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+      desc.MaxLOD = D3D11_FLOAT32_MAX;
+      desc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+      result = DxContext::Get()->d3d11Device->CreateSamplerState(&desc, m_pointSampler.GetAddressOf());
+      assert(SUCCEEDED(result));
+    }
+    {
+      D3D11_SAMPLER_DESC desc {};
+      desc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+      desc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+      desc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+      desc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+      desc.MaxLOD = D3D11_FLOAT32_MAX;
+      desc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+      result = DxContext::Get()->d3d11Device->CreateSamplerState(&desc, m_linearSampler.GetAddressOf());
+      assert(SUCCEEDED(result));
+    }
+    {
+      D3D11_SAMPLER_DESC desc {};
+      desc.Filter = D3D11_FILTER_ANISOTROPIC;
+      desc.MaxAnisotropy = 8;
+      desc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+      desc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+      desc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+      desc.MaxLOD = D3D11_FLOAT32_MAX;
+      desc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+      result = DxContext::Get()->d3d11Device->CreateSamplerState(&desc, m_anisotropicSampler.GetAddressOf());
+      assert(SUCCEEDED(result));
+    }
   }
 
   void DxRenderer::Cleanup() {
+    m_pointSampler.Reset();
+    m_linearSampler.Reset();
+    m_anisotropicSampler.Reset();
     m_constantBuffer.Reset();
   }
 
@@ -66,6 +106,11 @@ namespace Flame {
     float clearColor[4] = { 0.12f, 0.12f, 0.12f, 1.0f };
     dc->ClearRenderTargetView(targetView.Get(), clearColor);
     dc->ClearDepthStencilView(depthStencilView.Get(), D3D11_CLEAR_DEPTH, 0.0f, 0);
+
+    // Set Samplers
+    dc->PSSetSamplers(0, 1, m_pointSampler.GetAddressOf());
+    dc->PSSetSamplers(1, 1, m_linearSampler.GetAddressOf());
+    dc->PSSetSamplers(2, 1, m_anisotropicSampler.GetAddressOf());
 
     // Constant buffer magic
     {

@@ -2,6 +2,7 @@
 #include <d3d11.h>
 #include <memory>
 #include <glm/glm.hpp>
+#include "Flame/graphics/groups/TextureOnlyGroup.h"
 #include "Model.h"
 #include "Flame/graphics/groups/HologramGroup.h"
 #include "Flame/graphics/groups/OpaqueGroup.h"
@@ -11,14 +12,16 @@ namespace Flame {
   enum class GroupType {
     OPAQUE_GROUP,
     HOLOGRAM_GROUP,
+    TEXTURE_ONLY_GROUP,
     COUNT
   };
 
   struct MeshSystem final {
     struct HitResult final {
       union {
-        HologramGroup::PerInstance* perInstanceHologram;
         OpaqueGroup::PerInstance* perInstanceOpaque;
+        HologramGroup::PerInstance* perInstanceHologram;
+        TextureOnlyGroup::PerInstance* perInstanceTextureOnly;
       };
       GroupType groupType;
     };
@@ -42,6 +45,7 @@ namespace Flame {
 
     OpaqueGroup m_opaqueGroup;
     HologramGroup m_hologramGroup;
+    TextureOnlyGroup m_textureOnlyGroup;
     // Skybox
     VertexShader m_skyVertexShader;
     PixelShader m_skyPixelShader;

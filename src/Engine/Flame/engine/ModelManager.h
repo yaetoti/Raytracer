@@ -20,6 +20,6 @@ namespace Flame {
     std::unordered_map<std::string, std::shared_ptr<Model>> m_models;
     Assimp::Importer m_importer;
 
-    inline static uint32_t kLoadFlags = aiProcess_Triangulate | aiProcess_GenBoundingBoxes | aiProcess_ConvertToLeftHanded | aiProcess_GenNormals;
+    inline static uint32_t kLoadFlags = aiProcess_Triangulate | aiProcess_GenBoundingBoxes | aiProcess_ConvertToLeftHanded | aiProcess_GenNormals | aiProcess_GenUVCoords | aiProcess_RemoveRedundantMaterials;
   };
 }
