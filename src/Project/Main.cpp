@@ -2,26 +2,30 @@
 #include "Application.h"
 #include <Windows.h>
 
-// #include "assimp/Importer.hpp"
-// #include "assimp/scene.h"
-// #include "assimp/postprocess.h"
+#include "Flame/utils/SolidVector.h"
 
 int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
   Console::Get()->RedirectStdHandles();
   Flame::Engine::Init();
 
-  // Assimp::Importer importer;
-  // auto scene = importer.ReadFile("Assets/Models/OtherCube/OtherCube.obj", aiProcess_Triangulate);
-  
-  // std::cout << "Materials: " << scene->mNumMaterials << '\n';
-  // std::cout << "Meshes: " << scene->mNumMeshes << '\n';
-  // std::cout << "Index: " << scene->mMeshes[0]->mMaterialIndex << '\n';
-
-  // std::cout << "Textures: " << scene->mMaterials[0]->GetTextureCount(aiTextureType_DIFFUSE) << '\n';
-  // std::cout << "Properties: " << scene->mMaterials[0]->mNumProperties << '\n';
-  // for (int i = 0; i < scene->mMaterials[0]->mNumProperties; ++i) {
-  //   std::cout << "Property: " << scene->mMaterials[0]->mProperties[i]->mKey.C_Str() << '\n';
-  // }
+  Flame::SolidVector<std::string> v;
+  std::cout << v.insert("ABOBA1") << '\n';
+  std::cout << v.insert("ABOBA2") << '\n';
+  std::cout << v.insert("ABOBA3") << '\n';
+  std::cout << v[0] << '\n';
+  std::cout << v[1] << '\n';
+  std::cout << v[2] << '\n';
+  v.erase(1);
+  v.erase(2);
+  auto id = v.insert("LAST_ABOBA");
+  std::cout << id << '\n';
+  std::cout << v[id] << '\n';
+  id = v.insert("LASTEST_ABOBA_FINAL");
+  std::cout << id << '\n';
+  std::cout << v[id] << '\n';
+  id = v.insert("LASTEST_ABOBA_FINAL_INAL_FINAL");
+  std::cout << id << '\n';
+  std::cout << v[id] << '\n';
 
   std::cout << "Press any key to continue..." << '\n';
   Console::Get()->Pause();
