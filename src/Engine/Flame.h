@@ -3,6 +3,7 @@
 #include "Flame/camera/AlignedCamera.h"
 #include "Flame/camera/CameraController.h"
 #include "Flame/camera/SpaceshipCamera.h"
+#include "Flame/engine/LightSystem.h"
 #include "Flame/engine/Mesh.h"
 #include "Flame/engine/MeshBvh.h"
 #include "Flame/engine/MeshSystem.h"
@@ -21,7 +22,6 @@
 #include "Flame/graphics/groups/OpaqueGroup.h"
 #include "Flame/graphics/groups/ShaderGroup.h"
 #include "Flame/graphics/Material.h"
-#include "Flame/graphics/Renderer.h"
 #include "Flame/graphics/shaders/PixelShader.h"
 #include "Flame/graphics/shaders/VertexShader.h"
 #include "Flame/graphics/shaders/GeometryShader.h"
@@ -75,6 +75,7 @@ namespace Flame {
       MeshSystem::Get()->Cleanup();
       MeshSystem::Get()->Cleanup();
       ModelManager::Get()->Cleanup();
+      LightSystem::Get()->Cleanup();
       TransformSystem::Get()->Cleanup();
       DxContext::Get()->Cleanup();
     }

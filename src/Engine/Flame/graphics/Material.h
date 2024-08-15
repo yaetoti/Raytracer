@@ -15,33 +15,4 @@ namespace Flame {
     glm::vec3 emissionColor { 0.0f };
     float emissionStrength = 0.0f;
   };
-
-  struct PointLight final {
-    glm::vec3 position;
-    glm::vec3 color;
-    float intensity;
-
-    float linearFadeoff;
-    float constantFadeoff;
-    float quadraticFadeoff;
-  };
-
-  struct DirectLight final {
-    glm::vec3 direction;
-    glm::vec3 color;
-    float intensity;
-  };
-
-  struct SpotLight final {
-    glm::vec3 position;
-    glm::vec3 direction;
-    glm::vec3 color;
-    float intensity;
-    float cutoffCosineInner;
-    float cutoffCosineOuter;
-
-    float linearFadeoff;
-    float constantFadeoff;
-    float quadraticFadeoff;
-  };
 }
