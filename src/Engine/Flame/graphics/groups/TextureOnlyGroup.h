@@ -1,4 +1,6 @@
 #pragma once
+
+#include "Flame/engine/TransformSystem.h"
 #include "Flame/engine/Transform.h"
 #include "Flame/graphics/groups/ShaderGroup.h"
 #include "Flame/graphics/shaders/PixelShader.h"
@@ -13,12 +15,12 @@ namespace Flame {
 
     ShaderData GetShaderData() const {
       ShaderData data;
-      data.modelMatrix = transform.GetMat();
+      data.modelMatrix = TransformSystem::Get()->At(transformId)->transform.GetMat();
       return data;
     }
 
   public:
-    Transform transform;
+    uint32_t transformId;
   };
 
   struct TextureOnlyMaterialData final {

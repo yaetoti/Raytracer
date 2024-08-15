@@ -3,6 +3,8 @@
 #include <vector>
 #include <glm/glm.hpp>
 
+#include "Flame/engine/TransformSystem.h"
+#include "Flame/utils/SolidVector.h"
 #include "ShaderGroup.h"
 #include "Flame/engine/Transform.h"
 #include "Flame/engine/Model.h"
@@ -28,14 +30,14 @@ namespace Flame {
 
     ShaderData GetShaderData() const {
       ShaderData data;
-      data.modelMatrix = transform.GetMat();
+      data.modelMatrix = TransformSystem::Get()->At(transformId)->transform.GetMat();
       data.mainColor = mainColor;
       data.secondaryColor = secondaryColor;
       return data;
     }
 
   public:
-    Transform transform;
+    uint32_t transformId;
     glm::vec3 mainColor;
     glm::vec3 secondaryColor;
   };

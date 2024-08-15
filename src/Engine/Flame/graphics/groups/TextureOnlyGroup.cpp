@@ -46,7 +46,7 @@ namespace Flame {
         for (const auto & perInstance : perMaterial->GetInstances()) {
           // TODO we could store these as we use them often, but definitely not in PerInstance as we copy it entirely into the buffer
           // Transform ray
-          const glm::mat4& modelMat = perInstance->GetData().transform.GetMat();
+          glm::mat4 modelMat = TransformSystem::Get()->At(perInstance->GetData().transformId)->transform.GetMat();
           glm::mat4 modelMatInv = glm::inverse(modelMat);
           glm::vec4 position = modelMatInv * glm::vec4(ray.origin, 1.0f);
           glm::vec3 direction = modelMatInv * glm::vec4(ray.direction, 0.0f);

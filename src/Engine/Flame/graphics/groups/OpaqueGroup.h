@@ -3,6 +3,7 @@
 #include <vector>
 #include <glm/glm.hpp>
 
+#include "Flame/engine/TransformSystem.h"
 #include "ShaderGroup.h"
 #include "Flame/engine/Transform.h"
 #include "Flame/engine/Model.h"
@@ -17,12 +18,12 @@ namespace Flame {
 
     ShaderData GetShaderData() const {
       ShaderData data;
-      data.modelMatrix = transform.GetMat();
+      data.modelMatrix = TransformSystem::Get()->At(transformId)->transform.GetMat();
       return data;
     }
 
   public:
-    Transform transform;
+    uint32_t transformId;
   };
 
   struct OpaqueMaterialData final {
