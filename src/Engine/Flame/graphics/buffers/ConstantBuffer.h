@@ -11,7 +11,7 @@ namespace Flame {
     T data;
 
     ConstantBuffer()
-    : data(static_cast<T>(0)) {
+    : data(T {}) {
     }
 
     ID3D11Buffer* Get() const {

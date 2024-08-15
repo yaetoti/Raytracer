@@ -1,4 +1,5 @@
 #include "DxRenderer.h"
+#include "Flame/engine/LightSystem.h"
 #include "Flame/engine/MeshSystem.h"
 #include "Flame/math/HitRecord.h"
 #include "Flame/utils/PtrProxy.h"
@@ -10,6 +11,7 @@
 #include <d3dcompiler.h>
 #include <glm/ext/matrix_transform.hpp>
 #include <iostream>
+#include <winnt.h>
 
 #include "Flame/utils/draggers/IDragger.h"
 
@@ -151,11 +153,17 @@ namespace Flame {
       m_constantBuffer.ApplyChanges();
     }
 
-    dc->VSSetConstantBuffers(0, 1, m_constantBuffer.GetAddressOf());
-    dc->PSSetConstantBuffers(0, 1, m_constantBuffer.GetAddressOf());
-    dc->GSSetConstantBuffers(0, 1, m_constantBuffer.GetAddressOf());
-    dc->HSSetConstantBuffers(0, 1, m_constantBuffer.GetAddressOf());
-    dc->DSSetConstantBuffers(0, 1, m_constantBuffer.GetAddressOf());
+    // Set constant buffers
+    ID3D11Buffer* buffers[] {
+      m_constantBuffer.Get(),
+      LightSystem::Get()->GetConstantBuffer()
+    };
+
+    dc->VSSetConstantBuffers(0, ARRAYSIZE(buffers), buffers);
+    dc->PSSetConstantBuffers(0, ARRAYSIZE(buffers), buffers);
+    dc->GSSetConstantBuffers(0, ARRAYSIZE(buffers), buffers);
+    dc->HSSetConstantBuffers(0, ARRAYSIZE(buffers), buffers);
+    dc->DSSetConstantBuffers(0, ARRAYSIZE(buffers), buffers);
 
     MeshSystem::Get()->Render(deltaTime);
   }

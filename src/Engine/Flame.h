@@ -68,14 +68,15 @@ namespace Flame {
     static void Init() {
       DxContext::Get()->Init();
       MeshSystem::Get()->Init();
+      LightSystem::Get()->Init();
     }
 
     static void Cleanup() {
       TextureManager::Get()->Cleanup();
+      LightSystem::Get()->Cleanup();
       MeshSystem::Get()->Cleanup();
       MeshSystem::Get()->Cleanup();
       ModelManager::Get()->Cleanup();
-      LightSystem::Get()->Cleanup();
       TransformSystem::Get()->Cleanup();
       DxContext::Get()->Cleanup();
     }
