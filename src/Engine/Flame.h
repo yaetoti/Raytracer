@@ -10,6 +10,7 @@
 #include "Flame/engine/ModelManager.h"
 #include "Flame/engine/TextureManager.h"
 #include "Flame/engine/Transform.h"
+#include "Flame/engine/TransformSystem.h"
 #include "Flame/graphics/buffers/ConstantBuffer.h"
 #include "Flame/graphics/buffers/IndexBuffer.h"
 #include "Flame/graphics/buffers/VertexBuffer.h"
@@ -74,6 +75,7 @@ namespace Flame {
       MeshSystem::Get()->Cleanup();
       MeshSystem::Get()->Cleanup();
       ModelManager::Get()->Cleanup();
+      TransformSystem::Get()->Cleanup();
       DxContext::Get()->Cleanup();
     }
   };

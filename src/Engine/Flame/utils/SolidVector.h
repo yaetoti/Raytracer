@@ -67,6 +67,27 @@ namespace Flame {
       return id;
     }
 
+    ID emplace(T&& value) {
+      ID id = m_nextUnused;
+      assert(id <= m_forwardMap.size() && m_forwardMap.size() == m_occupied.size());
+
+      if (id == m_forwardMap.size()) {
+        m_forwardMap.push_back(Index(m_forwardMap.size() + 1));
+        m_occupied.push_back(false);
+      }
+
+      assert(!m_occupied[id]);
+
+      m_nextUnused = m_forwardMap[id];
+      m_forwardMap[id] = Index(m_data.size());
+      m_occupied[id] = true;
+
+      m_data.emplace_back(std::move(value));
+      m_backwardMap.emplace_back(id);
+
+      return id;
+    }
+
     void erase(ID id) {
       assert(id < m_forwardMap.size() && m_forwardMap.size() == m_occupied.size());
 

@@ -59,6 +59,10 @@ namespace Flame {
       bvh.Build();
     }
 
+    void BuildBvh() {
+      bvh.Build();
+    }
+
   public:
     std::string name;
     std::vector<glm::vec3> vertices;
