@@ -12,13 +12,15 @@
 namespace Flame {
   struct LightSystem final {
   private:
-    inline static constexpr uint32_t kLightNum = 8;
+    inline static constexpr uint32_t kDirectLightNum = 1;
+    inline static constexpr uint32_t kPointLightNum = 8;
+    inline static constexpr uint32_t kSpotLightNum = 1;
 
   public:
     struct ShaderData final {
-      DirectLight::ShaderData directLightData[kLightNum];
-      PointLight::ShaderData pointLightData[kLightNum];
-      SpotLight::ShaderData spotLightData[kLightNum];
+      DirectLight::ShaderData directLightData[kDirectLightNum];
+      PointLight::ShaderData pointLightData[kPointLightNum];
+      SpotLight::ShaderData spotLightData[kSpotLightNum];
       uint32_t directLightCount;
       uint32_t pointLightCount;
       uint32_t spotLightCount;
@@ -63,9 +65,9 @@ namespace Flame {
 
     ShaderData ToShaderData() const {
       ShaderData data;
-      data.directLightCount = std::min(m_directLights.size(), kLightNum);
-      data.pointLightCount = std::min(m_pointLights.size(), kLightNum);
-      data.spotLightCount = std::min(m_spotLights.size(), kLightNum);
+      data.directLightCount = std::min(m_directLights.size(), kDirectLightNum);
+      data.pointLightCount = std::min(m_pointLights.size(), kPointLightNum);
+      data.spotLightCount = std::min(m_spotLights.size(), kSpotLightNum);
 
       for (uint32_t i = 0; i < data.directLightCount; ++i) {
         data.directLightData[i] = m_directLights[i]->ToShaderData();
@@ -92,7 +94,7 @@ namespace Flame {
       m_pointLights.clear();
     }
 
-    void UpdateConstantBuffer() {
+    void CommitChanges() {
       m_constantBuffer.data = ToShaderData();
       m_constantBuffer.ApplyChanges();
     }

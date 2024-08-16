@@ -1,4 +1,5 @@
 ﻿#include "Application.h"
+#include <Flame/engine/MeshSystem.h>
 
 Application::Application() {
   m_window = std::make_shared<Flame::Window>(L"Flame 🔥", 160, 90, 1);
@@ -48,6 +49,9 @@ void Application::Init() {
   m_window->GetDispatcher().AddListener(this);
   m_window->CreateResources();
   m_window->Show(SW_SHOW);
+
+  // Init scene
+  // Flame::MeshSystem::Get()->
 }
 
 void Application::Update(float deltaTime) {

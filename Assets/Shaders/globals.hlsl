@@ -1,7 +1,9 @@
 /*----- Lights -----*/
 
 
-#define NUM_LIGHTS 8
+#define NUM_DIRECT_LIGHTS 1
+#define NUM_POINT_LIGHTS 8
+#define NUM_SPOT_LIGHTS 1
 
 struct DirectLight {
   float4 direction;
@@ -56,9 +58,9 @@ cbuffer ConstantBuffer : register(b0)
 };
 
 cbuffer LightBuffer : register(b1) {
-  DirectLight g_directLights[NUM_LIGHTS];
-  PointLight g_pointLights[NUM_LIGHTS];
-  SpotLight g_spotLights[NUM_LIGHTS];
+  DirectLight g_directLights[NUM_DIRECT_LIGHTS];
+  PointLight g_pointLights[NUM_POINT_LIGHTS];
+  SpotLight g_spotLights[NUM_SPOT_LIGHTS];
   uint g_directLightsCount;
   uint g_pointLightsCount;
   uint g_spotLightsCount;

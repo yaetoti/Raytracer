@@ -33,6 +33,10 @@ namespace Flame {
     void Update(float deltaTime);
     void Render(float deltaTime);
 
+    OpaqueGroup* GetOpaqueGroup();
+    HologramGroup* GetHologramGroup();
+    TextureOnlyGroup* GetTextureOnlyGroup();
+
     bool Hit(const Ray& ray, HitRecord<HitResult>& record, float tMin, float tMax) const;
 
     static MeshSystem* Get();

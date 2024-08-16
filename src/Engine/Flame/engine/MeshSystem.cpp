@@ -1,11 +1,15 @@
 #include "MeshSystem.h"
 
+#include "Flame/engine/lights/PointLight.h"
+#include "Flame/math/MathUtils.h"
+#include "LightSystem.h"
 #include "Flame/engine/TextureManager.h"
 #include "Flame/graphics/DxContext.h"
 #include "Flame/graphics/groups/TextureOnlyGroup.h"
 #include "Flame/graphics/shaders/PixelShader.h"
 #include "Flame/graphics/shaders/VertexShader.h"
 #include "ModelManager.h"
+#include "lights/DirectLight.h"
 #include <d3dcommon.h>
 #include <wrl/client.h>
 
@@ -16,18 +20,20 @@ namespace Flame {
   void MeshSystem::Init() {
     // Opaque group
     {
-      auto model1 = m_opaqueGroup.AddModel(ModelManager::Get()->GetModel("Assets/Models/Samurai/Samurai1.obj"));
-      auto material1 = model1->AddMaterial({});
+      auto modelId0 = m_opaqueGroup.AddModel(ModelManager::Get()->GetModel("Assets/Models/Samurai/Samurai1.obj"));
+      auto model0 = m_opaqueGroup.GetModel(modelId0);
+      auto material1 = model0->AddMaterial({});
       material1->AddInstance({ TransformSystem::Get()->Insert({ Transform(glm::vec3(-2, -2, 0)) }) });
       material1->AddInstance({ TransformSystem::Get()->Insert({ Transform(glm::vec3(-2, 2, 0)) }) });
       material1->AddInstance({ TransformSystem::Get()->Insert({ Transform(glm::vec3(2, -2, 0)) }) });
       material1->AddInstance({ TransformSystem::Get()->Insert({ Transform(glm::vec3(2, 2, 0)) }) });
-      auto material2 = model1->AddMaterial({});
+      auto material2 = model0->AddMaterial({});
       material2->AddInstance({ TransformSystem::Get()->Insert({ Transform(glm::vec3(0, 0, 2)) }) });
       material2->AddInstance({ TransformSystem::Get()->Insert({ Transform(glm::vec3(0, 0, -2)) }) });
 
-      auto model2 = m_opaqueGroup.AddModel(ModelManager::Get()->GetModel("Assets/Cube.obj"));
-      auto material3 = model2->AddMaterial({});
+      auto modelId1 = m_opaqueGroup.AddModel(ModelManager::Get()->GetModel("Assets/Cube.obj"));
+      auto model1 = m_opaqueGroup.GetModel(modelId1);
+      auto material3 = model1->AddMaterial({});
       material3->AddInstance({ TransformSystem::Get()->Insert({ Transform(glm::vec3(-2, -2, 2), glm::vec3(0.5f)) }) });
       material3->AddInstance({ TransformSystem::Get()->Insert({ Transform(glm::vec3(-2, 2, -2)) }) });
       material3->AddInstance({ TransformSystem::Get()->Insert({ Transform(glm::vec3(2, -2, -2), glm::vec3(0.1f)) }) });
@@ -36,24 +42,27 @@ namespace Flame {
 
     // Hologram group
     {
-      auto model = m_hologramGroup.AddModel(ModelManager::Get()->GetModel("Assets/Models/Samurai/Samurai1.obj"));
-      auto material1 = model->AddMaterial({});
-      material1->AddInstance({ TransformSystem::Get()->Insert({ Transform(glm::vec3(0.0f), glm::vec3(0.5f)) }), glm::vec3(0, 1, 1), glm::vec3(1, 0, 0) });
-      material1->AddInstance({ TransformSystem::Get()->Insert({ Transform(glm::vec3(1.25f, 0.0f, 0.0f)) }), glm::vec3(0, 1, 0), glm::vec3(0, 1, 1) });
+      auto modelId0 = m_hologramGroup.AddModel(ModelManager::Get()->GetModel("Assets/Models/Samurai/Samurai1.obj"));
+      auto model0 = m_hologramGroup.GetModel(modelId0);
+      auto material0 = model0->AddMaterial({});
+      material0->AddInstance({ TransformSystem::Get()->Insert({ Transform(glm::vec3(0.0f), glm::vec3(0.5f)) }), glm::vec3(0, 1, 1), glm::vec3(1, 0, 0) });
+      material0->AddInstance({ TransformSystem::Get()->Insert({ Transform(glm::vec3(1.25f, 0.0f, 0.0f)) }), glm::vec3(0, 1, 0), glm::vec3(0, 1, 1) });
       
-      auto model2 = m_hologramGroup.AddModel(ModelManager::Get()->GetModel("Assets/Cube.obj"));
-      auto material2 = model2->AddMaterial({});
-      material2->AddInstance({ TransformSystem::Get()->Insert({ Transform(glm::vec3(0.0f, -8.0f, 0.0f), glm::vec3(2.5f)) }), glm::vec3(1, 0, 1), glm::vec3(1, 0, 1) });
-      material2->AddInstance({ TransformSystem::Get()->Insert({ Transform(glm::vec3(-8.0f, 0.0f, 0.0f), glm::vec3(3.5f)) }), glm::vec3(1, 0, 0), glm::vec3(1, 0, 0) });
-      material2->AddInstance({ TransformSystem::Get()->Insert({ Transform(glm::vec3(0.0f, 0.0f, -8.0f), glm::vec3(1.5f)) }), glm::vec3(0, 0, 1), glm::vec3(0, 0, 1) });
+      auto modelId1 = m_hologramGroup.AddModel(ModelManager::Get()->GetModel("Assets/Cube.obj"));
+      auto model1 = m_hologramGroup.GetModel(modelId1);
+      auto material1 = model1->AddMaterial({});
+      material1->AddInstance({ TransformSystem::Get()->Insert({ Transform(glm::vec3(0.0f, -8.0f, 0.0f), glm::vec3(2.5f)) }), glm::vec3(1, 0, 1), glm::vec3(1, 0, 1) });
+      material1->AddInstance({ TransformSystem::Get()->Insert({ Transform(glm::vec3(-8.0f, 0.0f, 0.0f), glm::vec3(3.5f)) }), glm::vec3(1, 0, 0), glm::vec3(1, 0, 0) });
+      material1->AddInstance({ TransformSystem::Get()->Insert({ Transform(glm::vec3(0.0f, 0.0f, -8.0f), glm::vec3(1.5f)) }), glm::vec3(0, 0, 1), glm::vec3(0, 0, 1) });
     }
 
     // TextureOnly group
     {
-      auto model = m_textureOnlyGroup.AddModel(ModelManager::Get()->GetModel("Assets/Models/OtherCube/OtherCube.obj"));
-      auto material0 = model->AddMaterial({ TextureManager::Get()->GetTexture(L"Assets/Models/OtherCube/OtherCube.dds")->GetResourceView() });
+      auto modelId0 = m_textureOnlyGroup.AddModel(ModelManager::Get()->GetModel("Assets/Models/OtherCube/OtherCube.obj"));
+      auto model0 = m_textureOnlyGroup.GetModel(modelId0);
+      auto material0 = model0->AddMaterial({ TextureManager::Get()->GetTexture(L"Assets/Models/OtherCube/OtherCube.dds")->GetResourceView() });
       material0->AddInstance({ TransformSystem::Get()->Insert({ Transform(glm::vec3(0.0f, 6.0f, 20.0f), glm::vec3(10.0f)) }) });
-      auto material1 = model->AddMaterial({ TextureManager::Get()->GetTexture(L"Assets/Models/OtherCube/AnotherCube.dds")->GetResourceView() });
+      auto material1 = model0->AddMaterial({ TextureManager::Get()->GetTexture(L"Assets/Models/OtherCube/AnotherCube.dds")->GetResourceView() });
       material1->AddInstance({ TransformSystem::Get()->Insert({ Transform(glm::vec3(3.0f, 7.0f, 3.0f), glm::vec3(1.5f)) }) });
     }
 
@@ -65,6 +74,29 @@ namespace Flame {
     m_skyVertexShader.Init(L"Assets/Shaders/sky.hlsl", nullptr, 0);
     m_skyPixelShader.Init(L"Assets/Shaders/sky.hlsl");
     m_textureView = TextureManager::Get()->GetTexture(kSkyboxPath)->GetResourceView();
+
+    // Init light TODO: move
+    LightSystem::Get()->AddDirectLight(std::make_shared<DirectLight>(
+      MathUtils::ColorFromHex(0x000000),
+      glm::vec3(0, -1, 0),
+      1.0f
+    ));
+
+    LightSystem::Get()->AddPointLight(std::make_shared<PointLight>(
+      0, // TODO create that transform
+      glm::vec3(0, 0, 0),
+      MathUtils::ColorFromHex(0x321ba6),
+      4.0f,
+      0.0f, 1.2f, 0.18f
+    ));
+
+    LightSystem::Get()->AddPointLight(std::make_shared<PointLight>(
+      0, // TODO create that transform
+      glm::vec3(1, 0, 1),
+      MathUtils::ColorFromHex(0xe61edf),
+      2.0f,
+      0.0f, 1.2f, 0.18f
+    ));
   }
 
   void MeshSystem::Cleanup() {
@@ -83,6 +115,18 @@ namespace Flame {
     m_textureOnlyGroup.Render();
 
     RenderSkybox(deltaTime);
+  }
+
+  OpaqueGroup* MeshSystem::GetOpaqueGroup() {
+    return &m_opaqueGroup;
+  }
+
+  HologramGroup* MeshSystem::GetHologramGroup() {
+    return &m_hologramGroup;
+  }
+
+  TextureOnlyGroup* MeshSystem::GetTextureOnlyGroup() {
+    return &m_textureOnlyGroup;
   }
 
   bool MeshSystem::Hit(const Ray& ray, HitRecord<HitResult>& record, float tMin, float tMax) const {

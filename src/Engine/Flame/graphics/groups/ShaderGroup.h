@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Flame/engine/Model.h"
+#include "Flame/utils/SolidVector.h"
 
 #include <vector>
 #include <memory>
@@ -88,11 +89,11 @@ namespace Flame {
     // ShaderGroup
     virtual ~ShaderGroup() = default;
 
-    std::vector<std::shared_ptr<PerModel>>& GetModels() {
+    SolidVector<std::shared_ptr<PerModel>>& GetModels() {
       return m_models;
     }
 
-    const std::vector<std::shared_ptr<PerModel>>& GetModels() const {
+    const SolidVector<std::shared_ptr<PerModel>>& GetModels() const {
       return m_models;
     }
 
@@ -107,11 +108,15 @@ namespace Flame {
       return numInstances;
     }
 
-    std::shared_ptr<PerModel> AddModel(std::shared_ptr<Model> model) {
-      return m_models.emplace_back(std::make_shared<PerModel>(std::move(model)));
+    uint32_t AddModel(std::shared_ptr<Model> model) {
+      return m_models.emplace(std::make_shared<PerModel>(std::move(model)));
+    }
+
+    std::shared_ptr<PerModel> GetModel(uint32_t id) const {
+      return m_models[id];
     }
 
   private:
-    std::vector<std::shared_ptr<PerModel>> m_models;
+    SolidVector<std::shared_ptr<PerModel>> m_models;
   };
 }

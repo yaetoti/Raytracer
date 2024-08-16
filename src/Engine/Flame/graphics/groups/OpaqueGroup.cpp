@@ -120,6 +120,8 @@ namespace Flame {
       dc->IASetIndexBuffer(perModel->GetModel()->m_indices.Get(), DXGI_FORMAT_R32_UINT, 0);
 
       for (const auto & perMaterial : perModel->GetMaterials()) {
+        // TODO set material via ConstantBuffer
+
         const auto& instances = perMaterial->GetInstances();
         uint32_t numInstances = instances.size();
         if (numInstances == 0) {

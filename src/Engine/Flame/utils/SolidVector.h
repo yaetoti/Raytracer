@@ -124,6 +124,22 @@ namespace Flame {
       m_occupied.reserve(count);
     }
 
+    std::vector<T>::iterator begin() {
+      return m_data.begin();
+    }
+
+    std::vector<T>::iterator end() {
+      return m_data.end();
+    }
+
+    std::vector<T>::const_iterator begin() const {
+      return m_data.begin();
+    }
+
+    std::vector<T>::const_iterator end() const {
+      return m_data.end();
+    }
+
   private:
     void assertId(ID id) const {
       assert(id < m_occupied.size());

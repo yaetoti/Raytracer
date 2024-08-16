@@ -11,9 +11,14 @@
 #include <d3dcompiler.h>
 #include <glm/ext/matrix_transform.hpp>
 #include <iostream>
+#include <limits>
 #include <winnt.h>
 
 #include "Flame/utils/draggers/IDragger.h"
+
+#include "Flame/utils/Random.h"
+#include "Flame/math/MathUtils.h"
+#include "glm/ext.hpp"
 
 namespace Flame {
   DxRenderer::DxRenderer(std::shared_ptr<Window> window, std::shared_ptr<AlignedCamera> camera)
@@ -153,7 +158,25 @@ namespace Flame {
       m_constantBuffer.ApplyChanges();
     }
 
+    // Test
+    // static const int timeout = 300;
+    // static int timer = timeout;
+    // static glm::vec3 prevColor(0.0f);
+    // static glm::vec3 nextColor(0.0f);
+    // static glm::vec3 color;
+    // if (timer++ >= timeout) {
+    //   timer = 0;
+    //   prevColor = nextColor;
+    //   nextColor = MathUtils::ColorFromHex(Random::Float() * std::numeric_limits<int>::max());
+    // }
+
+    // color = glm::lerp(prevColor, nextColor, (float)timer / (float)timeout);
+
+    // LightSystem::Get()->GetDirectLight(0)->color = color;
+    LightSystem::Get()->GetDirectLight(0)->direction = m_camera->GetFrontUnit();
+
     // Set constant buffers
+    LightSystem::Get()->CommitChanges();
     ID3D11Buffer* buffers[] {
       m_constantBuffer.Get(),
       LightSystem::Get()->GetConstantBuffer()
