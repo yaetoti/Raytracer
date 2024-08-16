@@ -32,8 +32,8 @@ struct SpotLight {
   float cutoffCosineInner;
   float cutoffCosineOuter;
 
-  float linearFadeoff;
   float constantFadeoff;
+  float linearFadeoff;
   float quadraticFadeoff;
 
   float2 padding0;

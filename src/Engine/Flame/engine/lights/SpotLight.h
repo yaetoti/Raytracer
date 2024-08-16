@@ -45,8 +45,8 @@ namespace Flame {
     float cutoffCosineInner;
     float cutoffCosineOuter;
 
-    float linearFadeoff;
     float constantFadeoff;
+    float linearFadeoff;
     float quadraticFadeoff;
 
     // Texture mask

@@ -9,6 +9,7 @@
 #include "Flame/graphics/shaders/PixelShader.h"
 #include "Flame/graphics/shaders/VertexShader.h"
 #include "ModelManager.h"
+#include "glm/fwd.hpp"
 #include "lights/DirectLight.h"
 #include <d3dcommon.h>
 #include <wrl/client.h>
@@ -97,6 +98,28 @@ namespace Flame {
       2.0f,
       0.0f, 1.2f, 0.18f
     ));
+
+    LightSystem::Get()->AddSpotLight(std::make_shared<SpotLight>(
+      glm::vec3(0.0f),
+      glm::vec3(0.0f, 0.0f, 1.0f),
+      MathUtils::ColorFromHex(0xFFFFFF),
+      5.0f,
+      0.707f,
+      0.642f,
+      0.0f, 1.2f, 0.18f
+    ));
+
+    // glm::vec3 position;
+    // glm::vec3 direction;
+    // glm::vec3 color;
+    // float intensity;
+
+    // float cutoffCosineInner;
+    // float cutoffCosineOuter;
+
+    // float linearFadeoff;
+    // float constantFadeoff;
+    // float quadraticFadeoff;
   }
 
   void MeshSystem::Cleanup() {

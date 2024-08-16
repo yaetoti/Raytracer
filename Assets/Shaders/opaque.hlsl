@@ -71,5 +71,26 @@ float4 PSMain(VSOutput input) : SV_TARGET
     light += g_pointLights[i].intensity * attenuation * (diffuse + specular);
   }
 
+  // Spot light
+  for (uint i = 0; i < g_spotLightsCount; ++i) {
+    float3 lightPosCameraCentered = g_spotLights[i].position.xyz - g_cameraPosition.xyz;
+    float3 lightVec = lightPosCameraCentered - input.positionCameraCentered.xyz;
+
+    float lightDistance = length(lightVec);
+    float3 lightDir = normalize(lightVec);
+
+    float theta = dot(lightDir, -g_spotLights[i].direction);
+    float epsilon = g_spotLights[i].cutoffCosineInner - g_spotLights[i].cutoffCosineOuter;
+    float intensity = saturate((theta - g_spotLights[i].cutoffCosineOuter) / epsilon);
+
+    float attenuation =  1.0f / (g_spotLights[i].constantFadeoff
+      + g_spotLights[i].linearFadeoff * lightDistance
+      + g_spotLights[i].quadraticFadeoff * lightDistance * lightDistance);
+
+    float4 diffuse = g_spotLights[i].color * saturate(dot(input.normal, lightDir));
+    float4 specular = float4(0.0, 0.0, 0.0, 0.0);
+    light += g_spotLights[i].intensity * intensity * attenuation * (diffuse + specular);
+  }
+
   return light;
 }
