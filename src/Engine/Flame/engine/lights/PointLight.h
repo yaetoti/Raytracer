@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Flame/engine/TransformSystem.h"
 #include <glm/vec3.hpp>
 
 namespace Flame {
@@ -16,8 +17,10 @@ namespace Flame {
 
   public:
     ShaderData ToShaderData() const {
+      auto m = TransformSystem::Get()->At(parentTransformId)->transform.GetMat();
+
       return ShaderData {
-        { position.x, position.y, position.z, 1.0f },
+        { position.x + m[3][0], position.y + m[3][1], position.z + m[3][2], 1.0f },
         { color.x, color.y, color.z, 1.0f },
         intensity,
         constantFadeoff,

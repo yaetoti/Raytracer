@@ -1,6 +1,7 @@
 #include "MeshSystem.h"
 
 #include "Flame/engine/lights/PointLight.h"
+#include "Flame/graphics/groups/EmissionOnlyGroup.h"
 #include "Flame/math/MathUtils.h"
 #include "LightSystem.h"
 #include "Flame/engine/TextureManager.h"
@@ -55,11 +56,6 @@ namespace Flame {
       material1->AddInstance({ TransformSystem::Get()->Insert({ Transform(glm::vec3(0.0f, -8.0f, 0.0f), glm::vec3(2.5f)) }), glm::vec3(1, 0, 1), glm::vec3(1, 0, 1) });
       material1->AddInstance({ TransformSystem::Get()->Insert({ Transform(glm::vec3(-8.0f, 0.0f, 0.0f), glm::vec3(3.5f)) }), glm::vec3(1, 0, 0), glm::vec3(1, 0, 0) });
       material1->AddInstance({ TransformSystem::Get()->Insert({ Transform(glm::vec3(0.0f, 0.0f, -8.0f), glm::vec3(1.5f)) }), glm::vec3(0, 0, 1), glm::vec3(0, 0, 1) });
-
-      auto modelId2 = m_hologramGroup.AddModel(ModelManager::Get()->GetBuiltinModel(ModelManager::BuiltinModelType::UNIT_SPHERE));
-      auto model2 = m_hologramGroup.GetModel(modelId2);
-      auto material2 = model2->AddMaterial({});
-      material2->AddInstance({ TransformSystem::Get()->Insert({ Transform(glm::vec3(8.0f, 0.0f, 0.0f), glm::vec3(2.5f)) }), MathUtils::ColorFromHex(0x310c75), MathUtils::ColorFromHex(0xa018b5) });
     }
 
     // TextureOnly group
@@ -72,8 +68,27 @@ namespace Flame {
       material1->AddInstance({ TransformSystem::Get()->Insert({ Transform(glm::vec3(3.0f, 7.0f, 3.0f), glm::vec3(1.5f)) }) });
     }
 
+    // EmissionOnly group
+    {
+      auto transformId = TransformSystem::Get()->Insert({ Transform(glm::vec3(8.0f, 0.0f, 0.0f), glm::vec3(0.1f)) });
+
+      auto modelId0 = m_emissionOnlyGroup.AddModel(ModelManager::Get()->GetBuiltinModel(ModelManager::BuiltinModelType::UNIT_SPHERE));
+      auto model0 = m_emissionOnlyGroup.GetModel(modelId0);
+      auto material0 = model0->AddMaterial({});
+      material0->AddInstance({ transformId, MathUtils::ColorFromHex(0xf194ff) });
+
+      LightSystem::Get()->AddPointLight(std::make_shared<PointLight>(
+        transformId,
+        glm::vec3(0, 0, 0),
+        MathUtils::ColorFromHex(0xf194ff),
+        4.0f,
+        0.0f, 1.2f, 0.18f
+      ));
+    }
+
     m_opaqueGroup.Init();
     m_hologramGroup.Init();
+    m_emissionOnlyGroup.Init();
     m_textureOnlyGroup.Init();
 
     // Init skybox shaders
@@ -88,21 +103,21 @@ namespace Flame {
       1.0f
     ));
 
-    LightSystem::Get()->AddPointLight(std::make_shared<PointLight>(
-      0, // TODO create that transform
-      glm::vec3(0, 0, 0),
-      MathUtils::ColorFromHex(0x321ba6),
-      4.0f,
-      0.0f, 1.2f, 0.18f
-    ));
+    // LightSystem::Get()->AddPointLight(std::make_shared<PointLight>(
+    //   0, // TODO create that transform
+    //   glm::vec3(0, 0, 0),
+    //   MathUtils::ColorFromHex(0x321ba6),
+    //   4.0f,
+    //   0.0f, 1.2f, 0.18f
+    // ));
 
-    LightSystem::Get()->AddPointLight(std::make_shared<PointLight>(
-      0, // TODO create that transform
-      glm::vec3(1, 0, 1),
-      MathUtils::ColorFromHex(0xe61edf),
-      2.0f,
-      0.0f, 1.2f, 0.18f
-    ));
+    // LightSystem::Get()->AddPointLight(std::make_shared<PointLight>(
+    //   0, // TODO create that transform
+    //   glm::vec3(1, 0, 1),
+    //   MathUtils::ColorFromHex(0xe61edf),
+    //   2.0f,
+    //   0.0f, 1.2f, 0.18f
+    // ));
 
     LightSystem::Get()->AddSpotLight(std::make_shared<SpotLight>(
       glm::vec3(0.0f),
@@ -130,6 +145,7 @@ namespace Flame {
   void MeshSystem::Cleanup() {
     m_opaqueGroup.Cleanup();
     m_hologramGroup.Cleanup();
+    m_emissionOnlyGroup.Cleanup();
     m_textureOnlyGroup.Cleanup();
   }
 
@@ -140,6 +156,7 @@ namespace Flame {
   void MeshSystem::Render(float deltaTime) {
     m_opaqueGroup.Render();
     m_hologramGroup.Render();
+    m_emissionOnlyGroup.Render();
     m_textureOnlyGroup.Render();
 
     RenderSkybox(deltaTime);
@@ -157,10 +174,15 @@ namespace Flame {
     return &m_textureOnlyGroup;
   }
 
+  EmissionOnlyGroup* MeshSystem::GetEmissionOnlyGroup() {
+    return &m_emissionOnlyGroup;
+  }
+
   bool MeshSystem::Hit(const Ray& ray, HitRecord<HitResult>& record, float tMin, float tMax) const {
     HitRecord<OpaqueGroup::PerInstance*> opaqueResult;
     HitRecord<HologramGroup::PerInstance*> hologramResult;
     HitRecord<TextureOnlyGroup::PerInstance*> textureOnlyResult;
+    HitRecord<EmissionOnlyGroup::PerInstance*> emissionOnlyResult;
     bool wasHit = false;
 
     if (m_opaqueGroup.HitInstance(ray, opaqueResult, tMin, tMax)) {
@@ -183,6 +205,13 @@ namespace Flame {
       record = textureOnlyResult;
       record.data.groupType = GroupType::TEXTURE_ONLY_GROUP;
       record.data.perInstanceTextureOnly = textureOnlyResult.data;
+    }
+    if (m_emissionOnlyGroup.HitInstance(ray, emissionOnlyResult, tMin, tMax)) {
+      wasHit |= true;
+      tMax = emissionOnlyResult.time;
+      record = emissionOnlyResult;
+      record.data.groupType = GroupType::EMISSION_ONLY_GROUP;
+      record.data.perInstanceEmissionOnly = emissionOnlyResult.data;
     }
 
     return wasHit;
