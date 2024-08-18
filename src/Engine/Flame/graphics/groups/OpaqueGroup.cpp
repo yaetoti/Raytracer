@@ -35,40 +35,6 @@ namespace Flame {
     GetModels().clear();
   }
 
-  bool OpaqueGroup::HitInstance(const Ray& ray, HitRecord<PerInstance*>& record, float tMin, float tMax) const {
-    HitRecord<const Model*> record0;
-
-    // Go through all instances and find the closest one
-    for (const auto & perModel : GetModels()) {
-      const auto& model = *perModel->GetModel();
-
-      for (const auto & perMaterial : perModel->GetMaterials()) {
-        for (const auto & perInstance : perMaterial->GetInstances()) {
-          // TODO we could store these as we use them often, but definitely not in PerInstance as we copy it entirely into the buffer
-          // Transform ray
-          glm::mat4 modelMat = TransformSystem::Get()->At(perInstance->GetData().transformId)->transform.GetMat();
-          glm::mat4 modelMatInv = glm::inverse(modelMat);
-          glm::vec4 position = modelMatInv * glm::vec4(ray.origin, 1.0f);
-          glm::vec3 direction = modelMatInv * glm::vec4(ray.direction, 0.0f);
-          Ray rayModel { position / position.w, direction };
-
-          // Hit model in model space
-          if (model.Hit(rayModel, record0, tMin, tMax)) {
-            // If hit - update tMax and InvTransform the results
-            tMax = record0.time;
-            position = modelMat * glm::vec4(record0.point, 1.0f);
-            record.time = tMax;
-            record.point = position / position.w;
-            record.normal = glm::normalize(modelMat * glm::vec4(record0.normal, 0.0f));
-            record.data = perInstance.get();
-          }
-        }
-      }
-    }
-
-    return record.data != nullptr;
-  }
-
   void OpaqueGroup::UpdateInstanceBuffer() {
     // Fill buffer
     auto mapping = m_instanceBuffer.Map(D3D11_MAP_WRITE_DISCARD);

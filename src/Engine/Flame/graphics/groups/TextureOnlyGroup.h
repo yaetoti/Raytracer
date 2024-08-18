@@ -31,7 +31,6 @@ namespace Flame {
     void Init();
     void Cleanup();
 
-    bool HitInstance(const Ray& ray, HitRecord<PerInstance*>& record, float tMin, float tMax) const;
     void UpdateInstanceBuffer();
     void Render();
 

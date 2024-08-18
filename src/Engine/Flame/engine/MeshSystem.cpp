@@ -2,6 +2,7 @@
 
 #include "Flame/engine/lights/PointLight.h"
 #include "Flame/graphics/groups/EmissionOnlyGroup.h"
+#include "Flame/graphics/groups/ShaderGroup.h"
 #include "Flame/math/MathUtils.h"
 #include "LightSystem.h"
 #include "Flame/engine/TextureManager.h"
@@ -103,22 +104,6 @@ namespace Flame {
       1.0f
     ));
 
-    // LightSystem::Get()->AddPointLight(std::make_shared<PointLight>(
-    //   0, // TODO create that transform
-    //   glm::vec3(0, 0, 0),
-    //   MathUtils::ColorFromHex(0x321ba6),
-    //   4.0f,
-    //   0.0f, 1.2f, 0.18f
-    // ));
-
-    // LightSystem::Get()->AddPointLight(std::make_shared<PointLight>(
-    //   0, // TODO create that transform
-    //   glm::vec3(1, 0, 1),
-    //   MathUtils::ColorFromHex(0xe61edf),
-    //   2.0f,
-    //   0.0f, 1.2f, 0.18f
-    // ));
-
     LightSystem::Get()->AddSpotLight(std::make_shared<SpotLight>(
       glm::vec3(0.0f),
       glm::vec3(0.0f, 0.0f, 1.0f),
@@ -128,18 +113,6 @@ namespace Flame {
       0.642f,
       0.0f, 1.2f, 0.18f
     ));
-
-    // glm::vec3 position;
-    // glm::vec3 direction;
-    // glm::vec3 color;
-    // float intensity;
-
-    // float cutoffCosineInner;
-    // float cutoffCosineOuter;
-
-    // float linearFadeoff;
-    // float constantFadeoff;
-    // float quadraticFadeoff;
   }
 
   void MeshSystem::Cleanup() {
