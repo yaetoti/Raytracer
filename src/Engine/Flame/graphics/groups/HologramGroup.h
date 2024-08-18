@@ -49,7 +49,8 @@ namespace Flame {
   struct HologramGroup final : ShaderGroup<HologramInstanceData, HologramMaterialData> {
     void Init();
     void Cleanup();
-
+    
+    void InitInstanceBuffer();
     void UpdateInstanceBuffer();
     void Render();
 

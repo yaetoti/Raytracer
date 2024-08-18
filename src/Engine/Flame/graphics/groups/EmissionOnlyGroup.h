@@ -37,6 +37,7 @@ namespace Flame {
     void Init();
     void Cleanup();
 
+    void InitInstanceBuffer();
     void UpdateInstanceBuffer();
     void Render();
 

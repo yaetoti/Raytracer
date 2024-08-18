@@ -24,12 +24,6 @@ namespace Flame {
     m_geometryShader.Init(kShaderPath);
     m_hullShader.Init(kShaderPath);
     m_domainShader.Init(kShaderPath);
-
-    // TODO FIX. This creates the need for initialization only after parsing the scene graph
-    // Create instance buffer
-    HRESULT result;
-    result = m_instanceBuffer.Init(GetInstanceCount(), D3D11_CPU_ACCESS_WRITE, D3D11_USAGE_DYNAMIC);
-    assert(SUCCEEDED(result));
   }
 
   void HologramGroup::Cleanup() {
@@ -41,6 +35,12 @@ namespace Flame {
     m_vertexShader.Reset();
     m_instanceBuffer.Reset();
     GetModels().clear();
+  }
+
+  void HologramGroup::InitInstanceBuffer() {
+    m_instanceBuffer.Reset();
+    HRESULT result = m_instanceBuffer.Init(GetInstanceCount(), D3D11_CPU_ACCESS_WRITE, D3D11_USAGE_DYNAMIC);
+    assert(SUCCEEDED(result));
   }
 
   void HologramGroup::UpdateInstanceBuffer() {

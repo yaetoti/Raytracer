@@ -1,4 +1,8 @@
 ﻿#include "Application.h"
+#include "Flame/engine/LightSystem.h"
+#include "Flame/engine/ModelManager.h"
+#include "Flame/engine/TextureManager.h"
+#include "Flame/engine/Transform.h"
 #include <Flame/engine/MeshSystem.h>
 
 Application::Application() {
@@ -51,7 +55,93 @@ void Application::Init() {
   m_window->Show(SW_SHOW);
 
   // Init scene
-  // Flame::MeshSystem::Get()->
+  using Transform = Flame::Transform;
+
+  Flame::MeshSystem* ms = Flame::MeshSystem::Get();
+  Flame::TransformSystem* ts = Flame::TransformSystem::Get();
+  Flame::ModelManager* mm = Flame::ModelManager::Get();
+  Flame::TextureManager* tm = Flame::TextureManager::Get();
+  Flame::LightSystem* ls = Flame::LightSystem::Get();
+
+  // Opaque group
+  {
+    auto* group = Flame::MeshSystem::Get()->GetOpaqueGroup();
+
+    auto modelId0 = group->AddModel(mm->GetModel("Assets/Models/Samurai/Samurai1.obj"));
+    auto model0 = group->GetModel(modelId0);
+    auto material1 = model0->AddMaterial({});
+    material1->AddInstance({ ts->Insert({ Transform(glm::vec3(-2, -2, 0)) }) });
+    material1->AddInstance({ ts->Insert({ Transform(glm::vec3(-2, 2, 0)) }) });
+    material1->AddInstance({ ts->Insert({ Transform(glm::vec3(2, -2, 0)) }) });
+    material1->AddInstance({ ts->Insert({ Transform(glm::vec3(2, 2, 0)) }) });
+    auto material2 = model0->AddMaterial({});
+    material2->AddInstance({ ts->Insert({ Transform(glm::vec3(0, 0, 2)) }) });
+    material2->AddInstance({ ts->Insert({ Transform(glm::vec3(0, 0, -2)) }) });
+
+    auto modelId1 = group->AddModel(mm->GetModel("Assets/Cube.obj"));
+    auto model1 = group->GetModel(modelId1);
+    auto material3 = model1->AddMaterial({});
+    material3->AddInstance({ ts->Insert({ Transform(glm::vec3(-2, -2, 2), glm::vec3(0.5f)) }) });
+    material3->AddInstance({ ts->Insert({ Transform(glm::vec3(-2, 2, -2)) }) });
+    material3->AddInstance({ ts->Insert({ Transform(glm::vec3(2, -2, -2), glm::vec3(0.1f)) }) });
+    material3->AddInstance({ ts->Insert({ Transform(glm::vec3(2, 2, 2)) }) });
+  }
+  
+  // Hologram group
+  {
+    auto* group = ms->GetHologramGroup();
+
+    auto modelId0 = group->AddModel(mm->GetModel("Assets/Models/Samurai/Samurai1.obj"));
+    auto model0 = group->GetModel(modelId0);
+    auto material0 = model0->AddMaterial({});
+    material0->AddInstance({ ts->Insert({ Transform(glm::vec3(0.0f), glm::vec3(0.5f)) }), glm::vec3(0, 1, 1), glm::vec3(1, 0, 0) });
+    material0->AddInstance({ ts->Insert({ Transform(glm::vec3(1.25f, 0.0f, 0.0f)) }), glm::vec3(0, 1, 0), glm::vec3(0, 1, 1) });
+    
+    auto modelId1 = group->AddModel(mm->GetModel("Assets/Cube.obj"));
+    auto model1 = group->GetModel(modelId1);
+    auto material1 = model1->AddMaterial({});
+    material1->AddInstance({ ts->Insert({ Transform(glm::vec3(0.0f, -8.0f, 0.0f), glm::vec3(2.5f)) }), glm::vec3(1, 0, 1), glm::vec3(1, 0, 1) });
+    material1->AddInstance({ ts->Insert({ Transform(glm::vec3(-8.0f, 0.0f, 0.0f), glm::vec3(3.5f)) }), glm::vec3(1, 0, 0), glm::vec3(1, 0, 0) });
+    material1->AddInstance({ ts->Insert({ Transform(glm::vec3(0.0f, 0.0f, -8.0f), glm::vec3(1.5f)) }), glm::vec3(0, 0, 1), glm::vec3(0, 0, 1) });
+  }
+
+  // TextureOnly group
+  {
+    auto* group = ms->GetTextureOnlyGroup();
+
+    auto modelId0 = group->AddModel(mm->GetModel("Assets/Models/OtherCube/OtherCube.obj"));
+    auto model0 = group->GetModel(modelId0);
+    auto material0 = model0->AddMaterial({ tm->GetTexture(L"Assets/Models/OtherCube/OtherCube.dds")->GetResourceView() });
+    material0->AddInstance({ ts->Insert({ Transform(glm::vec3(0.0f, 6.0f, 20.0f), glm::vec3(10.0f)) }) });
+    auto material1 = model0->AddMaterial({ tm->GetTexture(L"Assets/Models/OtherCube/AnotherCube.dds")->GetResourceView() });
+    material1->AddInstance({ ts->Insert({ Transform(glm::vec3(3.0f, 7.0f, 3.0f), glm::vec3(1.5f)) }) });
+  }
+
+  // EmissionOnly group
+  {
+    auto* group = ms->GetEmissionOnlyGroup();
+
+    auto transformId = ts->Insert({ Transform(glm::vec3(8.0f, 0.0f, 0.0f), glm::vec3(0.1f)) });
+
+    auto modelId0 = group->AddModel(mm->GetBuiltinModel(Flame::ModelManager::BuiltinModelType::UNIT_SPHERE));
+    auto model0 = group->GetModel(modelId0);
+    auto material0 = model0->AddMaterial({});
+    material0->AddInstance({ transformId, Flame::MathUtils::ColorFromHex(0xf194ff) });
+
+    ls->AddPointLight(std::make_shared<Flame::PointLight>(
+      transformId,
+      glm::vec3(0, 0, 0),
+      Flame::MathUtils::ColorFromHex(0xf194ff),
+      4.0f,
+      0.0f, 1.2f, 0.18f
+    ));
+  }
+
+  // TODO 2-step initialization is kinda bad because you can forget about that. Don't know what to to at the moment
+  ms->GetOpaqueGroup()->InitInstanceBuffer();
+  ms->GetHologramGroup()->InitInstanceBuffer();
+  ms->GetTextureOnlyGroup()->InitInstanceBuffer();
+  ms->GetEmissionOnlyGroup()->InitInstanceBuffer();
 }
 
 void Application::Update(float deltaTime) {
