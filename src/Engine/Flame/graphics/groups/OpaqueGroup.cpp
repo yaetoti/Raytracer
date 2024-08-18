@@ -1,4 +1,5 @@
 #include "OpaqueGroup.h"
+#include "Flame/engine/TextureManager.h"
 
 namespace Flame {
   void OpaqueGroup::Init() {
@@ -63,6 +64,9 @@ namespace Flame {
     dc->PSSetShader(m_pixelShader.GetShader(), nullptr, 0);
     dc->IASetInputLayout(m_vertexShader.GetInputLayout());
     dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+    // Set light texture
+    dc->PSSetShaderResources(0, 1, TextureManager::Get()->GetTexture(kFlashlightTexturePath)->GetResourceViewAddress());
 
     uint32_t numRenderedInstances = 0;
     for (const auto & perModel : GetModels()) {

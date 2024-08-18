@@ -1,13 +1,74 @@
 #include "ConsoleLib.h"
 #include "Application.h"
 #include <Windows.h>
+#include <utility>
 
 #include "Flame/engine/Transform.h"
 #include "Flame/utils/SolidVector.h"
+#include "glm/ext.hpp"
+#include "glm/fwd.hpp"
+#include "glm/geometric.hpp"
+#include "glm/trigonometric.hpp"
 
 int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
   Console::Get()->RedirectStdHandles();
   Flame::Engine::Init();
+
+  // TODO Get ViewMatrix:
+  // 1. Manually (rows are front, right and up axes)
+  // 2. LookAt
+  // 3. Transform * Rotate (Rotate - How? What? Z-Axis. By what? Difference between Z-Axis and Vector. How to find? ?)
+
+
+  // glm::vec3 lightPos(2.0f, 2.0f, 20.0f);
+  // glm::vec3 lightDir = glm::normalize(glm::vec3(0.0f, 0.0f, -1.0f));
+  // float lightAngleCos = glm::cos(glm::radians(25.0f));
+  // glm::vec3 pointWS(0.0f, 0.0f, -4.0f);
+
+  // std::cout << "lightPos: " << lightPos << '\n';
+  // std::cout << "lightDir: " << lightDir << '\n';
+  // std::cout << "pointWS: " << pointWS << '\n';
+  // glm::quat rotationQuat(glm::vec3(0.0f, 0.0f, 1.0f), glm::normalize(lightDir));
+  // std::cout << "Rotation Quat: " << rotationQuat << '\n';
+
+  // glm::mat4 lightMat = glm::mat4(
+  //   1, 0, 0, 0,
+  //   0, 1, 0, 0,
+  //   0, 0, 1, 0,
+  //   lightPos.x, lightPos.y, lightPos.z, 1
+  // ) * glm::mat4(rotationQuat);
+  // std::cout << lightMat << '\n';
+
+  // lightMat = glm::inverse(lightMat); // Create ViewMatrix
+  // std::cout << lightMat << '\n';
+
+  // std::cout << lightMat << " * " << pointWS << '\n';
+  // glm::vec3 pointVS = glm::vec3(lightMat * glm::vec4(pointWS, 1.0f));
+  // std::cout << pointWS << " WS -> VS " << pointVS << '\n';
+
+  // // Now goes projection
+  // float cosAbs = glm::abs(lightAngleCos);
+  // float sinAbs = glm::sqrt(1 - cosAbs * cosAbs);
+  // float ctgAbs = cosAbs / sinAbs;
+
+  // std::cout << ctgAbs << '\n';
+
+  // const float nearPlane = 0.001f;
+  // const float farPlane = pointVS.z;
+  // glm::mat4 perspective = glm::mat4(
+  //   ctgAbs, 0, 0, 0,
+  //   0, ctgAbs, 0, 0,
+  //   0, 0, -(farPlane + nearPlane) / (farPlane - nearPlane), -1.0,
+  //   0, 0, -2.0f * farPlane * nearPlane / (farPlane - nearPlane), 0.0f
+  // );
+  
+  // glm::vec4 pointCS = perspective * glm::vec4(pointVS, 1.0f);
+  // std::cout << "PointCS:" << pointCS << '\n';
+  // glm::vec4 pointNDC = pointCS / pointCS.w;
+  // std::cout << "PointNDC:" << pointNDC << '\n';
+
+  // glm::vec2 pointUV = glm::vec2(pointNDC) * 0.5f + glm::vec2(0.5f);
+  // std::cout << "PointUV:" << pointUV << '\n';
 
   std::cout << "Press any key to continue..." << '\n';
   Console::Get()->Pause();

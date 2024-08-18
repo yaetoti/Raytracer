@@ -37,6 +37,9 @@ struct SpotLight {
   float quadraticFadeoff;
 
   float2 padding0;
+
+  // For flashlight
+  float4x4 lightMat; // WStoVS
 };
 
 

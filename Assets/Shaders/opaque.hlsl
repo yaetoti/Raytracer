@@ -1,5 +1,7 @@
 #include "globals.hlsl"
 
+Texture2D<float4> texture0 : register(t0);
+
 struct VSInput
 {
   float3 position : POSITION;
@@ -35,6 +37,29 @@ VSOutput VSMain(VSInput input)
   result.normalLocal = input.normal;
   result.normal = worldN;
   return result;
+}
+
+float2 GetSpotLightUv(float4 pointWS, float4x4 lightMat, float lightAngleCos) {
+  float4 pointVS = mul(lightMat, pointWS);
+
+  // Now goes projection
+  float cosAbs = abs(lightAngleCos);
+  float sinAbs = sqrt(1 - cosAbs * cosAbs);
+  float ctgAbs = cosAbs / sinAbs;
+
+  float nearPlane = 0.001f;
+  float farPlane = pointVS.z;
+  float4x4 perspective = float4x4(
+    ctgAbs, 0, 0, 0,
+    0, ctgAbs, 0, 0,
+    0, 0, -(farPlane + nearPlane) / (farPlane - nearPlane), -2.0f * farPlane * nearPlane / (farPlane - nearPlane),
+    0, 0, -1.0, 0.0f
+  );
+  
+  float4 pointCS = mul(perspective, pointVS);
+  float4 pointNDC = pointCS / pointCS.w;
+  float2 pointUV = pointNDC.xy * 0.5 + 0.5;
+  return pointUV;
 }
 
 float4 PSMain(VSOutput input) : SV_TARGET
@@ -87,9 +112,12 @@ float4 PSMain(VSOutput input) : SV_TARGET
       + g_spotLights[i].linearFadeoff * lightDistance
       + g_spotLights[i].quadraticFadeoff * lightDistance * lightDistance);
 
+    float2 textureUV = GetSpotLightUv(input.positionWorld, g_spotLights[i].lightMat, g_spotLights[i].cutoffCosineOuter);
+    float4 textureColor = texture0.Sample(g_anisotropicWrap, textureUV);
+
     float4 diffuse = g_spotLights[i].color * saturate(dot(input.normal, lightDir));
     float4 specular = float4(0.0, 0.0, 0.0, 0.0);
-    light += g_spotLights[i].intensity * intensity * attenuation * (diffuse + specular);
+    light += g_spotLights[i].intensity * intensity * attenuation * (diffuse + specular) * textureColor;
   }
 
   return light;

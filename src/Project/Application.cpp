@@ -161,6 +161,8 @@ void Application::Init() {
   m_flashlightId = ls->AddSpotLight(std::make_shared<SpotLight>(
     glm::vec3(0.0f),
     glm::vec3(0.0f, 0.0f, 1.0f),
+    glm::vec3(0.0f, 1.0f, 0.0f),
+    glm::vec3(1.0f, 0.0f, 0.0f),
     MathUtils::ColorFromHex(0xFFFFFF),
     1.5f,
     glm::cos(glm::radians(20.0f)),
@@ -186,7 +188,10 @@ void Application::Update(float deltaTime) {
     Flame::LightSystem* ls = Flame::LightSystem::Get();
     auto flashlight = ls->GetSpotLight(m_flashlightId);
     flashlight->position = m_camera->GetPosition();
-    flashlight->direction = m_camera->GetFrontUnit();
+    //flashlight->direction = m_camera->GetFrontUnit();
+    flashlight->axisFront = m_camera->GetFrontUnit();
+    flashlight->axisRight = m_camera->GetRightUnit();
+    flashlight->axisUp = m_camera->GetUpUnit();
   }
 }
 

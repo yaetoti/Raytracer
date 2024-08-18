@@ -46,5 +46,6 @@ namespace Flame {
     PixelShader m_pixelShader;
 
     inline static const wchar_t* kShaderPath = L"Assets/Shaders/opaque.hlsl";
+    inline static const wchar_t* kFlashlightTexturePath = L"Assets/Textures/flashlight_1.dds";
   };
 }
