@@ -67,6 +67,7 @@ namespace Flame {
   struct Engine final {
     static void Init() {
       DxContext::Get()->Init();
+      ModelManager::Get()->Init();
       MeshSystem::Get()->Init();
       LightSystem::Get()->Init();
     }

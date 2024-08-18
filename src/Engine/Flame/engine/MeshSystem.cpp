@@ -55,6 +55,11 @@ namespace Flame {
       material1->AddInstance({ TransformSystem::Get()->Insert({ Transform(glm::vec3(0.0f, -8.0f, 0.0f), glm::vec3(2.5f)) }), glm::vec3(1, 0, 1), glm::vec3(1, 0, 1) });
       material1->AddInstance({ TransformSystem::Get()->Insert({ Transform(glm::vec3(-8.0f, 0.0f, 0.0f), glm::vec3(3.5f)) }), glm::vec3(1, 0, 0), glm::vec3(1, 0, 0) });
       material1->AddInstance({ TransformSystem::Get()->Insert({ Transform(glm::vec3(0.0f, 0.0f, -8.0f), glm::vec3(1.5f)) }), glm::vec3(0, 0, 1), glm::vec3(0, 0, 1) });
+
+      auto modelId2 = m_hologramGroup.AddModel(ModelManager::Get()->GetBuiltinModel(ModelManager::BuiltinModelType::UNIT_SPHERE));
+      auto model2 = m_hologramGroup.GetModel(modelId2);
+      auto material2 = model2->AddMaterial({});
+      material2->AddInstance({ TransformSystem::Get()->Insert({ Transform(glm::vec3(8.0f, 0.0f, 0.0f), glm::vec3(2.5f)) }), MathUtils::ColorFromHex(0x310c75), MathUtils::ColorFromHex(0xa018b5) });
     }
 
     // TextureOnly group
