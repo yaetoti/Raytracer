@@ -3,7 +3,11 @@
 #include "Flame/engine/ModelManager.h"
 #include "Flame/engine/TextureManager.h"
 #include "Flame/engine/Transform.h"
+#include "Flame/engine/lights/PointLight.h"
+#include "Flame/engine/lights/SpotLight.h"
+#include "glm/trigonometric.hpp"
 #include <Flame/engine/MeshSystem.h>
+#include <cmath>
 
 Application::Application() {
   m_window = std::make_shared<Flame::Window>(L"Flame 🔥", 160, 90, 1);
@@ -56,6 +60,10 @@ void Application::Init() {
 
   // Init scene
   using Transform = Flame::Transform;
+  using MathUtils = Flame::MathUtils;
+  using DirectLight = Flame::DirectLight;
+  using PointLight = Flame::PointLight;
+  using SpotLight = Flame::SpotLight;
 
   Flame::MeshSystem* ms = Flame::MeshSystem::Get();
   Flame::TransformSystem* ts = Flame::TransformSystem::Get();
@@ -117,7 +125,7 @@ void Application::Init() {
     material1->AddInstance({ ts->Insert({ Transform(glm::vec3(3.0f, 7.0f, 3.0f), glm::vec3(1.5f)) }) });
   }
 
-  // EmissionOnly group
+  // EmissionOnly group and PointLights
   {
     auto* group = ms->GetEmissionOnlyGroup();
 
@@ -126,12 +134,12 @@ void Application::Init() {
     auto modelId0 = group->AddModel(mm->GetBuiltinModel(Flame::ModelManager::BuiltinModelType::UNIT_SPHERE));
     auto model0 = group->GetModel(modelId0);
     auto material0 = model0->AddMaterial({});
-    material0->AddInstance({ transformId, Flame::MathUtils::ColorFromHex(0xf194ff) });
+    material0->AddInstance({ transformId, MathUtils::ColorFromHex(0xf194ff) });
 
-    ls->AddPointLight(std::make_shared<Flame::PointLight>(
+    ls->AddPointLight(std::make_shared<PointLight>(
       transformId,
       glm::vec3(0, 0, 0),
-      Flame::MathUtils::ColorFromHex(0xf194ff),
+      MathUtils::ColorFromHex(0xf194ff),
       4.0f,
       0.0f, 1.2f, 0.18f
     ));
@@ -142,6 +150,23 @@ void Application::Init() {
   ms->GetHologramGroup()->InitInstanceBuffer();
   ms->GetTextureOnlyGroup()->InitInstanceBuffer();
   ms->GetEmissionOnlyGroup()->InitInstanceBuffer();
+
+  // Init lights
+  ls->AddDirectLight(std::make_shared<DirectLight>(
+    MathUtils::ColorFromHex(0x000000),
+    glm::vec3(0, -1, 0),
+    1.0f
+  ));
+
+  m_flashlightId = ls->AddSpotLight(std::make_shared<SpotLight>(
+    glm::vec3(0.0f),
+    glm::vec3(0.0f, 0.0f, 1.0f),
+    MathUtils::ColorFromHex(0xFFFFFF),
+    1.5f,
+    glm::cos(glm::radians(20.0f)),
+    glm::cos(glm::radians(25.0f)),
+    1.0f, 0.045f, 0.0075f
+  ));
 }
 
 void Application::Update(float deltaTime) {
@@ -155,6 +180,14 @@ void Application::Update(float deltaTime) {
 
   // Input update must take place at the end to properly update last cursor coordinates TODO Fix
   m_input->Update();
+
+  // Update flashlight
+  if (m_flashlightGrabbed) {
+    Flame::LightSystem* ls = Flame::LightSystem::Get();
+    auto flashlight = ls->GetSpotLight(m_flashlightId);
+    flashlight->position = m_camera->GetPosition();
+    flashlight->direction = m_camera->GetFrontUnit();
+  }
 }
 
 void Application::Render() const {
@@ -172,6 +205,10 @@ void Application::HandleEvent(const Flame::WindowEvent& e) {
     const auto& event = static_cast<const Flame::KeyWindowEvent&>(e);
     if (event.vkCode == 'N' && event.isPressed && !event.wasPressed) {
       m_dxRenderer->SetNormalVisMode(!m_dxRenderer->GetNormalVisMode());
+    }
+
+    if (event.vkCode == 'F' && event.isPressed && !event.wasPressed) {
+      m_flashlightGrabbed = !m_flashlightGrabbed;
     }
   }
 }

@@ -30,23 +30,6 @@ namespace Flame {
     m_skyVertexShader.Init(L"Assets/Shaders/sky.hlsl", nullptr, 0);
     m_skyPixelShader.Init(L"Assets/Shaders/sky.hlsl");
     m_textureView = TextureManager::Get()->GetTexture(kSkyboxPath)->GetResourceView();
-
-    // Init light TODO: move
-    LightSystem::Get()->AddDirectLight(std::make_shared<DirectLight>(
-      MathUtils::ColorFromHex(0x000000),
-      glm::vec3(0, -1, 0),
-      1.0f
-    ));
-
-    LightSystem::Get()->AddSpotLight(std::make_shared<SpotLight>(
-      glm::vec3(0.0f),
-      glm::vec3(0.0f, 0.0f, 1.0f),
-      MathUtils::ColorFromHex(0xFFFFFF),
-      5.0f,
-      0.707f,
-      0.642f,
-      0.0f, 1.2f, 0.18f
-    ));
   }
 
   void MeshSystem::Cleanup() {
