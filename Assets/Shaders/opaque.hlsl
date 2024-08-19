@@ -7,6 +7,7 @@ struct VSInput
   float3 position : POSITION;
   float3 normal : NORMAL;
   float4x4 modelMatrix : MODEL;
+  float specularExponent : SPECULAR;
 };
 
 struct VSOutput
@@ -18,6 +19,7 @@ struct VSOutput
   float4 positionProj : SV_POSITION;
   float3 normal : NORMAL;
   float3 normalLocal : NORMAL_LOCAL;
+  nointerpolation float specularExponent : SPECULAR;
 };
 
 VSOutput VSMain(VSInput input)
@@ -36,6 +38,7 @@ VSOutput VSMain(VSInput input)
   result.modelMatrix = input.modelMatrix;
   result.normalLocal = input.normal;
   result.normal = worldN;
+  result.specularExponent = input.specularExponent;
   return result;
 }
 
@@ -71,11 +74,13 @@ float4 PSMain(VSOutput input) : SV_TARGET
   }
 
   float4 light = float4(0.0, 0.0, 0.0, 0.0);
+  float3 viewDir = normalize(g_cameraPosition.xyz - input.positionWorld);
 
   // Direct light
   for (uint i = 0; i < g_directLightsCount; ++i) {
     float4 diffuse = g_directLights[i].color * saturate(dot(-input.normal, g_directLights[i].direction.xyz));
-    float4 specular = float4(0.0, 0.0, 0.0, 0.0);
+    float3 halfReflect = normalize(g_directLights[i].direction + viewDir);
+    float4 specular = g_directLights[i].color * pow(max(dot(input.normal, halfReflect), 0.0f), input.specularExponent);
     light += g_directLights[i].intensity * (diffuse + specular);
   }
 
@@ -92,7 +97,8 @@ float4 PSMain(VSOutput input) : SV_TARGET
       + g_pointLights[i].quadraticFadeoff * lightDistance * lightDistance);
     
     float4 diffuse = g_pointLights[i].color * saturate(dot(input.normal, lightDir));
-    float4 specular = float4(0.0, 0.0, 0.0, 0.0);
+    float3 halfReflect = normalize(lightDir + viewDir);
+    float4 specular = g_pointLights[i].color * pow(max(dot(input.normal, halfReflect), 0.0f), input.specularExponent);
     light += g_pointLights[i].intensity * attenuation * (diffuse + specular);
   }
 
@@ -116,7 +122,8 @@ float4 PSMain(VSOutput input) : SV_TARGET
     float4 textureColor = texture0.Sample(g_anisotropicWrap, textureUV);
 
     float4 diffuse = g_spotLights[i].color * saturate(dot(input.normal, lightDir));
-    float4 specular = float4(0.0, 0.0, 0.0, 0.0);
+    float3 halfReflect = normalize(lightDir + viewDir);
+    float4 specular = g_spotLights[i].color * pow(max(dot(input.normal, halfReflect), 0.0f), input.specularExponent);
     light += g_spotLights[i].intensity * intensity * attenuation * (diffuse + specular) * textureColor;
   }
 
