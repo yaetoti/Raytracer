@@ -56,8 +56,6 @@ namespace Flame {
     std::vector<float> m_resolution;
     bool m_isNormalVisMode = false;
 
-    VertexShader m_resolveVertexShader;
-    PixelShader m_resolvePixelShader;
     float m_evFactor = 0.0f;
   };
 }

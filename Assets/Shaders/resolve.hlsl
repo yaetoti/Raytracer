@@ -69,7 +69,7 @@ float3 correctGamma(float3 color, float gamma)
 
 
 float4 PSMain(VSOutput input) : SV_TARGET {
-  float3 color = skyTexture.Sample(g_pointWrap, input.uv).xyz;
+  float3 color = skyTexture.Sample(g_linearWrap, input.uv).xyz;
   color = acesHdr2Ldr(color);
   color = adjustExposure(color, g_evFactor);
   color = correctGamma(color, 2.2);

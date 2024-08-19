@@ -12,6 +12,7 @@
 #include "Flame/engine/TextureManager.h"
 #include "Flame/engine/Transform.h"
 #include "Flame/engine/TransformSystem.h"
+#include "Flame/graphics/PostProcess.h"
 #include "Flame/graphics/buffers/ConstantBuffer.h"
 #include "Flame/graphics/buffers/IndexBuffer.h"
 #include "Flame/graphics/buffers/VertexBuffer.h"
@@ -70,9 +71,11 @@ namespace Flame {
       ModelManager::Get()->Init();
       MeshSystem::Get()->Init();
       LightSystem::Get()->Init();
+      PostProcess::Get()->Init();
     }
 
     static void Cleanup() {
+      PostProcess::Get()->Cleanup();
       TextureManager::Get()->Cleanup();
       LightSystem::Get()->Cleanup();
       MeshSystem::Get()->Cleanup();
