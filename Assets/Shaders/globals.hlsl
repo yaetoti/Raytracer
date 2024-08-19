@@ -57,6 +57,7 @@ cbuffer ConstantBuffer : register(b0)
   float4 g_resolution;
   float4 g_cameraPosition;
   float g_time;
+  float g_evFactor;
   bool g_isNormalVisMode;
 };
 

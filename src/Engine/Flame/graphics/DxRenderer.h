@@ -24,6 +24,7 @@ namespace Flame {
       float resolution[4];
       float cameraPosition[4];
       float time;
+      float evFactor;
       bool isNormalVisMode;
     };
 
@@ -37,6 +38,9 @@ namespace Flame {
 
     void SetNormalVisMode(bool isNormalVisMode);
     bool GetNormalVisMode() const;
+
+    float GetEvFactor() const;
+    void SetEvFactor(float evFactor);
 
   private:
     std::shared_ptr<Window> m_window;
@@ -54,5 +58,6 @@ namespace Flame {
 
     VertexShader m_resolveVertexShader;
     PixelShader m_resolvePixelShader;
+    float m_evFactor = 0.0f;
   };
 }

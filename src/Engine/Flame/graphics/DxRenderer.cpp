@@ -164,6 +164,7 @@ namespace Flame {
 
       m_constantBuffer.data.time = time;
       m_constantBuffer.data.isNormalVisMode = m_isNormalVisMode;
+      m_constantBuffer.data.evFactor = m_evFactor;
 
       m_constantBuffer.ApplyChanges();
     }
@@ -211,5 +212,13 @@ namespace Flame {
 
   bool DxRenderer::GetNormalVisMode() const {
     return m_isNormalVisMode;
+  }
+
+  float DxRenderer::GetEvFactor() const {
+    return m_evFactor;
+  }
+
+  void DxRenderer::SetEvFactor(float evFactor) {
+    m_evFactor = evFactor;
   }
 }

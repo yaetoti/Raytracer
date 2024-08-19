@@ -8,6 +8,7 @@
 #include "glm/trigonometric.hpp"
 #include <Flame/engine/MeshSystem.h>
 #include <cmath>
+#include <winuser.h>
 
 Application::Application() {
   m_window = std::make_shared<Flame::Window>(L"Flame 🔥", 160, 90, 1);
@@ -192,6 +193,17 @@ void Application::Update(float deltaTime) {
     flashlight->axisFront = m_camera->GetFrontUnit();
     flashlight->axisRight = m_camera->GetRightUnit();
     flashlight->axisUp = m_camera->GetUpUnit();
+  }
+
+  // Update EV100
+  const float evSpeed = 1.0f;
+
+  if (m_input->IsKeyPressed(VK_ADD)) {
+    m_dxRenderer->SetEvFactor(m_dxRenderer->GetEvFactor() + evSpeed * deltaTime);
+  }
+
+  if (m_input->IsKeyPressed(VK_SUBTRACT)) {
+    m_dxRenderer->SetEvFactor(m_dxRenderer->GetEvFactor() - evSpeed * deltaTime);
   }
 }
 
