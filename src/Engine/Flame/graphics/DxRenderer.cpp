@@ -87,9 +87,16 @@ namespace Flame {
       result = DxContext::Get()->d3d11Device->CreateSamplerState(&desc, m_anisotropicSampler.GetAddressOf());
       assert(SUCCEEDED(result));
     }
+
+    // Create resolve shaders TODO move
+    m_resolveVertexShader.Init(L"Assets/Shaders/resolve.hlsl", nullptr, 0);
+    m_resolvePixelShader.Init(L"Assets/Shaders/resolve.hlsl");
   }
 
   void DxRenderer::Cleanup() {
+    m_resolveVertexShader.Reset();
+    m_resolvePixelShader.Reset();
+
     m_pointSampler.Reset();
     m_linearSampler.Reset();
     m_anisotropicSampler.Reset();
@@ -102,16 +109,19 @@ namespace Flame {
   void DxRenderer::Render(float time, float deltaTime) {
     ID3D11DeviceContext* dc = DxContext::Get()->d3d11DeviceContext.Get();
     auto targetView = m_window->GetTargetView();
+    auto targetViewHdr = m_window->GetTargetViewHdr();
+    auto targetSrvHdr = m_window->GetTargetSrvHdr();
     auto depthStencilView = m_window->GetDepthStencilView();
     auto depthStencilState = m_window->GetDepthStencilState();
 
     // Set target
-    dc->OMSetRenderTargets(1, targetView.GetAddressOf(), depthStencilView.Get());
+    //dc->OMSetRenderTargets(1, targetView.GetAddressOf(), depthStencilView.Get());
+    dc->OMSetRenderTargets(1, targetViewHdr.GetAddressOf(), depthStencilView.Get());
     dc->OMSetDepthStencilState(depthStencilState.Get(), 0);
     dc->RSSetState(m_rasterizerState.Get());
 
     float clearColor[4] = { 0.12f, 0.12f, 0.12f, 1.0f };
-    dc->ClearRenderTargetView(targetView.Get(), clearColor);
+    dc->ClearRenderTargetView(targetViewHdr.Get(), clearColor);
     dc->ClearDepthStencilView(depthStencilView.Get(), D3D11_CLEAR_DEPTH, 0.0f, 0);
 
     // Set Samplers
@@ -158,23 +168,6 @@ namespace Flame {
       m_constantBuffer.ApplyChanges();
     }
 
-    // Test
-    // static const int timeout = 300;
-    // static int timer = timeout;
-    // static glm::vec3 prevColor(0.0f);
-    // static glm::vec3 nextColor(0.0f);
-    // static glm::vec3 color;
-    // if (timer++ >= timeout) {
-    //   timer = 0;
-    //   prevColor = nextColor;
-    //   nextColor = MathUtils::ColorFromHex(Random::Float() * std::numeric_limits<int>::max());
-    // }
-
-    // color = glm::lerp(prevColor, nextColor, (float)timer / (float)timeout);
-
-    // LightSystem::Get()->GetDirectLight(0)->color = color;
-    LightSystem::Get()->GetDirectLight(0)->direction = m_camera->GetFrontUnit();
-
     // Set constant buffers
     LightSystem::Get()->CommitChanges();
     ID3D11Buffer* buffers[] {
@@ -189,6 +182,18 @@ namespace Flame {
     dc->DSSetConstantBuffers(0, ARRAYSIZE(buffers), buffers);
 
     MeshSystem::Get()->Render(deltaTime);
+
+    // Resolve HDR -> LDR
+    dc->OMSetRenderTargets(1, targetView.GetAddressOf(), depthStencilView.Get());
+    dc->ClearRenderTargetView(targetView.Get(), clearColor);
+    dc->ClearDepthStencilView(depthStencilView.Get(), D3D11_CLEAR_DEPTH, 0.0f, 0);
+
+    dc->VSSetShader(m_resolveVertexShader.GetShader(), nullptr, 0);
+    dc->PSSetShader(m_resolvePixelShader.GetShader(), nullptr, 0);
+    dc->IASetInputLayout(nullptr);
+    dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    dc->PSSetShaderResources(0, 1, targetSrvHdr.GetAddressOf());
+    dc->Draw(3, 0);
   }
 
   void DxRenderer::Resize(uint32_t width, uint32_t height) {

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Flame/graphics/shaders/PixelShader.h"
+#include "Flame/graphics/shaders/VertexShader.h"
 #include "Flame/window/Window.h"
 
 #include <memory>
@@ -49,5 +51,8 @@ namespace Flame {
 
     std::vector<float> m_resolution;
     bool m_isNormalVisMode = false;
+
+    VertexShader m_resolveVertexShader;
+    PixelShader m_resolvePixelShader;
   };
 }
