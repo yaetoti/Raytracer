@@ -6,6 +6,7 @@
 #include "events/WindowEvent.h"
 #include "InputSystem.h"
 
+#include <d3d11.h>
 #include <functional>
 #include <unordered_map>
 #include <Windows.h>
@@ -38,6 +39,8 @@ namespace Flame {
     ComPtr<ID3D11RenderTargetView> GetTargetView() const;
     ComPtr<ID3D11DepthStencilView> GetDepthStencilView() const;
     ComPtr<ID3D11DepthStencilState> GetDepthStencilState() const;
+    ComPtr<ID3D11RenderTargetView> GetTargetViewHdr() const;
+    ComPtr<ID3D11ShaderResourceView> GetTargetSrvHdr() const;
 
     bool HandleWindowMessage(UINT msg, WPARAM wParam, LPARAM lParam) const;
 
@@ -72,8 +75,13 @@ namespace Flame {
   public:
     // TODO private and getters
     ComPtr<IDXGISwapChain1> m_dxgiSwapChain;
+
     ComPtr<ID3D11Texture2D> m_d3d11RenderTexture;
     ComPtr<ID3D11RenderTargetView> m_d3d11TargetView;
+    ComPtr<ID3D11Texture2D> m_d3d11RenderTextureHdr;
+    ComPtr<ID3D11RenderTargetView> m_d3d11TargetViewHdr;
+    ComPtr<ID3D11ShaderResourceView> m_d3d11TargetSrvHdr;
+
     ComPtr<ID3D11Texture2D> m_d3d11DepthTexture;
     ComPtr<ID3D11DepthStencilView> m_d3d11DepthStencilView;
     ComPtr<ID3D11DepthStencilState> m_d3d11DepthStencilState;

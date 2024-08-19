@@ -60,6 +60,6 @@ namespace Flame {
     PixelShader m_skyPixelShader;
     ID3D11ShaderResourceView* m_textureView;
 
-    static constexpr const wchar_t* kSkyboxPath = L"Assets/Textures/lake_beach.dds";
+    static constexpr const wchar_t* kSkyboxPath = L"Assets/Textures/night_street.dds";
   };  
 }
