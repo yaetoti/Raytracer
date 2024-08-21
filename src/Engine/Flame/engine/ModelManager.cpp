@@ -5,10 +5,8 @@
 
 namespace Flame {
   std::shared_ptr<Model> ModelManager::GetModel(const std::string& path) {
-    if (!m_models.contains(path)) {
-      if (!LoadModel(path)) {
-        return nullptr;
-      }
+    if (!LoadModel(path)) {
+      return nullptr;
     }
 
     return m_models.at(path);

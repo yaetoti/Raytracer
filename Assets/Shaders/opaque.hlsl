@@ -1,35 +1,52 @@
 #include "globals.hlsl"
 
-Texture2D<float4> texture0 : register(t0);
+Texture2D<float4> albedoTexture : register(t0);
+Texture2D<float4> normalTexture : register(t1);
+Texture2D<float4> metallicTexture : register(t2);
+Texture2D<float4> roughnessTexture : register(t3);
+
+// TODO generate metallic
+// TODO change layout
 
 struct VSInput
 {
   float3 position : POSITION;
   float3 normal : NORMAL;
+  float3 tangent : TANGENT;
+  float3 bitangent : BITANGENT;
+  float2 uv : UV;
+
+  // Instance buffer
   float4x4 modelMatrix : MODEL;
-  float specularExponent : SPECULAR;
 };
 
 struct VSOutput
 {
   float4x4 modelMatrix : MODEL;
+
   float3 positionLocal : POSITION_LOCAL;
   float4 positionWorld : POSITION_WORLD;
   float4 positionCameraCentered : POSITION_CAMERA_CENTERED;
   float4 positionProj : SV_POSITION;
+
   float3 normal : NORMAL;
   float3 normalLocal : NORMAL_LOCAL;
-  nointerpolation float specularExponent : SPECULAR;
+
+  float3 tangent : TANGENT;
+  float3 bitangent : BITANGENT;
+  float2 uv : UV;
 };
 
 VSOutput VSMain(VSInput input)
 {
   VSOutput result;
+  // Position
   result.positionLocal = input.position;
   result.positionWorld = mul(input.modelMatrix, float4(input.position, 1.0));
   result.positionCameraCentered = result.positionWorld - float4(g_cameraPosition.xyz, 0.0);
   result.positionProj = mul(g_projectionMatrix, mul(g_viewMatrix, result.positionWorld));
 
+  // Normal
   float3 axisX = normalize(input.modelMatrix[0].xyz);
   float3 axisY = normalize(input.modelMatrix[1].xyz);
   float3 axisZ = normalize(input.modelMatrix[2].xyz);
@@ -38,7 +55,10 @@ VSOutput VSMain(VSInput input)
   result.modelMatrix = input.modelMatrix;
   result.normalLocal = input.normal;
   result.normal = worldN;
-  result.specularExponent = input.specularExponent;
+
+  result.tangent = tangent;
+  result.bitangent = bitangent;
+  result.uv = uv;
   return result;
 }
 
@@ -65,6 +85,35 @@ float2 GetSpotLightUv(float4 pointWS, float4x4 lightMat, float lightAngleCos) {
   return pointUV;
 }
 
+// Schlick's approximation of Fresnel reflectance
+float3 Fresnel(float NoL, float3 F0)
+{
+	return F0 + (1 - F0) * pow(1 - NoL, 5);
+}
+
+// Height-correlated Smith G2 for GGX,
+// Filament, 4.4.2 Geometric shadowing
+float Gmf(float rough, float NoV, float NoL)
+{
+	NoV *= NoV;
+	NoL *= NoL;
+  float rough4 = pow(rough, 4);
+	return 2.0 / (sqrt(1 + rough4 * (1 - NoV) / NoV) + sqrt(1 + rough4 * (1 - NoL) / NoL));
+}
+
+// GGX normal distribution,
+// Real-Time Rendering 4th Edition, page 340, equation 9.41
+float Ndf(float rough, float NoH)
+{
+	float denom = NoH * NoH * (pow(rough, 4) - 1.0) + 1.0;
+	denom = PI * denom * denom;
+	return pow(rough, 2) / denom;
+}
+
+float SolidAngle(float radius, float distance) {
+  return 1 - sqrt(1 - pow(r / d, 2));
+}
+
 float4 PSMain(VSOutput input) : SV_TARGET
 {
   if (g_isNormalVisMode)
@@ -73,11 +122,23 @@ float4 PSMain(VSOutput input) : SV_TARGET
     return color;
   }
 
-  float4 light = float4(0.0, 0.0, 0.0, 0.0);
+  float3 light = float4(0.0, 0.0, 0.0);
   float3 viewDir = normalize(g_cameraPosition.xyz - input.positionWorld);
+
+  // a albedo
+  // m metallicity
+  // n normal
 
   // Direct light
   for (uint i = 0; i < g_directLightsCount; ++i) {
+    float3 radiance = g_directLights[i].radiance;
+    float3 lightDir = -g_directLights[i].direction.xyz;
+    float solidAngle = g_directLights[i].solidAngle;
+
+    // l lightDir
+
+    light += g_directLights[i].radiance * ();
+
     float4 diffuse = g_directLights[i].color * saturate(dot(-input.normal, g_directLights[i].direction.xyz));
     float3 halfReflect = normalize(g_directLights[i].direction + viewDir);
     float4 specular = g_directLights[i].color * pow(max(dot(input.normal, halfReflect), 0.0f), input.specularExponent);

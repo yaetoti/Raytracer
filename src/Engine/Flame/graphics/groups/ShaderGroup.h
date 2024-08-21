@@ -57,6 +57,8 @@ namespace Flame {
       std::vector<std::shared_ptr<PerInstance>> m_instances;
     };
 
+    using PerMesh = std::vector<std::shared_ptr<PerMaterial>>;
+
     struct PerModel final {
       PerModel(std::shared_ptr<Model> model)
       : m_model(std::move(model)) {

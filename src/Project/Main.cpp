@@ -3,7 +3,9 @@
 #include <Windows.h>
 #include <utility>
 
+#include "Flame/engine/ModelManager.h"
 #include "Flame/engine/Transform.h"
+#include "Flame/graphics/DxContext.h"
 #include "Flame/utils/SolidVector.h"
 #include "glm/ext.hpp"
 #include "glm/fwd.hpp"
@@ -12,8 +14,14 @@
 
 int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
   Console::Get()->RedirectStdHandles();
-  Flame::Engine::Init();
 
+  Flame::DxContext::Get()->Init();
+  Flame::ModelManager::Get()->Init();
+  Flame::ModelManager::Get()->LoadModel("Assets/Models/EastTower/EastTower.fbx");
+  std::cout << "Press any key to continue..." << '\n';
+  Console::Get()->Pause();
+
+  Flame::Engine::Init();
   // TODO Get ViewMatrix:
   // 1. Manually (rows are front, right and up axes)
   // 2. LookAt

@@ -7,39 +7,29 @@
 
 struct DirectLight {
   float4 direction;
-  float4 color;
-  float intensity;
-
-  float3 padding0;
+  float3 radiance;
+  float solidAngle;
 };
 
 struct PointLight {
   float4 position;
-  float4 color;
-  float intensity;
-
-  float constantFadeoff;
-  float linearFadeoff;
-  float quadraticFadeoff;
+  float3 radiance;
+  float radius;
 };
 
 struct SpotLight {
   float4 position;
   float4 direction;
-  float4 color;
-  float intensity;
+  float3 radiance;
+  float radius;
 
   float cutoffCosineInner;
   float cutoffCosineOuter;
 
-  float constantFadeoff;
-  float linearFadeoff;
-  float quadraticFadeoff;
-
   float2 padding0;
 
   // For flashlight
-  float4x4 lightMat; // WStoVS
+  float4x4 lightViewMat; // WStoVS
 };
 
 

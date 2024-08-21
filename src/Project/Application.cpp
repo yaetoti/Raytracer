@@ -76,24 +76,10 @@ void Application::Init() {
   {
     auto* group = Flame::MeshSystem::Get()->GetOpaqueGroup();
 
-    auto modelId0 = group->AddModel(mm->GetModel("Assets/Models/Samurai/Samurai1.obj"));
+    auto modelId0 = group->AddModel(mm->GetModel("Assets/Models/EastTower/EastTower.fbx"));
     auto model0 = group->GetModel(modelId0);
     auto material1 = model0->AddMaterial({});
-    material1->AddInstance({ ts->Insert({ Transform(glm::vec3(-2, -2, 0)) }), 4.0f });
-    material1->AddInstance({ ts->Insert({ Transform(glm::vec3(-2, 2, 0)) }), 4.0f });
-    material1->AddInstance({ ts->Insert({ Transform(glm::vec3(2, -2, 0)) }), 4.0f });
-    material1->AddInstance({ ts->Insert({ Transform(glm::vec3(2, 2, 0)) }), 4.0f });
-    auto material2 = model0->AddMaterial({});
-    material2->AddInstance({ ts->Insert({ Transform(glm::vec3(0, 0, 2)) }), 4.0f });
-    material2->AddInstance({ ts->Insert({ Transform(glm::vec3(0, 0, -2)) }), 4.0f });
-
-    auto modelId1 = group->AddModel(mm->GetModel("Assets/Cube.obj"));
-    auto model1 = group->GetModel(modelId1);
-    auto material3 = model1->AddMaterial({});
-    material3->AddInstance({ ts->Insert({ Transform(glm::vec3(-2, -2, 2), glm::vec3(0.5f)) }), 4.0f });
-    material3->AddInstance({ ts->Insert({ Transform(glm::vec3(-2, 2, -2)) }), 4.0f });
-    material3->AddInstance({ ts->Insert({ Transform(glm::vec3(2, -2, -2), glm::vec3(0.1f)) }), 4.0f });
-    material3->AddInstance({ ts->Insert({ Transform(glm::vec3(2, 2, 2)) }), 4.0f });
+    //material1->AddInstance({ ts->Insert({ Transform(glm::vec3(-2, -2, 0)) }), 4.0f });
   }
   
   // Hologram group

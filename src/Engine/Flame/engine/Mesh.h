@@ -33,14 +33,22 @@ namespace Flame {
       assert(sizeof(aiAABB) == sizeof(Aabb));
       assert(sizeof(Face) == 3 * sizeof(uint32_t));
       assert(mesh.mNormals);
+      assert(mesh.mTangents);
+      assert(mesh.mBitangents);
+      assert(mesh.mTextureCoords);
 
       vertices.resize(mesh.mNumVertices);
       normals.resize(mesh.mNumVertices);
+      tangents.resize(mesh.mNumVertices);
+      bitangents.resize(mesh.mNumVertices);
       uvs.resize(mesh.mNumVertices);
       faces.resize(mesh.mNumFaces);
 
       std::memcpy(vertices.data(), mesh.mVertices, mesh.mNumVertices * sizeof(aiVector3D));
       std::memcpy(normals.data(), mesh.mNormals, mesh.mNumVertices * sizeof(aiVector3D));
+      std::memcpy(tangents.data(), mesh.mTangents, mesh.mNumVertices * sizeof(aiVector3D));
+      std::memcpy(bitangents.data(), mesh.mBitangents, mesh.mNumVertices * sizeof(aiVector3D));
+
       //assert(mesh.mTextureCoords); 
       if (mesh.mTextureCoords[0]) {
         for (uint32_t i = 0; i < mesh.mNumVertices; ++i) {
@@ -67,7 +75,10 @@ namespace Flame {
     std::string name;
     std::vector<glm::vec3> vertices;
     std::vector<glm::vec3> normals;
+    std::vector<glm::vec3> tangents;
+    std::vector<glm::vec3> bitangents;
     std::vector<glm::vec2> uvs;
+
     std::vector<glm::mat4> transforms;
     std::vector<glm::mat4> transformsInv;
     std::vector<Face> faces;

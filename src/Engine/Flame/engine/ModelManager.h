@@ -34,6 +34,16 @@ namespace Flame {
     std::vector<std::shared_ptr<Model>> m_builtinModels;
     Assimp::Importer m_importer;
 
-    inline static uint32_t kLoadFlags = aiProcess_Triangulate | aiProcess_GenBoundingBoxes | aiProcess_ConvertToLeftHanded | aiProcess_GenNormals | aiProcess_GenUVCoords | aiProcess_RemoveRedundantMaterials;
+    inline static uint32_t kLoadFlags = aiProcess_JoinIdenticalVertices
+                                        | aiProcess_Triangulate
+                                        | aiProcess_ConvertToLeftHanded
+                                        | aiProcess_GenBoundingBoxes
+                                        | aiProcess_GenNormals
+                                        | aiProcess_GenUVCoords
+                                        | aiProcess_RemoveRedundantMaterials
+                                        | aiProcess_CalcTangentSpace
+                                        | aiProcess_ValidateDataStructure
+                                        | aiProcess_FindDegenerates // All of them
+                                        | aiProcess_FindInvalidData;
   };
 }
