@@ -45,9 +45,11 @@ namespace Flame {
       uint32_t numCopied = 0;
 
       for (const auto& perModel : GetModels()) {
-        for (const auto& perMaterial : perModel->GetMaterials()) {
-          for (const auto& perInstance : perMaterial->GetInstances()) {
-            destPtr[numCopied++] = perInstance->GetData().GetShaderData();
+        for (const auto & perMesh : perModel->GetMeshes()) {
+          for (const auto & perMaterial : perMesh->GetMaterials()) {
+            for (const auto & perInstance : perMaterial->GetInstances()) {
+              destPtr[numCopied++] = perInstance->GetData().GetShaderData();
+            }
           }
         }
       }
@@ -71,6 +73,8 @@ namespace Flame {
 
     uint32_t numRenderedInstances = 0;
     for (const auto & perModel : GetModels()) {
+      const auto& model = perModel->GetModel();
+
       // Set buffers
       ID3D11Buffer* buffers[] = {
         perModel->GetModel()->m_vertices.Get(),
@@ -90,19 +94,22 @@ namespace Flame {
       dc->IASetVertexBuffers(0, 2, buffers, strides, offsets);
       dc->IASetIndexBuffer(perModel->GetModel()->m_indices.Get(), DXGI_FORMAT_R32_UINT, 0);
 
-      for (const auto & perMaterial : perModel->GetMaterials()) {
-        // TODO set material via ConstantBuffer
+      const auto& perMeshArray = perModel->GetMeshes();
+      for (uint32_t meshId = 0; meshId < perMeshArray.size(); ++meshId) {
+        const auto& perMesh = perMeshArray[meshId];
 
-        const auto& instances = perMaterial->GetInstances();
-        uint32_t numInstances = instances.size();
-        if (numInstances == 0) {
-          continue;
+        for (const auto & perMaterial : perMesh->GetMaterials()) {
+          const auto& instances = perMaterial->GetInstances();
+          uint32_t numInstances = instances.size();
+          if (numInstances == 0) {
+            continue;
+          }
+
+          // Aaah, so that's why we have MeshRange... Finally
+          // TODO replace Model index offsetting with correct draw call parameters
+          dc->DrawIndexedInstanced(perModel->GetModel()->m_indexNum, numInstances, 0, 0, numRenderedInstances);
+          numRenderedInstances += numInstances;
         }
-
-        // Aaah, so that's why we have MeshRange... Finally
-        // TODO replace Model index offsetting with correct draw call parameters
-        dc->DrawIndexedInstanced(perModel->GetModel()->m_indexNum, numInstances, 0, 0, numRenderedInstances);
-        numRenderedInstances += numInstances;
       }
     }
   }

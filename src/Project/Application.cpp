@@ -5,6 +5,7 @@
 #include "Flame/engine/Transform.h"
 #include "Flame/engine/lights/PointLight.h"
 #include "Flame/engine/lights/SpotLight.h"
+#include "Flame/graphics/groups/HologramGroup.h"
 #include "glm/trigonometric.hpp"
 #include <Flame/engine/MeshSystem.h>
 #include <cmath>
@@ -78,7 +79,6 @@ void Application::Init() {
 
     auto modelId0 = group->AddModel(mm->GetModel("Assets/Models/EastTower/EastTower.fbx"));
     auto model0 = group->GetModel(modelId0);
-    auto material1 = model0->AddMaterial({});
     //material1->AddInstance({ ts->Insert({ Transform(glm::vec3(-2, -2, 0)) }), 4.0f });
   }
   
@@ -86,30 +86,35 @@ void Application::Init() {
   {
     auto* group = ms->GetHologramGroup();
 
-    auto modelId0 = group->AddModel(mm->GetModel("Assets/Models/Samurai/Samurai1.obj"));
-    auto model0 = group->GetModel(modelId0);
-    auto material0 = model0->AddMaterial({});
-    material0->AddInstance({ ts->Insert({ Transform(glm::vec3(0.0f), glm::vec3(0.5f)) }), glm::vec3(0, 1, 1), glm::vec3(1, 0, 0) });
-    material0->AddInstance({ ts->Insert({ Transform(glm::vec3(1.25f, 0.0f, 0.0f)) }), glm::vec3(0, 1, 0), glm::vec3(0, 1, 1) });
+    Flame::HologramInstanceData data0[] {
+      { ts->Insert({ Transform(glm::vec3(0.0f), glm::vec3(0.5f)) }), glm::vec3(0, 1, 1), glm::vec3(1, 0, 0) },
+      { ts->Insert({ Transform(glm::vec3(1.25f, 0.0f, 0.0f)) }), glm::vec3(0, 1, 0), glm::vec3(0, 1, 1) },
+    };
+    group->AddInstances(mm->GetModel("Assets/Models/Samurai/Samurai1.obj"), {}, data0);
     
-    auto modelId1 = group->AddModel(mm->GetModel("Assets/Cube.obj"));
-    auto model1 = group->GetModel(modelId1);
-    auto material1 = model1->AddMaterial({});
-    material1->AddInstance({ ts->Insert({ Transform(glm::vec3(0.0f, -8.0f, 0.0f), glm::vec3(2.5f)) }), glm::vec3(1, 0, 1), glm::vec3(1, 0, 1) });
-    material1->AddInstance({ ts->Insert({ Transform(glm::vec3(-8.0f, 0.0f, 0.0f), glm::vec3(3.5f)) }), glm::vec3(1, 0, 0), glm::vec3(1, 0, 0) });
-    material1->AddInstance({ ts->Insert({ Transform(glm::vec3(0.0f, 0.0f, -8.0f), glm::vec3(1.5f)) }), glm::vec3(0, 0, 1), glm::vec3(0, 0, 1) });
+    Flame::HologramInstanceData data1[] {
+      { ts->Insert({ Transform(glm::vec3(0.0f, -8.0f, 0.0f), glm::vec3(2.5f)) }), glm::vec3(1, 0, 1), glm::vec3(1, 0, 1) },
+      { ts->Insert({ Transform(glm::vec3(-8.0f, 0.0f, 0.0f), glm::vec3(3.5f)) }), glm::vec3(1, 0, 0), glm::vec3(1, 0, 0) },
+      { ts->Insert({ Transform(glm::vec3(0.0f, 0.0f, -8.0f), glm::vec3(1.5f)) }), glm::vec3(0, 0, 1), glm::vec3(0, 0, 1) },
+    };
+    group->AddInstances(mm->GetModel("Assets/Cube.obj"), {}, data1);
   }
 
   // TextureOnly group
   {
     auto* group = ms->GetTextureOnlyGroup();
 
-    auto modelId0 = group->AddModel(mm->GetModel("Assets/Models/OtherCube/OtherCube.obj"));
-    auto model0 = group->GetModel(modelId0);
-    auto material0 = model0->AddMaterial({ tm->GetTexture(L"Assets/Models/OtherCube/OtherCube.dds")->GetResourceView() });
-    material0->AddInstance({ ts->Insert({ Transform(glm::vec3(0.0f, 6.0f, 20.0f), glm::vec3(10.0f)) }) });
-    auto material1 = model0->AddMaterial({ tm->GetTexture(L"Assets/Models/OtherCube/AnotherCube.dds")->GetResourceView() });
-    material1->AddInstance({ ts->Insert({ Transform(glm::vec3(3.0f, 7.0f, 3.0f), glm::vec3(1.5f)) }) });
+    group->AddInstance(
+      mm->GetModel("Assets/Models/OtherCube/OtherCube.obj"),
+      { tm->GetTexture(L"Assets/Models/OtherCube/OtherCube.dds")->GetResourceView() },
+      { ts->Insert({ Transform(glm::vec3(0.0f, 6.0f, 20.0f), glm::vec3(10.0f)) }) }
+    );
+
+    group->AddInstance(
+      mm->GetModel("Assets/Models/OtherCube/OtherCube.obj"),
+      { tm->GetTexture(L"Assets/Models/OtherCube/AnotherCube.dds")->GetResourceView() },
+      { ts->Insert({ Transform(glm::vec3(3.0f, 7.0f, 3.0f), glm::vec3(1.5f)) }) }
+    );
   }
 
   // EmissionOnly group and PointLights
@@ -118,10 +123,11 @@ void Application::Init() {
 
     auto transformId = ts->Insert({ Transform(glm::vec3(8.0f, 0.0f, 0.0f), glm::vec3(0.1f)) });
 
-    auto modelId0 = group->AddModel(mm->GetBuiltinModel(Flame::ModelManager::BuiltinModelType::UNIT_SPHERE));
-    auto model0 = group->GetModel(modelId0);
-    auto material0 = model0->AddMaterial({});
-    material0->AddInstance({ transformId, MathUtils::ColorFromHex(0xf194ff) });
+    group->AddInstance(
+      mm->GetBuiltinModel(Flame::ModelManager::BuiltinModelType::UNIT_SPHERE),
+      { },
+      { transformId, MathUtils::ColorFromHex(0xf194ff) }
+    );
 
     ls->AddPointLight(std::make_shared<PointLight>(
       transformId,
