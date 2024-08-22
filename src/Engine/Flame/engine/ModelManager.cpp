@@ -64,6 +64,8 @@ namespace Flame {
 
     mesh.vertices.resize(VERT_PER_SIZE * SIDES);
     mesh.normals.resize(VERT_PER_SIZE * SIDES);
+    mesh.tangents.resize(VERT_PER_SIZE * SIDES);
+    mesh.bitangents.resize(VERT_PER_SIZE * SIDES);
     mesh.uvs.resize(VERT_PER_SIZE * SIDES);
 
     int sideMasks[6][3] = {
@@ -146,6 +148,8 @@ namespace Flame {
 
     mesh.vertices.resize(VERT_PER_SIZE * SIDES);
     mesh.normals.resize(VERT_PER_SIZE * SIDES);
+    mesh.tangents.resize(VERT_PER_SIZE * SIDES);
+    mesh.bitangents.resize(VERT_PER_SIZE * SIDES);
     mesh.uvs.resize(VERT_PER_SIZE * SIDES);
 
     int sideMasks[6][3] = {

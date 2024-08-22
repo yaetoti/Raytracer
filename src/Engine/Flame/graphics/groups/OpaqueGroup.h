@@ -14,19 +14,16 @@ namespace Flame {
   struct OpaqueInstanceData final {
     struct ShaderData final {
       glm::mat4 modelMatrix;
-      float specularExponent;
     };
 
     ShaderData GetShaderData() const {
       return ShaderData {
-        TransformSystem::Get()->At(transformId)->transform.GetMat(),
-        specularExponent
+        TransformSystem::Get()->At(transformId)->transform.GetMat()
       };
     }
 
   public:
     uint32_t transformId;
-    float specularExponent;
   };
 
   struct OpaqueMaterialData final {

@@ -14,7 +14,7 @@ struct VSInput
   float3 normal : NORMAL;
   float3 tangent : TANGENT;
   float3 bitangent : BITANGENT;
-  float2 uv : UV;
+  float2 uv : TEXCOORD;
 
   // Instance buffer
   float4x4 modelMatrix : MODEL;
@@ -34,7 +34,7 @@ struct VSOutput
 
   float3 tangent : TANGENT;
   float3 bitangent : BITANGENT;
-  float2 uv : UV;
+  float2 uv : TEXCOORD;
 };
 
 VSOutput VSMain(VSInput input)
@@ -56,9 +56,9 @@ VSOutput VSMain(VSInput input)
   result.normalLocal = input.normal;
   result.normal = worldN;
 
-  result.tangent = tangent;
-  result.bitangent = bitangent;
-  result.uv = uv;
+  result.tangent = input.tangent;
+  result.bitangent = input.bitangent;
+  result.uv = input.uv;
   return result;
 }
 
@@ -111,7 +111,7 @@ float Ndf(float rough, float NoH)
 }
 
 float SolidAngle(float radius, float distance) {
-  return 1 - sqrt(1 - pow(r / d, 2));
+  return 1 - sqrt(1 - pow(radius / distance, 2));
 }
 
 float4 PSMain(VSOutput input) : SV_TARGET
@@ -122,71 +122,71 @@ float4 PSMain(VSOutput input) : SV_TARGET
     return color;
   }
 
-  float3 light = float4(0.0, 0.0, 0.0);
-  float3 viewDir = normalize(g_cameraPosition.xyz - input.positionWorld);
+  float3 light = 0.0;
+  float3 viewDir = normalize(g_cameraPosition.xyz - input.positionWorld.xyz);
 
   // a albedo
   // m metallicity
   // n normal
 
   // Direct light
-  for (uint i = 0; i < g_directLightsCount; ++i) {
-    float3 radiance = g_directLights[i].radiance;
-    float3 lightDir = -g_directLights[i].direction.xyz;
-    float solidAngle = g_directLights[i].solidAngle;
+  // for (uint i = 0; i < g_directLightsCount; ++i) {
+  //   float3 radiance = g_directLights[i].radiance;
+  //   float3 lightDir = -g_directLights[i].direction.xyz;
+  //   float solidAngle = g_directLights[i].solidAngle;
 
-    // l lightDir
+  //   // l lightDir
 
-    light += g_directLights[i].radiance * ();
+  //   light += g_directLights[i].radiance * ();
 
-    float4 diffuse = g_directLights[i].color * saturate(dot(-input.normal, g_directLights[i].direction.xyz));
-    float3 halfReflect = normalize(g_directLights[i].direction + viewDir);
-    float4 specular = g_directLights[i].color * pow(max(dot(input.normal, halfReflect), 0.0f), input.specularExponent);
-    light += g_directLights[i].intensity * (diffuse + specular);
-  }
+  //   float4 diffuse = g_directLights[i].color * saturate(dot(-input.normal, g_directLights[i].direction.xyz));
+  //   float3 halfReflect = normalize(g_directLights[i].direction + viewDir);
+  //   float4 specular = g_directLights[i].color * pow(max(dot(input.normal, halfReflect), 0.0f), input.specularExponent);
+  //   light += g_directLights[i].intensity * (diffuse + specular);
+  // }
 
-  // Point light
-  for (uint i = 0; i < g_pointLightsCount; ++i) {
-    float3 lightPosCameraCentered = g_pointLights[i].position.xyz - g_cameraPosition.xyz;
-    float3 lightVec = lightPosCameraCentered - input.positionCameraCentered.xyz;
+  // // Point light
+  // for (uint i = 0; i < g_pointLightsCount; ++i) {
+  //   float3 lightPosCameraCentered = g_pointLights[i].position.xyz - g_cameraPosition.xyz;
+  //   float3 lightVec = lightPosCameraCentered - input.positionCameraCentered.xyz;
 
-    float lightDistance = length(lightVec);
-    float3 lightDir = normalize(lightVec);
+  //   float lightDistance = length(lightVec);
+  //   float3 lightDir = normalize(lightVec);
 
-    float attenuation =  1.0f / (g_pointLights[i].constantFadeoff
-      + g_pointLights[i].linearFadeoff * lightDistance
-      + g_pointLights[i].quadraticFadeoff * lightDistance * lightDistance);
+  //   float attenuation =  1.0f / (g_pointLights[i].constantFadeoff
+  //     + g_pointLights[i].linearFadeoff * lightDistance
+  //     + g_pointLights[i].quadraticFadeoff * lightDistance * lightDistance);
     
-    float4 diffuse = g_pointLights[i].color * saturate(dot(input.normal, lightDir));
-    float3 halfReflect = normalize(lightDir + viewDir);
-    float4 specular = g_pointLights[i].color * pow(max(dot(input.normal, halfReflect), 0.0f), input.specularExponent);
-    light += g_pointLights[i].intensity * attenuation * (diffuse + specular);
-  }
+  //   float4 diffuse = g_pointLights[i].color * saturate(dot(input.normal, lightDir));
+  //   float3 halfReflect = normalize(lightDir + viewDir);
+  //   float4 specular = g_pointLights[i].color * pow(max(dot(input.normal, halfReflect), 0.0f), input.specularExponent);
+  //   light += g_pointLights[i].intensity * attenuation * (diffuse + specular);
+  // }
 
-  // Spot light
-  for (uint i = 0; i < g_spotLightsCount; ++i) {
-    float3 lightPosCameraCentered = g_spotLights[i].position.xyz - g_cameraPosition.xyz;
-    float3 lightVec = lightPosCameraCentered - input.positionCameraCentered.xyz;
+  // // Spot light
+  // for (uint i = 0; i < g_spotLightsCount; ++i) {
+  //   float3 lightPosCameraCentered = g_spotLights[i].position.xyz - g_cameraPosition.xyz;
+  //   float3 lightVec = lightPosCameraCentered - input.positionCameraCentered.xyz;
 
-    float lightDistance = length(lightVec);
-    float3 lightDir = normalize(lightVec);
+  //   float lightDistance = length(lightVec);
+  //   float3 lightDir = normalize(lightVec);
 
-    float theta = dot(lightDir, -g_spotLights[i].direction);
-    float epsilon = g_spotLights[i].cutoffCosineInner - g_spotLights[i].cutoffCosineOuter;
-    float intensity = saturate((theta - g_spotLights[i].cutoffCosineOuter) / epsilon);
+  //   float theta = dot(lightDir, -g_spotLights[i].direction);
+  //   float epsilon = g_spotLights[i].cutoffCosineInner - g_spotLights[i].cutoffCosineOuter;
+  //   float intensity = saturate((theta - g_spotLights[i].cutoffCosineOuter) / epsilon);
 
-    float attenuation =  1.0f / (g_spotLights[i].constantFadeoff
-      + g_spotLights[i].linearFadeoff * lightDistance
-      + g_spotLights[i].quadraticFadeoff * lightDistance * lightDistance);
+  //   float attenuation =  1.0f / (g_spotLights[i].constantFadeoff
+  //     + g_spotLights[i].linearFadeoff * lightDistance
+  //     + g_spotLights[i].quadraticFadeoff * lightDistance * lightDistance);
 
-    float2 textureUV = GetSpotLightUv(input.positionWorld, g_spotLights[i].lightMat, g_spotLights[i].cutoffCosineOuter);
-    float4 textureColor = texture0.Sample(g_anisotropicWrap, textureUV);
+  //   float2 textureUV = GetSpotLightUv(input.positionWorld, g_spotLights[i].lightMat, g_spotLights[i].cutoffCosineOuter);
+  //   float4 textureColor = texture0.Sample(g_anisotropicWrap, textureUV);
 
-    float4 diffuse = g_spotLights[i].color * saturate(dot(input.normal, lightDir));
-    float3 halfReflect = normalize(lightDir + viewDir);
-    float4 specular = g_spotLights[i].color * pow(max(dot(input.normal, halfReflect), 0.0f), input.specularExponent);
-    light += g_spotLights[i].intensity * intensity * attenuation * (diffuse + specular) * textureColor;
-  }
+  //   float4 diffuse = g_spotLights[i].color * saturate(dot(input.normal, lightDir));
+  //   float3 halfReflect = normalize(lightDir + viewDir);
+  //   float4 specular = g_spotLights[i].color * pow(max(dot(input.normal, halfReflect), 0.0f), input.specularExponent);
+  //   light += g_spotLights[i].intensity * intensity * attenuation * (diffuse + specular) * textureColor;
+  // }
 
-  return light;
+  return float4(light, 1.0);
 }

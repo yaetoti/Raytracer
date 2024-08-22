@@ -108,16 +108,28 @@ namespace Flame {
 				const auto& mesh = m_meshes[rangeId];
 	
 				for (uint32_t verticeId = 0; verticeId < range.vertexNum; ++verticeId) {
-					vertexData.emplace_back(mesh.vertices[verticeId], mesh.normals[verticeId], mesh.uvs[verticeId]);
+					vertexData.emplace_back(
+						mesh.vertices[verticeId],
+						mesh.normals[verticeId],
+						mesh.tangents[verticeId],
+						mesh.bitangents[verticeId],
+						mesh.uvs[verticeId]
+					);
 				}
 	
 				assert(reinterpret_cast<const char*>(indexData.data() + indexOffset) + range.indexNum * sizeof(uint32_t) <= reinterpret_cast<const char*>(indexData.data() + indexData.size()));
 				//std::memcpy(indexData.data() + indexOffset, mesh.faces.data(), range.indexNum * sizeof(uint32_t));
 	
+		    // for (uint32_t i = 0; i < range.indexNum / 3; ++i) {
+				//   indexData[indexOffset + i * 3] = mesh.faces[i].indices[0] + indexOffset;
+				//   indexData[indexOffset + i * 3 + 1] = mesh.faces[i].indices[1] + indexOffset;
+				//   indexData[indexOffset + i * 3 + 2] = mesh.faces[i].indices[2] + indexOffset;
+				// }
+
 		    for (uint32_t i = 0; i < range.indexNum / 3; ++i) {
-				  indexData[indexOffset + i * 3] = mesh.faces[i].indices[0] + indexOffset;
-				  indexData[indexOffset + i * 3 + 1] = mesh.faces[i].indices[1] + indexOffset;
-				  indexData[indexOffset + i * 3 + 2] = mesh.faces[i].indices[2] + indexOffset;
+				  indexData[indexOffset + i * 3] = mesh.faces[i].indices[0];
+				  indexData[indexOffset + i * 3 + 1] = mesh.faces[i].indices[1];
+				  indexData[indexOffset + i * 3 + 2] = mesh.faces[i].indices[2];
 				}
 	
 		    indexOffset += range.indexNum;

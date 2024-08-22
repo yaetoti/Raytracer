@@ -33,9 +33,9 @@ namespace Flame {
       assert(sizeof(aiAABB) == sizeof(Aabb));
       assert(sizeof(Face) == 3 * sizeof(uint32_t));
       assert(mesh.mNormals);
+      assert(mesh.mTextureCoords);
       assert(mesh.mTangents);
       assert(mesh.mBitangents);
-      assert(mesh.mTextureCoords);
 
       vertices.resize(mesh.mNumVertices);
       normals.resize(mesh.mNumVertices);

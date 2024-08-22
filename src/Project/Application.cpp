@@ -77,8 +77,11 @@ void Application::Init() {
   {
     auto* group = Flame::MeshSystem::Get()->GetOpaqueGroup();
 
-    auto modelId0 = group->AddModel(mm->GetModel("Assets/Models/EastTower/EastTower.fbx"));
-    auto model0 = group->GetModel(modelId0);
+    group->AddInstance(
+      mm->GetModel("Assets/Models/EastTower/EastTower.fbx"),
+      { },
+      { ts->Insert({ Transform(glm::vec3(-2, -2, 0)) }) }
+    );
     //material1->AddInstance({ ts->Insert({ Transform(glm::vec3(-2, -2, 0)) }), 4.0f });
   }
   

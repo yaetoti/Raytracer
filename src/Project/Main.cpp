@@ -15,11 +15,11 @@
 int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
   Console::Get()->RedirectStdHandles();
 
-  Flame::DxContext::Get()->Init();
-  Flame::ModelManager::Get()->Init();
-  Flame::ModelManager::Get()->LoadModel("Assets/Models/EastTower/EastTower.fbx");
-  std::cout << "Press any key to continue..." << '\n';
-  Console::Get()->Pause();
+  // Flame::DxContext::Get()->Init();
+  // Flame::ModelManager::Get()->Init();
+  // Flame::ModelManager::Get()->LoadModel("Assets/Models/EastTower/EastTower.fbx");
+  // std::cout << "Press any key to continue..." << '\n';
+  // Console::Get()->Pause();
 
   Flame::Engine::Init();
   // TODO Get ViewMatrix:
