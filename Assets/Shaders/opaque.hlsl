@@ -24,7 +24,7 @@ struct VSOutput
 {
   float4x4 modelMatrix : MODEL;
 
-  float3 positionLocal : POSITION_LOCAL;
+  float4 positionLocal : POSITION_LOCAL;
   float4 positionWorld : POSITION_WORLD;
   float4 positionCameraCentered : POSITION_CAMERA_CENTERED;
   float4 positionProj : SV_POSITION;
@@ -41,23 +41,24 @@ VSOutput VSMain(VSInput input)
 {
   VSOutput result;
   // Position
-  result.positionLocal = input.position;
-  result.positionWorld = mul(input.modelMatrix, float4(input.position, 1.0));
+  result.positionLocal = mul(g_meshToModel, float4(input.position, 1.0));
+  result.positionWorld = mul(input.modelMatrix, result.positionLocal);
   result.positionCameraCentered = result.positionWorld - float4(g_cameraPosition.xyz, 0.0);
   result.positionProj = mul(g_projectionMatrix, mul(g_viewMatrix, result.positionWorld));
 
   // Normal
+  result.normalLocal = mul(g_meshToModel, float4(input.normal, 0.0)).xyz;
+
   float3 axisX = normalize(input.modelMatrix[0].xyz);
   float3 axisY = normalize(input.modelMatrix[1].xyz);
   float3 axisZ = normalize(input.modelMatrix[2].xyz);
-  float3 worldN = input.normal.x * axisX + input.normal.y * axisY + input.normal.z * axisZ;
+  float3 worldN = result.normalLocal.x * axisX + result.normalLocal.y * axisY + result.normalLocal.z * axisZ;
   
   result.modelMatrix = input.modelMatrix;
-  result.normalLocal = input.normal;
   result.normal = worldN;
 
-  result.tangent = input.tangent;
-  result.bitangent = input.bitangent;
+  result.tangent = mul(g_meshToModel, float4(input.tangent, 0.0)).xyz;
+  result.bitangent = mul(g_meshToModel, float4(input.bitangent, 0.0)).xyz;
   result.uv = input.uv;
   return result;
 }
@@ -188,5 +189,7 @@ float4 PSMain(VSOutput input) : SV_TARGET
   //   light += g_spotLights[i].intensity * intensity * attenuation * (diffuse + specular) * textureColor;
   // }
 
+  //light = float3(1.0, 1.0, 1.0) * dot(input.normal, viewDir);
+  light = albedoTexture.Sample(g_anisotropicWrap, input.uv).xyz * dot(input.normal, viewDir);
   return float4(light, 1.0);
 }

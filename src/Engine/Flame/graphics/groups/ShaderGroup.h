@@ -182,20 +182,34 @@ namespace Flame {
 
       // Go through all instances and find the closest one
       for (const auto& perModel : GetModels()) {
-        const auto& model = *perModel->GetModel();
+        const auto& model = perModel->GetModel();
 
-        for (const auto& perMesh : perModel->GetMeshes()) {
+        for (uint32_t meshId = 0; meshId < perModel->GetMeshes().size(); ++meshId) {
+          const auto& perMesh = perModel->GetMeshes()[meshId];
+
           for (const auto& perMaterial : perMesh->GetMaterials()) {
             for (const auto& perInstance : perMaterial->GetInstances()) {
               // Transform ray
               glm::mat4 modelMat = TransformSystem::Get()->At(perInstance->GetData().transformId)->transform.GetMat();
               glm::mat4 modelMatInv = glm::inverse(modelMat);
+
+              // Transform meshToModel
+              // TODO: Ok, there may be zero. If we can have more than 1 then we should multiply them all
+              // TODO: Another fix: add identity if zero after parsing.
+              assert(model->m_meshes[meshId].transforms.size() <= 1);
+              assert(model->m_meshes[meshId].transformsInv.size() <= 1);
+              if (model->m_meshes[meshId].transforms.size() != 0) {
+                modelMat *= model->m_meshes[meshId].transforms[0];
+                modelMatInv = model->m_meshes[meshId].transformsInv[0] * modelMatInv;
+              }
+
+
               glm::vec4 position = modelMatInv * glm::vec4(ray.origin, 1.0f);
               glm::vec3 direction = modelMatInv * glm::vec4(ray.direction, 0.0f);
               Ray rayModel { position / position.w, direction };
 
               // Hit model in model space
-              if (model.Hit(rayModel, record0, tMin, tMax)) {
+              if (model->Hit(rayModel, record0, tMin, tMax)) {
                 // If hit - update tMax and InvTransform the results
                 tMax = record0.time;
                 position = modelMat * glm::vec4(record0.point, 1.0f);

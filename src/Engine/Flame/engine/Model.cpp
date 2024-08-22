@@ -1,4 +1,5 @@
 #include "Model.h"
+#include "glm/ext.hpp"
 
 namespace Flame {
 	bool Model::Hit(const Ray& r, HitRecord<const Model*>& record, float tMin, float tMax) const {
@@ -36,7 +37,6 @@ namespace Flame {
 		m_meshes.reserve(scene.mNumMeshes);
 	
 		auto node = scene.mRootNode;
-		std::function<void(const aiNode&)> ParseNode;
 	
 		for (uint32_t meshId = 0; meshId < scene.mNumMeshes; ++meshId) {
 		  auto& mesh = m_meshes.emplace_back();
@@ -44,30 +44,24 @@ namespace Flame {
 			// TODO Parse textures
 		}
 	
-		//ParseNode = [this, &scene, &ParseNode](const aiNode& node) {
-		//	assert(sizeof(glm::mat4) == sizeof(aiMatrix4x4));
+		std::function<void(aiNode*)> LoadInstances;
+		LoadInstances = [&LoadInstances, this](aiNode* node) {
+			const glm::mat4 nodeToParent = reinterpret_cast<const glm::mat4&>(node->mTransformation.Transpose());
+			const glm::mat4 parentToNode = glm::inverse(nodeToParent);
+
+			// The same node may contain multiple meshes in its space, referring to them by indices
+			for (uint32_t i = 0; i < node->mNumMeshes; ++i) {
+				uint32_t meshIndex = node->mMeshes[i];
+				m_meshes[meshIndex].transforms.push_back(nodeToParent); 
+				m_meshes[meshIndex].transformsInv.push_back(parentToNode);
+			}
+
+			for (uint32_t i = 0; i < node->mNumChildren; ++i) {
+				LoadInstances(node->mChildren[i]);
+			}
+		};
 	
-		//	// TODO incorrect. Better to accumulate transforms in a stack
-		//	// TODO Also take into account that there are empty compound nodes with transforms
-		//	glm::mat4 nodeTransform { *reinterpret_cast<const glm::mat4*>(&node.mTransformation) };
-		//	glm::mat4 nodeTransformInv { glm::inverse(nodeTransform) };
-	
-		//	// Parse meshes in this node
-		//	for (uint32_t i = 0; i < node.mNumMeshes; ++i) {
-		//		uint32_t meshId = node.mMeshes[i];
-		//		auto& mesh = m_meshes.emplace_back();
-		//		mesh.Parse(*scene.mMeshes[meshId]);
-		//		mesh.transforms.push_back(nodeTransform);
-		//		mesh.transformsInv.push_back(nodeTransformInv);
-		//	}
-	
-		//	// Parse children nodes
-		//  for (uint32_t i = 0; i < node.mNumChildren; ++i) {
-		//    ParseNode(*node.mChildren[i]);
-		//  }
-		//};
-	
-		//ParseNode(*node);
+		LoadInstances(node);
 		GenerateRanges();
 		FillBuffers();
 	}

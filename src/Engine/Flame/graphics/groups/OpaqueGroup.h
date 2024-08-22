@@ -1,9 +1,11 @@
 #pragma once
+#include <d3d11.h>
 #include <memory>
 #include <vector>
 #include <glm/glm.hpp>
 
 #include "Flame/engine/TransformSystem.h"
+#include "Flame/graphics/buffers/ConstantBuffer.h"
 #include "ShaderGroup.h"
 #include "Flame/engine/Transform.h"
 #include "Flame/engine/Model.h"
@@ -27,7 +29,15 @@ namespace Flame {
   };
 
   struct OpaqueMaterialData final {
-    // Empty for now
+    ID3D11ShaderResourceView* m_albedoView;
+    ID3D11ShaderResourceView* m_normalView;
+    ID3D11ShaderResourceView* m_roughnessView;
+    ID3D11ShaderResourceView* m_metallicView;
+  };
+
+  struct OpaqueMeshData final {
+    glm::mat4 meshToModel;
+    glm::mat4 modelToMesh;
   };
 
   struct OpaqueGroup final : ShaderGroup<OpaqueInstanceData, OpaqueMaterialData> {
@@ -40,6 +50,7 @@ namespace Flame {
 
   private:
     VertexBuffer<OpaqueInstanceData::ShaderData> m_instanceBuffer;
+    ConstantBuffer<OpaqueMeshData> m_meshMatrixBuffer;
     bool m_instanceBufferDirty = true;
 
     VertexShader m_vertexShader;

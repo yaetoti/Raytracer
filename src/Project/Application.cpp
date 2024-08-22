@@ -77,12 +77,20 @@ void Application::Init() {
   {
     auto* group = Flame::MeshSystem::Get()->GetOpaqueGroup();
 
-    group->AddInstance(
-      mm->GetModel("Assets/Models/EastTower/EastTower.fbx"),
-      { },
-      { ts->Insert({ Transform(glm::vec3(-2, -2, 0)) }) }
-    );
-    //material1->AddInstance({ ts->Insert({ Transform(glm::vec3(-2, -2, 0)) }), 4.0f });
+    uint32_t transformId = ts->Insert({ Transform(glm::vec3(-2, -2, 0)) });
+
+    uint32_t modelId = group->AddModel(mm->GetModel("Assets/Models/EastTower/EastTower.fbx"));
+    auto& model = group->GetModels()[modelId];
+    uint32_t materialId;
+
+    materialId = model->GetMeshes()[3]->AddMaterial({
+      tm->GetTexture(L"Assets/Models/EastTower/dds/Statue_BaseColor.dds")->GetResourceView(),
+      tm->GetTexture(L"Assets/Models/EastTower/dds/Statue_Normal.dds")->GetResourceView(),
+      tm->GetTexture(L"Assets/Models/EastTower/dds/Statue_Metallic.dds")->GetResourceView(),
+      tm->GetTexture(L"Assets/Models/EastTower/dds/Statue_Roughness.dds")->GetResourceView()
+    });
+    auto& material = model->GetMeshes()[3]->GetMaterials()[materialId];
+    material->AddInstance({ transformId });
   }
   
   // Hologram group

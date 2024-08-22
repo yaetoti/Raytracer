@@ -1,5 +1,8 @@
 /*----- Defines -----*/
 
+#define CBUFFER_GENERAL b0
+#define CBUFFER_LIGHT b1
+#define CBUFFER_MESH b2
 
 static const float PI = 3.14159265f;
 
@@ -42,7 +45,7 @@ struct SpotLight {
 /*----- Buffers -----*/
 
 
-cbuffer ConstantBuffer : register(b0)
+cbuffer ConstantBuffer : register(CBUFFER_GENERAL)
 {
   float4x4 g_viewMatrix;
   float4x4 g_projectionMatrix;
@@ -57,7 +60,7 @@ cbuffer ConstantBuffer : register(b0)
   bool g_isNormalVisMode;
 };
 
-cbuffer LightBuffer : register(b1) {
+cbuffer LightBuffer : register(CBUFFER_LIGHT) {
   DirectLight g_directLights[NUM_DIRECT_LIGHTS];
   PointLight g_pointLights[NUM_POINT_LIGHTS];
   SpotLight g_spotLights[NUM_SPOT_LIGHTS];
@@ -65,6 +68,11 @@ cbuffer LightBuffer : register(b1) {
   uint g_pointLightsCount;
   uint g_spotLightsCount;
   float padding0;
+};
+
+cbuffer MeshBuffer : register(CBUFFER_MESH) {
+  float4x4 g_meshToModel;
+  float4x4 g_modelToMesh;
 };
 
 
