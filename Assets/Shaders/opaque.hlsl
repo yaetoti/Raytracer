@@ -118,38 +118,44 @@ float SolidAngle(float radius, float distance) {
 
 float4 PSMain(VSOutput input) : SV_TARGET
 {
-  if (g_isNormalVisMode)
-  {
-    float4 color = float4((input.normal + 1.0.rrr) * 0.5.rrr, 0.0);
-    return color;
-  }
-
   float3 albedo = albedoTexture.Sample(g_anisotropicWrap, input.uv).xyz;
   float3 normal = normalTexture.Sample(g_anisotropicWrap, input.uv).xyz;
   float metallic = metallicTexture.Sample(g_anisotropicWrap, input.uv).x;
   float roughness = roughnessTexture.Sample(g_anisotropicWrap, input.uv).x;
 
-  float3 light = 0.0;
-  float3 viewDir = normalize(g_cameraPosition.xyz - input.positionWorld.xyz);
+  float3x3 tbnMatrix = float3x3(
+    input.tangent.x, input.bitangent.x, input.normalLocal.x,
+    input.tangent.y, input.bitangent.y, input.normalLocal.y,
+    input.tangent.z, input.bitangent.z, input.normalLocal.z
+  );
 
-  // a albedo
-  // m metallicity
-  // n normal
+  normal = normalize(normal * 2.0 - 1.0);
+  normal = normalize(mul(tbnMatrix, normal));
+
+  if (g_isNormalVisMode)
+  {
+    float4 color = float4((normal + 1.0.rrr) * 0.5.rrr, 0.0);
+    return color;
+  }
+
+  float3 light = 0.0;
+  float3 F0 = 0.01;
+  float3 viewDir = normalize(g_cameraPosition.xyz - input.positionWorld.xyz);
 
   // Direct light
   for (uint i = 0; i < g_directLightsCount; ++i) {
     float3 radiance = g_directLights[i].radiance;
     float3 lightDir = g_directLights[i].direction.xyz;
     float solidAngle = g_directLights[i].solidAngle;
-    float3 halfReflect = normalize(g_directLights[i].direction + viewDir);
+    float3 halfReflect = normalize(lightDir + viewDir);
 
-    float NoH = dot(input.normal, halfReflect);
-    float NoL = dot(input.normal, lightDir);
+    float NoH = dot(normal, halfReflect);
+    float NoL = dot(normal, lightDir);
     float HoL = dot(halfReflect, lightDir);
-    float NoV = dot(input.normal, viewDir);
+    float NoV = dot(normal, viewDir);
 
-    float3 diffuse = ((solidAngle * albedo * (1 - metallic)) / PI) * (1 - Fresnel(NoL, float3(0.1, 0.1, 0.1))) * NoL;
-    float3 specular = min(1, (solidAngle * Ndf(roughness, NoH)) / (4 * NoV)) * Gmf(roughness, NoV, NoL) * Fresnel(NoL, float3(0.1, 0.1, 0.1));
+    float3 diffuse = ((solidAngle * albedo * (1 - metallic)) / PI) * (1 - Fresnel(NoL, F0)) * NoL;
+    float3 specular = min(1, (solidAngle * Ndf(roughness, NoH)) / (4 * NoV)) * Gmf(roughness, NoV, NoL) * Fresnel(HoL, F0);
 
     light += g_directLights[i].radiance * (diffuse + specular);
   }
@@ -163,13 +169,13 @@ float4 PSMain(VSOutput input) : SV_TARGET
     float3 radiance = g_pointLights[i].radiance;
     float solidAngle = SolidAngle(g_pointLights[i].radius, lightDistance);
     
-    float NoH = dot(input.normal, halfReflect);
-    float NoL = dot(input.normal, lightDir);
+    float NoH = dot(normal, halfReflect);
+    float NoL = dot(normal, lightDir);
     float HoL = dot(halfReflect, lightDir);
-    float NoV = dot(input.normal, viewDir);
+    float NoV = dot(normal, viewDir);
 
-    float3 diffuse = ((solidAngle * albedo * (1 - metallic)) / PI) * (1 - Fresnel(NoL, float3(0.1, 0.1, 0.1))) * NoL;
-    float3 specular = min(1, (solidAngle * Ndf(roughness, NoH)) / (4 * NoV)) * Gmf(roughness, NoV, NoL) * Fresnel(NoL, float3(0.1, 0.1, 0.1));
+    float3 diffuse = ((solidAngle * albedo * (1 - metallic)) / PI) * (1 - Fresnel(NoL, F0)) * NoL;
+    float3 specular = min(1, (solidAngle * Ndf(roughness, NoH)) / (4 * NoV)) * Gmf(roughness, NoV, NoL) * Fresnel(HoL, F0);
 
     light += g_pointLights[i].radiance * (diffuse + specular);
   }
@@ -178,25 +184,25 @@ float4 PSMain(VSOutput input) : SV_TARGET
   for (uint i = 0; i < g_spotLightsCount; ++i) {
     float3 lightVec = g_spotLights[i].position.xyz - input.positionWorld.xyz;
     float lightDistance = length(lightVec);
-    float3 lightDir = -normalize(lightVec);
+    float3 lightDir = normalize(lightVec);
     float3 halfReflect = normalize(lightDir + viewDir);
     float3 radiance = g_spotLights[i].radiance;
     float solidAngle = SolidAngle(g_spotLights[i].radius, lightDistance);
     
-    float NoH = dot(input.normal, halfReflect);
-    float NoL = dot(input.normal, lightDir);
+    float NoH = dot(normal, halfReflect);
+    float NoL = dot(normal, lightDir);
     float HoL = dot(halfReflect, lightDir);
-    float NoV = dot(input.normal, viewDir);
+    float NoV = dot(normal, viewDir);
 
-    float theta = dot(lightDir, g_spotLights[i].direction);
+    float theta = dot(lightDir, -g_spotLights[i].direction);
     float epsilon = g_spotLights[i].cutoffCosineInner - g_spotLights[i].cutoffCosineOuter;
     float intensity = saturate((theta - g_spotLights[i].cutoffCosineOuter) / epsilon);
 
     float2 textureUV = GetSpotLightUv(input.positionWorld, g_spotLights[i].lightViewMat, g_spotLights[i].cutoffCosineOuter);
     float4 textureColor = lightTexture.Sample(g_anisotropicWrap, textureUV);
 
-    float3 diffuse = ((solidAngle * albedo * (1 - metallic)) / PI) * (1 - Fresnel(NoL, float3(0.1, 0.1, 0.1))) * NoL;
-    float3 specular = min(1, (solidAngle * Ndf(roughness, NoH)) / (4 * NoV)) * Gmf(roughness, NoV, NoL) * Fresnel(NoL, float3(0.1, 0.1, 0.1));
+    float3 diffuse = ((solidAngle * albedo * (1 - metallic)) / PI) * (1 - Fresnel(NoL, F0)) * NoL;
+    float3 specular = min(1, (solidAngle * Ndf(roughness, NoH)) / (4 * NoV)) * Gmf(roughness, NoV, NoL) * Fresnel(HoL, F0);
 
     light += g_spotLights[i].radiance * textureColor * intensity * (diffuse + specular);
   }
