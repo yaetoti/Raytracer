@@ -149,7 +149,7 @@ float4 PSMain(VSOutput input) : SV_TARGET
     float NoV = dot(input.normal, viewDir);
 
     float3 diffuse = ((solidAngle * albedo * (1 - metallic)) / PI) * (1 - Fresnel(NoL, float3(0.1, 0.1, 0.1))) * NoL;
-    float3 specular = min(1, (solidAngle * Ndf(roughness, NoH)) / (4 * NoV)) * Gmf(roughness, NoV, NoL) * Fresnel(HoL, float3(0.1, 0.1, 0.1));
+    float3 specular = min(1, (solidAngle * Ndf(roughness, NoH)) / (4 * NoV)) * Gmf(roughness, NoV, NoL) * Fresnel(NoL, float3(0.1, 0.1, 0.1));
 
     light += g_directLights[i].radiance * (diffuse + specular);
   }
@@ -169,7 +169,7 @@ float4 PSMain(VSOutput input) : SV_TARGET
     float NoV = dot(input.normal, viewDir);
 
     float3 diffuse = ((solidAngle * albedo * (1 - metallic)) / PI) * (1 - Fresnel(NoL, float3(0.1, 0.1, 0.1))) * NoL;
-    float3 specular = min(1, (solidAngle * Ndf(roughness, NoH)) / (4 * NoV)) * Gmf(roughness, NoV, NoL) * Fresnel(HoL, float3(0.1, 0.1, 0.1));
+    float3 specular = min(1, (solidAngle * Ndf(roughness, NoH)) / (4 * NoV)) * Gmf(roughness, NoV, NoL) * Fresnel(NoL, float3(0.1, 0.1, 0.1));
 
     light += g_pointLights[i].radiance * (diffuse + specular);
   }
@@ -196,7 +196,7 @@ float4 PSMain(VSOutput input) : SV_TARGET
     float4 textureColor = lightTexture.Sample(g_anisotropicWrap, textureUV);
 
     float3 diffuse = ((solidAngle * albedo * (1 - metallic)) / PI) * (1 - Fresnel(NoL, float3(0.1, 0.1, 0.1))) * NoL;
-    float3 specular = min(1, (solidAngle * Ndf(roughness, NoH)) / (4 * NoV)) * Gmf(roughness, NoV, NoL) * Fresnel(HoL, float3(0.1, 0.1, 0.1));
+    float3 specular = min(1, (solidAngle * Ndf(roughness, NoH)) / (4 * NoV)) * Gmf(roughness, NoV, NoL) * Fresnel(NoL, float3(0.1, 0.1, 0.1));
 
     light += g_spotLights[i].radiance * textureColor * intensity * (diffuse + specular);
   }
