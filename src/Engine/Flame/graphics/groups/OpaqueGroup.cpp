@@ -127,7 +127,7 @@ namespace Flame {
             perMaterial->GetData().m_metallicView,
             perMaterial->GetData().m_roughnessView,
           };
-          dc->PSSetShaderResources(0, 4, srvs);
+          dc->PSSetShaderResources(1, 4, srvs);
 
           // Aaah, so that's why we have MeshRange... Finally
           // TODO replace Model index offsetting with correct draw call parameters
