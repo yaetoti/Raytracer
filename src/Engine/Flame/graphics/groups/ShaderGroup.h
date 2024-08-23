@@ -178,7 +178,7 @@ namespace Flame {
     }
 
     bool HitInstance(const Ray& ray, HitRecord<PerInstance*>& record, float tMin, float tMax) const {
-      HitRecord<const Model*> record0;
+      HitRecord<const Mesh*> record0;
 
       // Go through all instances and find the closest one
       for (const auto& perModel : GetModels()) {
@@ -209,7 +209,7 @@ namespace Flame {
               Ray rayModel { position / position.w, direction };
 
               // Hit model in model space
-              if (model->Hit(rayModel, record0, tMin, tMax)) {
+              if (model->m_meshes[meshId].Hit(rayModel, record0, tMin, tMax)) {
                 // If hit - update tMax and InvTransform the results
                 tMax = record0.time;
                 position = modelMat * glm::vec4(record0.point, 1.0f);
