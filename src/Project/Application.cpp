@@ -78,20 +78,67 @@ void Application::Init() {
   {
     auto* group = Flame::MeshSystem::Get()->GetOpaqueGroup();
 
-    uint32_t transformId = ts->Insert({ Transform(glm::vec3(-2, -2, 0)) });
+    // Statue
+    {
+      uint32_t transformId = ts->Insert({ Transform(glm::vec3(-2, -2, 0)) });
 
-    uint32_t modelId = group->AddModel(mm->GetModel("Assets/Models/EastTower/EastTower.fbx"));
-    auto& model = group->GetModels()[modelId];
-    uint32_t materialId;
+      uint32_t modelId = group->AddModel(mm->GetModel("Assets/Models/EastTower/EastTower.fbx"));
+      auto& model = group->GetModels()[modelId];
+      uint32_t materialId;
 
-    materialId = model->GetMeshes()[3]->AddMaterial({
-      tm->GetTexture(L"Assets/Models/EastTower/dds/Statue_BaseColor.dds")->GetResourceView(),
-      tm->GetTexture(L"Assets/Models/EastTower/dds/Statue_Normal.dds")->GetResourceView(),
-      tm->GetTexture(L"Assets/Models/EastTower/dds/Statue_Metallic.dds")->GetResourceView(),
-      tm->GetTexture(L"Assets/Models/EastTower/dds/Statue_Roughness.dds")->GetResourceView()
-    });
-    auto& material = model->GetMeshes()[3]->GetMaterials()[materialId];
-    material->AddInstance({ transformId });
+      materialId = model->GetMeshes()[3]->AddMaterial({
+        tm->GetTexture(L"Assets/Models/EastTower/dds/Statue_BaseColor.dds")->GetResourceView(),
+        tm->GetTexture(L"Assets/Models/EastTower/dds/Statue_Normal.dds")->GetResourceView(),
+        tm->GetTexture(L"Assets/Models/EastTower/dds/Statue_Metallic.dds")->GetResourceView(),
+        tm->GetTexture(L"Assets/Models/EastTower/dds/Statue_Roughness.dds")->GetResourceView()
+      });
+      auto& material = model->GetMeshes()[3]->GetMaterials()[materialId];
+      material->AddInstance({ transformId });
+    }
+
+    // Plane
+    {
+      group->AddInstance(
+        mm->GetModel("Assets/Models/Floor/Floor.fbx"),
+        {
+          tm->GetTexture(L"Assets/Models/Floor/dds/Albedo.dds")->GetResourceView(),
+          tm->GetTexture(L"Assets/Models/Floor/dds/Normal.dds")->GetResourceView(),
+          tm->GetTexture(L"Assets/Models/Floor/dds/Metallic.dds")->GetResourceView(),
+          tm->GetTexture(L"Assets/Models/Floor/dds/Roughness.dds")->GetResourceView()
+        },
+        {
+          ts->Insert({ Transform(glm::vec3(0, -6, 0)) })
+        }
+      );
+    }
+
+    // Cube
+    {
+      uint32_t modelId = group->AddModel(mm->GetModel("Assets/Models/Floor/PbrCube.fbx"));
+      auto& model = group->GetModels()[modelId];
+      uint32_t materialId;
+      uint32_t materialId1;
+
+      materialId = model->GetMeshes()[0]->AddMaterial({
+        tm->GetTexture(L"Assets/Models/Floor/dds/Albedo.dds")->GetResourceView(),
+        tm->GetTexture(L"Assets/Models/Floor/dds/Normal.dds")->GetResourceView(),
+        tm->GetTexture(L"Assets/Models/Floor/dds/Metallic.dds")->GetResourceView(),
+        tm->GetTexture(L"Assets/Models/Floor/dds/Roughness.dds")->GetResourceView()
+      });
+      auto& material = model->GetMeshes()[0]->GetMaterials()[materialId];
+      material->AddInstance({ ts->Insert({ Transform(glm::vec3(0, 6, 0), glm::vec3(0.01f)) }) });
+      material->AddInstance({ ts->Insert({ Transform(glm::vec3(-3, 8, 3), glm::vec3(0.01f)) }) });
+
+      materialId1 = model->GetMeshes()[0]->AddMaterial({
+        tm->GetTexture(L"Assets/Models/Floor/dds-bathroom/Albedo.dds")->GetResourceView(),
+        tm->GetTexture(L"Assets/Models/Floor/dds-bathroom/Normal.dds")->GetResourceView(),
+        tm->GetTexture(L"Assets/Models/Floor/dds-bathroom/Metallic.dds")->GetResourceView(),
+        tm->GetTexture(L"Assets/Models/Floor/dds-bathroom/Roughness.dds")->GetResourceView()
+      });
+      auto& material1 = model->GetMeshes()[0]->GetMaterials()[materialId1];
+
+      material1->AddInstance({ ts->Insert({ Transform(glm::vec3(-3, 6, 0), glm::vec3(0.01f)) }) });
+    }
   }
   
   // Hologram group
