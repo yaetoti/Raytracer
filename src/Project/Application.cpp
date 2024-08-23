@@ -132,7 +132,8 @@ void Application::Init() {
   {
     auto* group = ms->GetEmissionOnlyGroup();
 
-    auto transformId = ts->Insert({ Transform(glm::vec3(8.0f, 0.0f, 0.0f), glm::vec3(0.1f)) });
+    float radius = 4.0f;
+    auto transformId = ts->Insert({ Transform(glm::vec3(8.0f, 0.0f, 0.0f), glm::vec3(radius)) });
 
     group->AddInstance(
       mm->GetBuiltinModel(Flame::ModelManager::BuiltinModelType::UNIT_SPHERE),
@@ -143,9 +144,8 @@ void Application::Init() {
     ls->AddPointLight(std::make_shared<PointLight>(
       transformId,
       glm::vec3(0, 0, 0),
-      MathUtils::ColorFromHex(0xf194ff),
-      4.0f,
-      0.0f, 1.2f, 0.18f
+      MathUtils::RadianceFromIrradiance(MathUtils::ColorFromHex(0xf194ff), radius, 12.0f),
+      radius
     ));
   }
 
@@ -156,22 +156,24 @@ void Application::Init() {
   ms->GetEmissionOnlyGroup()->InitInstanceBuffer();
 
   // Init lights
+  float sunRadius = 696340.0f;
+  float sunDistance = 150000000.0f;
   ls->AddDirectLight(std::make_shared<DirectLight>(
-    MathUtils::ColorFromHex(0x000000),
     glm::vec3(0, -1, 0),
-    1.0f
+    MathUtils::RadianceFromIrradiance(MathUtils::ColorFromHex(0x000000), sunRadius, sunDistance),
+    MathUtils::SolidAngle(sunRadius, sunDistance)
   ));
 
+  float flashlightRadius = 1.0f;
   m_flashlightId = ls->AddSpotLight(std::make_shared<SpotLight>(
     glm::vec3(0.0f),
     glm::vec3(0.0f, 0.0f, 1.0f),
     glm::vec3(0.0f, 1.0f, 0.0f),
     glm::vec3(1.0f, 0.0f, 0.0f),
-    MathUtils::ColorFromHex(0xFFFFFF),
-    1.5f,
+    MathUtils::RadianceFromIrradiance(MathUtils::ColorFromHex(0xFFFFFF), flashlightRadius, 50.0f),
+    flashlightRadius,
     glm::cos(glm::radians(20.0f)),
-    glm::cos(glm::radians(25.0f)),
-    1.0f, 0.045f, 0.0075f
+    glm::cos(glm::radians(25.0f))
   ));
 }
 

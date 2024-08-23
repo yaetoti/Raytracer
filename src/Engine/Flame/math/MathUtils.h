@@ -5,6 +5,7 @@
 #include "Ray.h"
 #include "Sphere.h"
 #include "TriangleOld.h"
+#include "glm/exponential.hpp"
 
 #undef near
 #undef far
@@ -76,6 +77,15 @@ namespace Flame {
       float w = (d00 * d21 - d01 * d20) / denom;
       float u = 1.0f - v - w;
       return glm::vec3(u, v, w);
+    }
+
+    static float SolidAngle(float radius, float distance) {
+      float sin = (radius / distance);
+      return (1.0f - glm::sqrt(1.0f - sin * sin));
+    }
+
+    static glm::vec3 RadianceFromIrradiance(glm::vec3 irradiance, float radius, float distance) {
+      return irradiance / SolidAngle(radius, distance);
     }
 
     // GLM temporary replacement
