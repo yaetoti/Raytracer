@@ -6,6 +6,7 @@
 #include "Flame/engine/lights/PointLight.h"
 #include "Flame/engine/lights/SpotLight.h"
 #include "Flame/graphics/groups/HologramGroup.h"
+#include "glm/fwd.hpp"
 #include "glm/trigonometric.hpp"
 #include <Flame/engine/MeshSystem.h>
 #include <cmath>
@@ -160,7 +161,7 @@ void Application::Init() {
   float sunDistance = 150000000.0f;
   ls->AddDirectLight(std::make_shared<DirectLight>(
     glm::vec3(0, -1, 0),
-    MathUtils::RadianceFromIrradiance(MathUtils::ColorFromHex(0x000000), sunRadius, sunDistance),
+    MathUtils::RadianceFromIrradiance(MathUtils::ColorFromHex(0xFFFFFF), sunRadius, sunDistance),
     MathUtils::SolidAngle(sunRadius, sunDistance)
   ));
 

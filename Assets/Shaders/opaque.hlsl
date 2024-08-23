@@ -123,6 +123,11 @@ float4 PSMain(VSOutput input) : SV_TARGET
     return color;
   }
 
+  float3 albedo = albedoTexture.Sample(g_anisotropicWrap, input.uv).xyz;
+  float3 normal = normalTexture.Sample(g_anisotropicWrap, input.uv).xyz;
+  float metallic = metallicTexture.Sample(g_anisotropicWrap, input.uv).x;
+  float roughness = roughnessTexture.Sample(g_anisotropicWrap, input.uv).x;
+
   float3 light = 0.0;
   float3 viewDir = normalize(g_cameraPosition.xyz - input.positionWorld.xyz);
 
@@ -131,20 +136,23 @@ float4 PSMain(VSOutput input) : SV_TARGET
   // n normal
 
   // Direct light
-  // for (uint i = 0; i < g_directLightsCount; ++i) {
-  //   float3 radiance = g_directLights[i].radiance;
-  //   float3 lightDir = -g_directLights[i].direction.xyz;
-  //   float solidAngle = g_directLights[i].solidAngle;
+  for (uint i = 0; i < g_directLightsCount; ++i) {
+    float3 radiance = g_directLights[i].radiance;
+    float3 lightDir = g_directLights[i].direction.xyz;
+    float solidAngle = g_directLights[i].solidAngle;
+    float3 halfReflect = normalize(g_directLights[i].direction + viewDir);
 
-  //   // l lightDir
+    float NoH = dot(input.normal, halfReflect);
+    float NoL = dot(input.normal, lightDir);
+    float NoV = dot(input.normal, viewDir);
 
-  //   light += g_directLights[i].radiance * ();
+    // l lightDir
 
-  //   float4 diffuse = g_directLights[i].color * saturate(dot(-input.normal, g_directLights[i].direction.xyz));
-  //   float3 halfReflect = normalize(g_directLights[i].direction + viewDir);
-  //   float4 specular = g_directLights[i].color * pow(max(dot(input.normal, halfReflect), 0.0f), input.specularExponent);
-  //   light += g_directLights[i].intensity * (diffuse + specular);
-  // }
+    float3 diffuse = (solidAngle * albedo * (1 - metallic)) / PI;
+    float3 specular = min(1, (solidAngle * Ndf(roughness, NoH)) / (4 * NoV)) * Gmf(roughness, NoV, NoL) * Fresnel(NoL, float3(0.1, 0.1, 0.1));
+
+    light += g_directLights[i].radiance * (diffuse + specular);
+  }
 
   // // Point light
   // for (uint i = 0; i < g_pointLightsCount; ++i) {
@@ -190,6 +198,6 @@ float4 PSMain(VSOutput input) : SV_TARGET
   // }
 
   //light = float3(1.0, 1.0, 1.0) * dot(input.normal, viewDir);
-  light = albedoTexture.Sample(g_anisotropicWrap, input.uv).xyz * dot(input.normal, viewDir);
+  //light *= albedoTexture.Sample(g_anisotropicWrap, input.uv).xyz;
   return float4(light, 1.0);
 }
