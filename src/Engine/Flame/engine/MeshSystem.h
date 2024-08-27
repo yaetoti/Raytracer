@@ -59,6 +59,8 @@ namespace Flame {
     ShaderPipeline m_skyboxPipeline;
     ID3D11ShaderResourceView* m_textureView;
 
+    ShaderPipeline m_testPipeline;
+
     static constexpr const wchar_t* kSkyboxPath = L"Assets/Textures/night_street.dds";
     static constexpr const wchar_t* kSkyShaderPath = L"Assets/Shaders/sky.hlsl";
   };

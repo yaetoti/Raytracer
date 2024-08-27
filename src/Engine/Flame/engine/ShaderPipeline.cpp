@@ -1,5 +1,9 @@
 #include "ShaderPipeline.h"
 
+#include <Flame.h>
+
+#include "Engine.h"
+
 namespace Flame {
   void ShaderPipeline::Init(const std::wstring& filename, ShaderType types) {
     // TODO: need to change order in 2 places if I'm gonna add another shader
@@ -13,7 +17,7 @@ namespace Flame {
 
     for (uint32_t i = 0, end = ARRAYSIZE(kFilenameTypes); i < end; ++i) {
       if (IsSet(types, kFilenameTypes[i])) {
-        paths[i][0] = filename;
+        paths[i][0] = Engine::GetDirectory(filename);
       } else {
         paths[i][0].clear();
       }
@@ -23,8 +27,8 @@ namespace Flame {
   }
 
   void ShaderPipeline::Init(const std::wstring& vsFile, const std::wstring& psFile) {
-    m_vsFile = vsFile;
-    m_psFile = psFile;
+    m_vsFile = Engine::GetDirectory(vsFile);
+    m_psFile = Engine::GetDirectory(psFile);
     m_hsFile.clear();
     m_dsFile.clear();
     m_gsFile.clear();
@@ -32,11 +36,11 @@ namespace Flame {
   }
 
   void ShaderPipeline::Init(const std::wstring& vsFile, const std::wstring& hsFile, const std::wstring& dsFile, const std::wstring& gsFile, const std::wstring& psFile) {
-    m_vsFile = vsFile;
-    m_hsFile = hsFile;
-    m_dsFile = dsFile;
-    m_gsFile = gsFile;
-    m_psFile = psFile;
+    m_vsFile = Engine::GetDirectory(vsFile);
+    m_hsFile = Engine::GetDirectory(hsFile);
+    m_dsFile = Engine::GetDirectory(dsFile);
+    m_gsFile = Engine::GetDirectory(gsFile);
+    m_psFile = Engine::GetDirectory(psFile);
     Compile();
   }
 

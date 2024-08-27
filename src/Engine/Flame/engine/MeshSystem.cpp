@@ -29,6 +29,8 @@ namespace Flame {
     // Init skybox shaders
     m_skyboxPipeline.Init(kSkyShaderPath, ShaderType::VERTEX_SHADER | ShaderType::PIXEL_SHADER);
     m_textureView = TextureManager::Get()->GetTexture(kSkyboxPath)->GetResourceView();
+
+    m_testPipeline.Init(L"Assets/Shaders/test.hlsl", ShaderType::VERTEX_SHADER | ShaderType::PIXEL_SHADER);
   }
 
   void MeshSystem::Cleanup() {
@@ -43,6 +45,19 @@ namespace Flame {
   }
 
   void MeshSystem::Render(float deltaTime) {
+    static float time = 0.0f;
+    time += deltaTime;
+    if (time >= 15.0f) {
+      time = 0;
+      std::cout << "Recompilante!" << '\n';
+      m_testPipeline.Compile();
+    }
+
+    auto dc = DxContext::Get()->d3d11DeviceContext.Get();
+    m_testPipeline.Bind();
+    dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    dc->Draw(3, 0);
+
     m_opaqueGroup.Render();
     m_hologramGroup.Render();
     m_emissionOnlyGroup.Render();

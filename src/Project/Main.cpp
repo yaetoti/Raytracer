@@ -7,6 +7,7 @@
 #include <limits>
 #include <utility>
 #include <vector>
+#include <Flame/engine/Engine.h>
 
 #include "Flame/engine/ModelManager.h"
 #include "Flame/math/MathUtils.h"
@@ -21,7 +22,7 @@
 #include "glm/glm.hpp"
 #include "glm/trigonometric.hpp"
 
-glm::vec3 randomHemisphere(double i, double N, double* NoV = nullptr) {
+glm::vec3 RandomHemisphere(double i, double N, double* NoV = nullptr) {
   const double GOLDEN_RATIO = (1.0 + sqrt(5.0)) / 2.0;
 	double theta = 2.0 * glm::pi<double>() * i / GOLDEN_RATIO;
 	double phiCos = 1.0 - (i + 0.5) / N;
@@ -35,9 +36,49 @@ glm::vec3 randomHemisphere(double i, double N, double* NoV = nullptr) {
 	return glm::vec3(thetaCos * phiSin, thetaSin * phiSin, phiCos);
 }
 
-int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
+std::vector<std::wstring> ParseCommandArgs(LPWSTR lpCmdLine) {
+  std::vector<std::wstring> args;
+  std::wstring cmdLine(lpCmdLine);
+  std::wstringstream argStream;
+  size_t argSize = 0;
+  bool inQuotes = false;
+
+  for (size_t i = 0; i < cmdLine.length(); ++i) {
+    if (cmdLine[i] == L'\"') {
+      inQuotes = !inQuotes;
+      continue;
+    }
+    if (std::iswspace(cmdLine[i]) && !inQuotes) {
+      if (argSize != 0) {
+        args.push_back(argStream.str());
+        argStream.clear();
+        argSize = 0;
+      }
+
+      continue;
+    }
+
+    argStream << cmdLine[i];
+    ++argSize;
+  }
+
+  if (argSize != 0) {
+    args.push_back(argStream.str());
+  }
+
+  return args;
+}
+void HandleCommandArgs(std::vector<std::wstring> args) {
+  if (args.size() >= 1) {
+    Flame::Engine::SetWorkingDirectory(args[0]);
+    std::wcout << "Directory was set to: \"" << args[0] << '\"' << '\n';
+  }
+}
+
+int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR lpCmdLine, _In_ int) {
   Console::Get()->RedirectStdHandles();
 
+  HandleCommandArgs(ParseCommandArgs(lpCmdLine));
   Flame::Engine::Init();
 
   // Generation
@@ -48,7 +89,7 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
 
   for (int i = 1; i <= count; ++i) {
     double NoV = 0.0f;
-    glm::vec3 coord(randomHemisphere(double(i), double(count), &NoV));
+    glm::vec3 coord(RandomHemisphere(double(i), double(count), &NoV));
     coords.emplace_back(coord.x, coord.y);
     //coords.emplace_back(coord.x, coord.z);
     coords3d.emplace_back(coord);

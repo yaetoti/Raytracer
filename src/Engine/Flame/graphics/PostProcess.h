@@ -1,7 +1,8 @@
 #pragma once
 
-#include "Flame/graphics/shaders/PixelShader.h"
-#include "Flame/graphics/shaders/VertexShader.h"
+#include <Flame/engine/ShaderPipeline.h>
+#include <Flame/engine/ShaderType.h>
+
 #include "Flame/graphics/DxContext.h"
 
 namespace Flame {
