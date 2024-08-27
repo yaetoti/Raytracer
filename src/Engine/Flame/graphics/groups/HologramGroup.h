@@ -1,6 +1,7 @@
 #pragma once
 #include <memory>
 #include <vector>
+#include <Flame/engine/ShaderPipeline.h>
 #include <glm/glm.hpp>
 
 #include "Flame/engine/TransformSystem.h"
@@ -58,11 +59,7 @@ namespace Flame {
     VertexBuffer<HologramInstanceData::ShaderData> m_instanceBuffer;
     bool m_instanceBufferDirty = true;
 
-    VertexShader m_vertexShader;
-    PixelShader m_pixelShader;
-    GeometryShader m_geometryShader;
-    HullShader m_hullShader;
-    DomainShader m_domainShader;
+    ShaderPipeline m_pipeline;
 
     inline static const wchar_t* kShaderPath = L"Assets/Shaders/hologram.hlsl";
   };

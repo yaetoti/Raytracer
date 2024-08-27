@@ -2,6 +2,7 @@
 #include <d3d11.h>
 #include <memory>
 #include <vector>
+#include <Flame/engine/ShaderPipeline.h>
 #include <glm/glm.hpp>
 
 #include "Flame/engine/TransformSystem.h"
@@ -53,8 +54,7 @@ namespace Flame {
     ConstantBuffer<OpaqueMeshData> m_meshMatrixBuffer;
     bool m_instanceBufferDirty = true;
 
-    VertexShader m_vertexShader;
-    PixelShader m_pixelShader;
+    ShaderPipeline m_pipeline;
 
     inline static const wchar_t* kShaderPath = L"Assets/Shaders/opaque.hlsl";
     inline static const wchar_t* kFlashlightTexturePath = L"Assets/Textures/flashlight_1.dds";

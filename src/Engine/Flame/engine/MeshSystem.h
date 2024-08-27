@@ -56,10 +56,10 @@ namespace Flame {
     TextureOnlyGroup m_textureOnlyGroup;
     EmissionOnlyGroup m_emissionOnlyGroup;
     // Skybox
-    VertexShader m_skyVertexShader;
-    PixelShader m_skyPixelShader;
+    ShaderPipeline m_skyboxPipeline;
     ID3D11ShaderResourceView* m_textureView;
 
     static constexpr const wchar_t* kSkyboxPath = L"Assets/Textures/night_street.dds";
-  };  
+    static constexpr const wchar_t* kSkyShaderPath = L"Assets/Shaders/sky.hlsl";
+  };
 }

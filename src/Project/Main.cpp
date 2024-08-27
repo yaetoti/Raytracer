@@ -156,6 +156,7 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
 
   std::cout << "Press any key to continue..." << '\n';
   Console::Get()->Pause();
+  std::cout << "Loading..." << '\n';
 
   {
     Application application;
