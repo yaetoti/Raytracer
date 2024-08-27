@@ -88,6 +88,24 @@ namespace Flame {
       return irradiance / SolidAngle(radius, distance);
     }
 
+    static glm::vec3 HsvToRgb(const glm::vec3& hsv) {
+      int i = int(std::floor(hsv.x * 6));
+      float f = hsv.x * 6 - i;
+      float p = hsv.z * (1 - hsv.y);
+      float q = hsv.z * (1 - f * hsv.y);
+      float t = hsv.z * (1 - (1 - f) * hsv.y);
+
+      switch(i % 6){
+        case 0: return glm::vec3(hsv.z, t, p);
+        case 1: return glm::vec3(q, hsv.z, p);
+        case 2: return glm::vec3(p, hsv.z, t);
+        case 3: return glm::vec3(p, q, hsv.z);
+        case 4: return glm::vec3(t, p, hsv.z);
+        case 5: return glm::vec3(hsv.z, p, q);
+        default: return {};
+      }
+    }
+
     // GLM temporary replacement
     static glm::mat4 Perspective(float fov, float aspect, float near, float far) {
       float ctgHalfFov = glm::cot(fov * 0.5f);
