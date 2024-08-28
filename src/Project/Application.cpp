@@ -218,7 +218,7 @@ void Application::Init() {
     glm::vec3(0.0f, 0.0f, 1.0f),
     glm::vec3(0.0f, 1.0f, 0.0f),
     glm::vec3(1.0f, 0.0f, 0.0f),
-    MathUtils::RadianceFromIrradiance(MathUtils::ColorFromHex(0xBBBBBB), flashlightRadius, 5.0f),
+    MathUtils::RadianceFromIrradiance(MathUtils::ColorFromHex(0xFFFFFF), flashlightRadius, 15.0f),
     flashlightRadius,
     glm::cos(glm::radians(20.0f)),
     glm::cos(glm::radians(25.0f))
