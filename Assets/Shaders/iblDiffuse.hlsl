@@ -5,6 +5,8 @@ TextureCube<float4> skyTexture : register(t0);
 cbuffer IblBuffer : register(b13) {
   float4x4 g_viewMatInv;
   float4 g_normal;
+  float g_cubemapSize;
+  float3 IblBufferPadding0;
 };
 
 struct VSOutput {
@@ -16,7 +18,7 @@ struct VSOutput {
 
 VSOutput VSMain(uint vertexId : SV_VERTEXID) {
   VSOutput result;
-  result.normal = g_normal;
+  result.normal = g_normal.xyz;
 
   // TopLeft
   if (vertexId == 0) {
@@ -90,23 +92,32 @@ float3x3 BasisFromDir(float3 dir)
   return rotation;
 }
 
-static const uint samples = 1000;
+// Determing which mip level to read in cubemap sampling with uniform/importance sampling
+float HemisphereMip(float sampleProbability, float cubemapSize)
+{
+  float hemisphereTexels = cubemapSize * cubemapSize * 3;
+  float log4 = 0.5 * log2(sampleProbability * hemisphereTexels);
+  return log4;
+}
+
+static const uint kSamples = 1000000;
+static const float kProbability = 1 / (2 * PI);
 
 float4 PSMain(VSOutput input) : SV_TARGET {
   float3 light = 0;
   float3 normal = normalize(input.cameraToPixelDir);
   float3x3 basis = BasisFromDir(normal);
 
-  for (uint i = 0; i < samples; ++i) {
+  for (uint i = 0; i < kSamples; ++i) {
     float NdotV;
-    float3 lightDir = normalize(mul(RandomHemisphere(NdotV, i, samples), basis));
-    float3 irradiance = skyTexture.Sample(g_anisotropicWrap, lightDir);
+    float3 lightDir = normalize(mul(RandomHemisphere(NdotV, i, kSamples), basis));
+    float3 irradiance = skyTexture.SampleLevel(g_pointWrap, lightDir, HemisphereMip(kProbability, g_cubemapSize));
     float NoL = max(dot(g_normal, lightDir), 0.01);
 
     light += ((irradiance * NdotV) / PI) * (1 - Fresnel(NoL, 0.04));
   }
 
-  light *= (2 * PI) / samples;
+  light *= (2 * PI) / kSamples;
 
   //float3 color = normalize(input.cameraToPixelDir) * 0.5 + 0.5;
   //float3 color = g_normal * 0.5 + 0.5;

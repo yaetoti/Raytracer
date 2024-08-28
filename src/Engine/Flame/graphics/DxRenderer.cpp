@@ -102,7 +102,11 @@ namespace Flame {
 
     // Init skybox shaders
     m_skyboxPipeline.Init(kSkyShaderPath, ShaderType::VERTEX_SHADER | ShaderType::PIXEL_SHADER);
-    m_textureView = TextureManager::Get()->GetTexture(kSkyboxPath)->GetResourceView();
+    {
+      auto texture = TextureManager::Get()->GetTexture(kSkyboxPath);
+      m_skyTextureView = texture->GetResourceView();
+      m_skyTexture = texture->GetResource();
+    }
 
     // Create IBL shader pipelines
     diffuseIblPipeline.Init(L"Assets/Shaders/iblDiffuse.hlsl", ShaderType::VERTEX_SHADER | ShaderType::PIXEL_SHADER);
@@ -211,13 +215,20 @@ namespace Flame {
     };
     UpdateConstantBuffer(0.0f);
 
+    ComPtr<ID3D11Texture2D> texture;
+    result = m_skyTexture->QueryInterface(IID_PPV_ARGS(texture.GetAddressOf()));
+    assert(SUCCEEDED(result));
+    D3D11_TEXTURE2D_DESC desc = {};
+    texture->GetDesc(&desc);
+    diffuseBuffer.data.cubemapSize = float(desc.Width);
+
     dc->RSSetViewports(1, &viewport);
     dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
     dc->VSSetConstantBuffers(13, 1, diffuseBuffer.GetAddressOf());
     dc->PSSetConstantBuffers(13, 1, diffuseBuffer.GetAddressOf());
     dc->VSSetConstantBuffers(0, 1, m_constantBuffer.GetAddressOf());
     dc->PSSetConstantBuffers(0, 1, m_constantBuffer.GetAddressOf());
-    dc->PSSetShaderResources(0, 1, &m_textureView);
+    dc->PSSetShaderResources(0, 1, &m_skyTextureView);
     diffuseIblPipeline.Bind();
     for (uint32_t i = 0; i < 6; ++i) {
       dc->OMSetRenderTargets(1, diffuseRTVs[i].GetAddressOf(), nullptr);

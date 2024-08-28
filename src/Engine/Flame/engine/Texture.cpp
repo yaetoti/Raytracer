@@ -13,7 +13,6 @@ namespace Flame {
       m_resourceView.GetAddressOf()
     );
     assert(SUCCEEDED(result));
-    // TODO Are resources always null if !SUCCEEDED? Possible leak
     return SUCCEEDED(result);
   }
 

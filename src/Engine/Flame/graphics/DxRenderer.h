@@ -16,6 +16,8 @@ namespace Flame {
   struct IblDiffuseData final {
     glm::mat4 viewMatInv;
     glm::vec4 normal;
+    float cubemapSize;
+    float padding0[3];
   };
 
   struct DxRenderer final {
@@ -71,7 +73,8 @@ namespace Flame {
 
     // Skybox
     ShaderPipeline m_skyboxPipeline;
-    ID3D11ShaderResourceView* m_textureView;
+    ID3D11Resource* m_skyTexture;
+    ID3D11ShaderResourceView* m_skyTextureView;
 
     //static constexpr const wchar_t* kSkyboxPath = L"Assets/Textures/night_street.dds";
     static constexpr const wchar_t* kSkyboxPath = L"Assets/Textures/lake_beach.dds";
