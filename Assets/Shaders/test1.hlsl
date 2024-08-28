@@ -16,7 +16,7 @@ struct VSOutput {
 
 VSOutput VSMain(uint vertexId : SV_VERTEXID) {
   VSOutput result;
-  result.normal = g_normal;
+  result.normal = mul(g_normal, g_viewMatInv);
 
   // TopLeft
   if (vertexId == 0) {
@@ -54,65 +54,10 @@ VSOutput VSMain(uint vertexId : SV_VERTEXID) {
   return result;
 }
 
-// Fibonacci hemisphere point uniform distribution
-float3 RandomHemisphere(out float NdotV, float i, float N) {
-  const float GOLDEN_RATIO = (1.0 + sqrt(5.0)) / 2.0;
-  float theta = 2.0 * PI * i / GOLDEN_RATIO;
-  float phiCos = NdotV = 1.0 - (i + 0.5) / N;
-  float phiSin = sqrt(1.0 - phiCos * phiCos);
-  float thetaCos, thetaSin;
-  sincos(theta, thetaSin, thetaCos);
-  return float3(thetaCos * phiSin, thetaSin * phiSin, phiCos);
-}
-
-// Schlick's approximation of Fresnel reflectance
-float3 Fresnel(float NoL, float3 F0) {
-  return F0 + (1 - F0) * pow(1 - NoL, 5);
-}
-
-// Frisvad with z == -1 problem avoidance
-void BasisFromDir(out float3 right, out float3 top, in float3 dir)
-{
-  float k = 1.0 / max(1.0 + dir.z, 0.00001);
-  float a =  dir.y * k;
-  float b =  dir.y * a;
-  float c = -dir.x * a;
-  right = float3(dir.z + b, c, -dir.x);
-  top = float3(c, 1.0 - b, -dir.y);
-}
-
-// Frisvad with z == -1 problem avoidance
-float3x3 BasisFromDir(float3 dir)
-{
-  float3x3 rotation;
-  rotation[2] = dir;
-  BasisFromDir(rotation[0], rotation[1], dir);
-  return rotation;
-}
-
-static const uint samples = 1000;
-
 float4 PSMain(VSOutput input) : SV_TARGET {
-  float3 light = 0;
-  float3 normal = normalize(input.cameraToPixelDir);
-  float3x3 basis = BasisFromDir(normal);
-
-  for (uint i = 0; i < samples; ++i) {
-    float NdotV;
-    float3 lightDir = normalize(mul(RandomHemisphere(NdotV, i, samples), basis));
-    float3 irradiance = skyTexture.Sample(g_anisotropicWrap, lightDir);
-    float NoL = max(dot(g_normal, lightDir), 0.01);
-
-    light += ((irradiance * NdotV) / PI) * (1 - Fresnel(NoL, 0.04));
-  }
-
-  light *= (2 * PI) / samples;
-
-  //float3 color = normalize(input.cameraToPixelDir) * 0.5 + 0.5;
+  float3 color = normalize(input.cameraToPixelDir) * 0.5 + 0.5;
   //float3 color = g_normal * 0.5 + 0.5;
   //return float4(color.r, color.g, color.b, 1.0);
   //return float4(1.0, 0.0, 0.0, 1.0);
-
-  //return skyTexture.Sample(g_anisotropicWrap, input.cameraToPixelDir);
-  return float4(light, 1.0);
+  return skyTexture.Sample(g_anisotropicWrap, input.cameraToPixelDir);
 }
