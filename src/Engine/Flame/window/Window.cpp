@@ -231,15 +231,6 @@ namespace Flame {
       }
     }
 
-    D3D11_VIEWPORT viewport;
-    viewport.Width = static_cast<float>(m_width);
-    viewport.Height = static_cast<float>(m_height);
-    viewport.MinDepth = 0.0f;
-    viewport.MaxDepth = 1.0f;
-    viewport.TopLeftX = 0.0f;
-    viewport.TopLeftY = 0.0f;
-    DxContext::Get()->d3d11DeviceContext->RSSetViewports(1, &viewport);
-
     // \D3D
 
     InitHandlers();
@@ -338,6 +329,17 @@ namespace Flame {
 
   uint32_t Window::GetResolutionDivisor() const {
     return m_resolutionDivisor;
+  }
+
+  D3D11_VIEWPORT Window::GetViewport() const {
+    return {
+      0.0f,
+      0.0f,
+      static_cast<float>(m_width),
+      static_cast<float>(m_height),
+      0.0f,
+      1.0f,
+    };
   }
 
 
@@ -491,16 +493,6 @@ namespace Flame {
         return;
       }
     }
-
-    // Set viewport
-    D3D11_VIEWPORT viewport;
-    viewport.Width = static_cast<float>(m_width);
-    viewport.Height = static_cast<float>(m_height);
-    viewport.MinDepth = 0.0f;
-    viewport.MaxDepth = 1.0f;
-    viewport.TopLeftX = 0.0f;
-    viewport.TopLeftY = 0.0f;
-    DxContext::Get()->d3d11DeviceContext->RSSetViewports(1, &viewport);
   }
 
   void Window::InitHandlers() {

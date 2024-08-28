@@ -5,12 +5,19 @@
 #include "Flame/window/Window.h"
 
 #include <memory>
+#include <Flame/engine/ShaderPipeline.h>
 #include <wrl/client.h>
 
 #include "buffers/ConstantBuffer.h"
+#include "buffers/VertexBuffer.h"
 #include "Flame/camera/AlignedCamera.h"
 
 namespace Flame {
+  struct IblDiffuseData final {
+    glm::mat4 viewMatInv;
+    glm::vec4 normal;
+  };
+
   struct DxRenderer final {
     template <typename T>
     using ComPtr = Microsoft::WRL::ComPtr<T>;
@@ -43,6 +50,10 @@ namespace Flame {
     void SetEvFactor(float evFactor);
 
   private:
+    void RenderSkybox();
+    void UpdateConstantBuffer(float time);
+
+  private:
     std::shared_ptr<Window> m_window;
     std::shared_ptr<AlignedCamera> m_camera;
     ComPtr<ID3D11RasterizerState> m_rasterizerState;
@@ -57,5 +68,19 @@ namespace Flame {
     bool m_isNormalVisMode = false;
 
     float m_evFactor = 0.0f;
+
+    // Skybox
+    ShaderPipeline m_skyboxPipeline;
+    ID3D11ShaderResourceView* m_textureView;
+
+    //static constexpr const wchar_t* kSkyboxPath = L"Assets/Textures/night_street.dds";
+    static constexpr const wchar_t* kSkyboxPath = L"Assets/Textures/lake_beach.dds";
+    static constexpr const wchar_t* kSkyShaderPath = L"Assets/Shaders/sky.hlsl";
+
+    // Diffuse IBL
+    ComPtr<ID3D11Texture2D> diffuseReflectionTexture;
+    ComPtr<ID3D11ShaderResourceView> diffuseReflectionView;
+    ConstantBuffer<IblDiffuseData> diffuseBuffer;
+    ShaderPipeline diffuseIblPipeline;
   };
 }

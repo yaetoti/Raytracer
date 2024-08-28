@@ -196,7 +196,8 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR lpCmdLine, _
   // std::cout << "PointUV:" << pointUV << '\n';
 
   std::cout << "Press any key to continue..." << '\n';
-  Console::Get()->Pause();
+  // TODO: Not working with CLion debug
+  //Console::Get()->Pause();
   std::cout << "Loading..." << '\n';
 
   {

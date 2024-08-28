@@ -56,7 +56,6 @@ void Application::Run() {
 }
 
 void Application::Init() {
-  m_dxRenderer->Init();
   m_window->GetDispatcher().AddListener(this);
   m_window->CreateResources();
   m_window->Show(SW_SHOW);
@@ -224,6 +223,8 @@ void Application::Init() {
     glm::cos(glm::radians(20.0f)),
     glm::cos(glm::radians(25.0f))
   ));
+
+  m_dxRenderer->Init();
 }
 
 void Application::Update(float deltaTime) {
