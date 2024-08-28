@@ -137,7 +137,7 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR lpCmdLine, _
     auto coord = coords3d[i];
     result += double(NoVs[i]);
   }
-  std::cout << "PI = " << result * (2.0 * glm::pi<double>() / double(count)) << '\n';
+  std::cout << "[PiMeter]: Today PI is " << result * (2.0 * glm::pi<double>() / double(count)) << '\n';
 
   // TODO Get ViewMatrix:
   // 1. Manually (rows are front, right and up axes)

@@ -21,7 +21,8 @@ VSOutput VSMain(uint vertexId : SV_VERTEXID) {
   // TopLeft
   if (vertexId == 0) {
     result.position = float4(-1.0, 3.0, 1.0, 1.0);
-    result.cameraToPixelDir = mul(g_frustumTL, g_viewMatInv).xyz;
+    result.cameraToPixelDir = mul(float4(-1.0f, 3.0f, 1.0f, 0.0f), g_viewMatInv).xyz;
+    //result.cameraToPixelDir = mul(g_frustumTL, g_viewMatInv).xyz;
     //result.cameraToPixelDir = mul(g_viewMatInv, g_frustumTL).xyz;
     //result.cameraToPixelDir = g_frustumTL.xyz;
     result.uv = float2(0, 2);
@@ -31,7 +32,8 @@ VSOutput VSMain(uint vertexId : SV_VERTEXID) {
   // BottomRight
   if (vertexId == 1) {
     result.position = float4(3.0, -1.0, 1.0, 1.0);
-    result.cameraToPixelDir = mul(g_frustumBR, g_viewMatInv).xyz;
+    result.cameraToPixelDir = mul(float4(3.0, -1.0, 1.0, 0.0), g_viewMatInv).xyz;
+    //result.cameraToPixelDir = mul(g_frustumBR, g_viewMatInv).xyz;
     //result.cameraToPixelDir = mul(g_viewMatInv, g_frustumBR).xyz;
     //result.cameraToPixelDir = g_frustumBR.xyz;
     result.uv = float2(2, 0);
@@ -41,7 +43,8 @@ VSOutput VSMain(uint vertexId : SV_VERTEXID) {
   // BottomLeft
   if (vertexId == 2) {
     result.position = float4(-1.0, -1.0, 1.0, 1.0);
-    result.cameraToPixelDir = mul(g_frustumBL, g_viewMatInv).xyz;
+    result.cameraToPixelDir = mul(float4(-1.0, -1.0, 1.0, 0.0), g_viewMatInv).xyz;
+    //result.cameraToPixelDir = mul(g_frustumBL, g_viewMatInv).xyz;
     //result.cameraToPixelDir = mul(g_viewMatInv, g_frustumBL).xyz;
     //result.cameraToPixelDir = g_frustumBL.xyz;
     result.uv = float2(0, 0);
@@ -56,5 +59,5 @@ float4 PSMain(VSOutput input) : SV_TARGET {
   //float3 color = g_normal * 0.5 + 0.5;
   //return float4(color.r, color.g, color.b, 1.0);
   //return float4(1.0, 0.0, 0.0, 1.0);
-  return skyTexture.Sample(g_pointWrap, input.cameraToPixelDir);
+  return skyTexture.Sample(g_anisotropicWrap, input.cameraToPixelDir);
 }

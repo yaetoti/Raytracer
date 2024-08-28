@@ -39,5 +39,5 @@ VSOutput VSMain(uint vertexId : SV_VERTEXID) {
 }
 
 float4 PSMain(VSOutput input) : SV_TARGET {
-  return skyTexture.Sample(g_pointWrap, input.cameraToPixelDir);
+  return skyTexture.Sample(g_anisotropicWrap, input.cameraToPixelDir);
 }

@@ -95,6 +95,11 @@ namespace Flame {
       assert(SUCCEEDED(result));
     }
 
+    // Set Samplers
+    dc->PSSetSamplers(0, 1, m_pointSampler.GetAddressOf());
+    dc->PSSetSamplers(1, 1, m_linearSampler.GetAddressOf());
+    dc->PSSetSamplers(2, 1, m_anisotropicSampler.GetAddressOf());
+
     // Init skybox shaders
     m_skyboxPipeline.Init(kSkyShaderPath, ShaderType::VERTEX_SHADER | ShaderType::PIXEL_SHADER);
     m_textureView = TextureManager::Get()->GetTexture(kSkyboxPath)->GetResourceView();
@@ -105,9 +110,10 @@ namespace Flame {
     // Generate IBL textures
 
     // Generate TextureCube
+    uint32_t textureSize = 8;
     D3D11_TEXTURE2D_DESC diffuseDesc {
-      1024,
-      1024,
+      textureSize,
+      textureSize,
       1,
       6,
       DXGI_FORMAT_R16G16B16A16_FLOAT,
@@ -169,19 +175,19 @@ namespace Flame {
     };
 
     glm::vec4 right[6] = {
-      { 0, 0, 1, 0 },
       { 0, 0, -1, 0 },
+      { 0, 0, 1, 0 },
+      { 1, 0, 0, 0 },
       { 1, 0, 0, 0 },
       { 1, 0, 0, 0 },
       { -1, 0, 0, 0 },
-      { 1, 0, 0, 0 },
     };
 
     glm::vec4 up[6] = {
       { 0, 1, 0, 0 },
       { 0, 1, 0, 0 },
-      { 0, 0, 1, 0 },
       { 0, 0, -1, 0 },
+      { 0, 0, 1, 0 },
       { 0, 1, 0, 0 },
       { 0, 1, 0, 0 },
     };
@@ -198,8 +204,8 @@ namespace Flame {
     D3D11_VIEWPORT viewport {
       0.0f,
       0.0f,
-      1024.0f,
-      1024.0f,
+      float(textureSize),
+      float(textureSize),
       0.0f,
       1.0f,
     };
@@ -266,11 +272,6 @@ namespace Flame {
     float clearColor[4] = { 0.12f, 0.12f, 0.12f, 1.0f };
     dc->ClearRenderTargetView(targetViewHdr.Get(), clearColor);
     dc->ClearDepthStencilView(depthStencilView.Get(), D3D11_CLEAR_DEPTH, 0.0f, 0);
-
-    // Set Samplers
-    dc->PSSetSamplers(0, 1, m_pointSampler.GetAddressOf());
-    dc->PSSetSamplers(1, 1, m_linearSampler.GetAddressOf());
-    dc->PSSetSamplers(2, 1, m_anisotropicSampler.GetAddressOf());
 
     MeshSystem::Get()->Render(deltaTime);
     RenderSkybox();
