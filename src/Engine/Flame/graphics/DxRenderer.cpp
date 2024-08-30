@@ -113,11 +113,12 @@ namespace Flame {
     // Generate IBL textures
     ReflectionCapture capture;
     capture.Init();
-    m_diffuseTexture = capture.GenerateDiffuseTexture(8, m_skyTextureView);
+    //m_diffuseTexture = capture.GenerateDiffuseTexture(256, m_skyTextureView);
+    m_specularTexture = capture.GenerateSpecularTexture(1024, m_skyTextureView);
 
     TextureManager::SaveToDDS(
       Engine::GetDirectory(L"cubemap.dds"),
-      m_diffuseTexture->GetResource(),
+      m_specularTexture->GetResource(),
       TextureManager::FileFormat(DXGI_FORMAT_R16G16B16A16_FLOAT),
       false
     );
@@ -205,7 +206,8 @@ namespace Flame {
     m_skyboxPipeline.Bind();
     dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
     //dc->PSSetShaderResources(0, 1, &m_skyTextureView);
-    dc->PSSetShaderResources(0, 1, m_diffuseTexture->GetResourceViewAddress());
+    //dc->PSSetShaderResources(0, 1, m_diffuseTexture->GetResourceViewAddress());
+    dc->PSSetShaderResources(0, 1, m_specularTexture->GetResourceViewAddress());
     dc->Draw(3, 0);
   }
 

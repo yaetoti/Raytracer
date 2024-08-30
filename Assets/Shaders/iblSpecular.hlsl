@@ -1,12 +1,15 @@
-#include "globals.hlsl"
+#include "samplers.hlsli"
+
+static const float PI = 3.1415926535897;
 
 TextureCube<float4> skyTexture : register(t0);
 
-cbuffer IblBuffer : register(b13) {
+cbuffer IblBuffer : register(b0) {
   float4x4 g_viewMatInv;
   float4 g_normal;
-  float g_cubemapSize;
-  float3 IblBufferPadding0;
+  float g_roughness;
+  uint g_samples;
+  float2 g_padding0;
 };
 
 struct VSOutput {
@@ -138,42 +141,47 @@ float3 RandomGGX(out float NdotH, uint index, uint N, float rough4, float3x3 rot
 
 // GGX normal distribution,
 // Real-Time Rendering 4th Edition, page 340, equation 9.41
-float Ndf(float rough, float NoH) {
-  float denom = NoH * NoH * (pow(rough, 4) - 1.0) + 1.0;
+float Ndf(float rough2, float NoH) {
+  float denom = NoH * NoH * (rough2 * rough2 - 1.0) + 1.0;
   denom = PI * denom * denom;
-  return pow(rough, 2) / denom;
+  return rough2 / denom;
 }
 
-static const uint kSamples = 1000000;
+static const uint kSamples = 1000;
 static const float kProbability = 1 / kSamples;
 
 float4 PSMain(VSOutput input) : SV_TARGET {
   float3 light = 0;
-  float3 normal = normalize(input.cameraToPixelDir);
-  float3x3 basis = BasisFromDir(normal);
+  float3 viewDir = normalize(input.cameraToPixelDir);
+  float3 normal = viewDir;
+  float3x3 basis = BasisFromDir(input.normal);
 
-  uint numSamples = 0;
+  uint width;
+  uint height;
+  uint levels;
+  skyTexture.GetDimensions(0, width, height, levels);
+  float cubemapSize = max(width, height);
+
   for (uint i = 0; i < kSamples; ++i) {
     float NdotH;
-    float3 halfVector = mul(RandomGGX(NdotH, i, kSamples, /* TODO roughness */), basis);
-    float3 lightDir = reflect(input.normal, halfVector);
-    float ndf = Ndf(NdotH);
+    float3 halfVector = RandomGGX(NdotH, i, kSamples, pow(g_roughness, 4), basis);
+    float3 lightDir = reflect(viewDir, halfVector);
+    float ndf = Ndf(g_roughness * g_roughness, NdotH);
     float sampleProbability = (4 / (2 * PI * ndf)) * kProbability;
-    float3 irradiance = skyTexture.SampleLevel(g_pointWrap, lightDir, HemisphereMip(sampleProbability, g_cubemapSize));
+    float3 irradiance = skyTexture.SampleLevel(g_anisotropicWrap, lightDir, HemisphereMip(sampleProbability, cubemapSize));
 
-    if (dot(g_normal.xyz, lightDir) <= 0.01) {
+    if (dot(g_normal.xyz, lightDir) <= 0.001) {
       continue;
     }
 
-    ++numSamples;
-    light += (irradiance * ndf * 0.25) * ((4 * dot(normal, halfVector)) / (ndf * NdotH))
+    light += (irradiance * ndf * 0.25) * ((4 * dot(normal, halfVector)) / (ndf * NdotH));
   }
 
-  light /= numSamples;
+  light /= kSamples;
 
   //float3 color = normalize(input.cameraToPixelDir) * 0.5 + 0.5;
-  //float3 color = g_normal * 0.5 + 0.5;
-  //return float4(color.r, color.g, color.b, 1.0);
+  //float3 color = abs(normal) * 0.5 + 0.5;
+  //return float4(pow(color, 8), 1.0);
   //return float4(1.0, 0.0, 0.0, 1.0);
 
   //return skyTexture.Sample(g_anisotropicWrap, input.cameraToPixelDir);

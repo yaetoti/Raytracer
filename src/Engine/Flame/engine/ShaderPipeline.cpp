@@ -65,6 +65,7 @@ namespace Flame {
   }
 
   void ShaderPipeline::Compile() {
+    // TODO IL should also be reset because that's why.
     m_vertexShader.Reset();
     m_hullShader.Reset();
     m_domainShader.Reset();

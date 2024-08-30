@@ -1,6 +1,6 @@
 #pragma once
 #include <array>
-#include <complex.h>
+#include <memory>
 #include <vector>
 #include <Flame/graphics/buffers/ConstantBuffer.h>
 #include <wrl/client.h>
@@ -18,11 +18,16 @@ namespace Flame {
     struct IblDiffuseData final {
       glm::mat4 viewMatInv;
       glm::vec4 normal;
+      uint32_t samples;
+      float padding0[3];
     };
 
     struct IblSpecularData final {
       glm::mat4 viewMatInv;
       glm::vec4 normal;
+      float roughness;
+      uint32_t samples;
+      float padding0[2];
     };
 
     void Init();
@@ -32,9 +37,10 @@ namespace Flame {
     std::shared_ptr<Texture> GenerateSpecularTexture(uint32_t textureSize, ID3D11ShaderResourceView* skyboxView);
 
   private:
-    static std::shared_ptr<Texture> CreateCubemap(uint32_t textureSize, DXGI_FORMAT format);
-    static std::array<ComPtr<ID3D11RenderTargetView>, 6> CreateCubemapRtv(ID3D11Resource* texture, DXGI_FORMAT format);
+    static std::shared_ptr<Texture> CreateCubemap(uint32_t textureSize, DXGI_FORMAT format, uint32_t mipLevels);
+    static std::array<ComPtr<ID3D11RenderTargetView>, 6> CreateCubemapRtv(ID3D11Resource* texture, DXGI_FORMAT format, uint32_t mipLevel);
     static std::array<glm::mat4, 6> GenerateTransformMatrices();
+    static uint32_t GetTextureSizeLevel(uint32_t size, uint32_t mipLevel);
 
   private:
     // Diffuse IBL

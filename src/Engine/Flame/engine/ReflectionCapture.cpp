@@ -6,8 +6,8 @@ namespace Flame {
   void ReflectionCapture::Init() {
     diffusePipeline.Init(L"Assets/Shaders/iblDiffuse.hlsl", ShaderType::VERTEX_SHADER | ShaderType::PIXEL_SHADER);
     diffuseBuffer.Init();
-    //specularPipeline.Init(L"Assets/Shaders/iblSpecular.hlsl", ShaderType::VERTEX_SHADER | ShaderType::PIXEL_SHADER);
-    //specularBuffer.Init();
+    specularPipeline.Init(L"Assets/Shaders/iblSpecular.hlsl", ShaderType::VERTEX_SHADER | ShaderType::PIXEL_SHADER);
+    specularBuffer.Init();
   }
 
   void ReflectionCapture::Cleanup() {
@@ -21,9 +21,10 @@ namespace Flame {
     auto device = DxContext::Get()->d3d11Device;
     auto dc = DxContext::Get()->d3d11DeviceContext;
 
-    auto texture = CreateCubemap(textureSize, DXGI_FORMAT_R16G16B16A16_FLOAT);
-    auto rtvArray = CreateCubemapRtv(texture->GetResource(), DXGI_FORMAT_R16G16B16A16_FLOAT);
+    auto texture = CreateCubemap(textureSize, DXGI_FORMAT_R16G16B16A16_FLOAT, 1);
+    auto rtvArray = CreateCubemapRtv(texture->GetResource(), DXGI_FORMAT_R16G16B16A16_FLOAT, 0);
     auto transforms = GenerateTransformMatrices();
+    diffuseBuffer.data.samples = 1024;
 
     // Render onto faces
     D3D11_VIEWPORT viewport {
@@ -55,37 +56,45 @@ namespace Flame {
     auto device = DxContext::Get()->d3d11Device;
     auto dc = DxContext::Get()->d3d11DeviceContext;
 
-    auto texture = CreateCubemap(textureSize, DXGI_FORMAT_R16G16B16A16_FLOAT);
-    auto rtvArray = CreateCubemapRtv(texture->GetResource(), DXGI_FORMAT_R16G16B16A16_FLOAT);
+    auto texture = CreateCubemap(textureSize, DXGI_FORMAT_R16G16B16A16_FLOAT, 0);
     auto transforms = GenerateTransformMatrices();
-
-    // Render onto faces
-    D3D11_VIEWPORT viewport {
-      0.0f,
-      0.0f,
-      float(textureSize),
-      float(textureSize),
-      0.0f,
-      1.0f,
-    };
-    dc->RSSetViewports(1, &viewport);
+    specularBuffer.data.samples = 1024;
     dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
     dc->VSSetConstantBuffers(0, 1, specularBuffer.GetAddressOf());
     dc->PSSetConstantBuffers(0, 1, specularBuffer.GetAddressOf());
     dc->PSSetShaderResources(0, 1, &skyboxView);
     specularPipeline.Bind();
-    for (uint32_t i = 0; i < 6; ++i) {
-      dc->OMSetRenderTargets(1, rtvArray[i].GetAddressOf(), nullptr);
-      specularBuffer.data.normal = kCubemapFront[i];
-      specularBuffer.data.viewMatInv = transforms[i];
-      specularBuffer.ApplyChanges();
-      dc->Draw(3, 0);
+
+    uint32_t mipLevels = static_cast<uint32_t>(std::ceilf(std::log2f(textureSize) + 1.0f));
+    for (uint32_t mipLevel = 0; mipLevel < mipLevels; ++mipLevel) {
+      uint32_t levelTextureSize = GetTextureSizeLevel(textureSize, mipLevel);
+
+      auto rtvArray = CreateCubemapRtv(texture->GetResource(), DXGI_FORMAT_R16G16B16A16_FLOAT, mipLevel);
+      // Render onto faces
+      D3D11_VIEWPORT viewport {
+        0.0f,
+        0.0f,
+        float(levelTextureSize),
+        float(levelTextureSize),
+        0.0f,
+        1.0f,
+      };
+      dc->RSSetViewports(1, &viewport);
+
+      for (uint32_t i = 0; i < 6; ++i) {
+        dc->OMSetRenderTargets(1, rtvArray[i].GetAddressOf(), nullptr);
+        specularBuffer.data.normal = kCubemapFront[i];
+        specularBuffer.data.viewMatInv = transforms[i];
+        specularBuffer.data.roughness = std::max(float(mipLevel) / float(mipLevels), 0.001f);
+        specularBuffer.ApplyChanges();
+        dc->Draw(3, 0);
+      }
     }
 
     return texture;
   }
 
-  std::shared_ptr<Texture> ReflectionCapture::CreateCubemap(uint32_t textureSize, DXGI_FORMAT format) {
+  std::shared_ptr<Texture> ReflectionCapture::CreateCubemap(uint32_t textureSize, DXGI_FORMAT format, uint32_t mipLevels) {
     auto device = DxContext::Get()->d3d11Device;
     auto dc = DxContext::Get()->d3d11DeviceContext;
     HRESULT result;
@@ -97,7 +106,7 @@ namespace Flame {
     D3D11_TEXTURE2D_DESC desc {
       textureSize,
       textureSize,
-      1,
+      mipLevels,
       6,
       format,
       { 1, 0 },
@@ -129,7 +138,7 @@ namespace Flame {
     return std::make_shared<Texture>(std::move(texture), std::move(textureView));
   }
 
-  std::array<ReflectionCapture::ComPtr<ID3D11RenderTargetView>, 6> ReflectionCapture::CreateCubemapRtv(ID3D11Resource* texture, DXGI_FORMAT format) {
+  std::array<ReflectionCapture::ComPtr<ID3D11RenderTargetView>, 6> ReflectionCapture::CreateCubemapRtv(ID3D11Resource* texture, DXGI_FORMAT format, uint32_t mipLevel) {
     auto device = DxContext::Get()->d3d11Device;
     HRESULT result;
     std::array<ComPtr<ID3D11RenderTargetView>, 6> rtvs;
@@ -138,7 +147,7 @@ namespace Flame {
       D3D11_RENDER_TARGET_VIEW_DESC rtvDesc {};
       rtvDesc.Format = format;
       rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2DARRAY;
-      rtvDesc.Texture2DArray.MipSlice = 0;
+      rtvDesc.Texture2DArray.MipSlice = mipLevel;
       rtvDesc.Texture2DArray.ArraySize = 1;
       rtvDesc.Texture2DArray.FirstArraySlice = i;
 
@@ -163,5 +172,17 @@ namespace Flame {
     }
 
     return matrices;
+  }
+
+  uint32_t ReflectionCapture::GetTextureSizeLevel(uint32_t size, uint32_t mipLevel) {
+    if (mipLevel == 0) {
+      return size;
+    }
+
+    if (size == 1) {
+      return size;
+    }
+
+    return GetTextureSizeLevel(uint32_t(float(size) * 0.5f), mipLevel - 1);
   }
 }

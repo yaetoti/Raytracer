@@ -7,8 +7,8 @@ TextureCube<float4> skyTexture : register(t0);
 cbuffer IblBuffer : register(b0) {
   float4x4 g_viewMatInv;
   float4 g_normal;
-  float g_cubemapSize;
-  float3 IblBufferPadding0;
+  uint g_samples;
+  float3 g_padding0;
 };
 
 struct VSOutput {
@@ -102,7 +102,7 @@ float HemisphereMip(float sampleProbability, float cubemapSize)
   return log4;
 }
 
-static const uint kSamples = 1000000;
+static const uint kSamples = 1000;
 //static const float kProbability = 1 / (2 * PI);
 static const float kProbability = 1 / kSamples;
 
@@ -111,11 +111,17 @@ float4 PSMain(VSOutput input) : SV_TARGET {
   float3 normal = normalize(input.cameraToPixelDir);
   float3x3 basis = BasisFromDir(normal);
 
+  uint width;
+  uint height;
+  uint levels;
+  skyTexture.GetDimensions(0, width, height, levels);
+  float cubemapSize = max(width, height);
+
   for (uint i = 0; i < kSamples; ++i) {
     float NdotV;
     float3 lightDir = mul(RandomHemisphere(NdotV, i, kSamples), basis);
 
-    float3 irradiance = skyTexture.SampleLevel(g_pointWrap, lightDir, HemisphereMip(kProbability, g_cubemapSize));
+    float3 irradiance = skyTexture.SampleLevel(g_pointWrap, lightDir, HemisphereMip(kProbability, cubemapSize));
     float NoL = max(dot(g_normal, lightDir), 0.01);
 
     light += ((irradiance * NdotV) / PI) * (1 - Fresnel(NoL, 0.04));
