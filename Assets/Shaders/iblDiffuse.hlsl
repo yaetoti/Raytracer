@@ -1,8 +1,10 @@
-#include "globals.hlsl"
+#include "samplers.hlsli"
+
+static const float PI = 3.1415926535897;
 
 TextureCube<float4> skyTexture : register(t0);
 
-cbuffer IblBuffer : register(b13) {
+cbuffer IblBuffer : register(b0) {
   float4x4 g_viewMatInv;
   float4 g_normal;
   float g_cubemapSize;

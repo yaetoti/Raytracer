@@ -14,6 +14,7 @@
 #include <limits>
 #include <winnt.h>
 #include <Flame/engine/Engine.h>
+#include <Flame/engine/ReflectionCapture.h>
 #include <Flame/engine/TextureManager.h>
 
 #include "Flame/utils/draggers/IDragger.h"
@@ -109,140 +110,15 @@ namespace Flame {
       m_skyTexture = texture->GetResource();
     }
 
-    // Create IBL shader pipelines
-    diffuseIblPipeline.Init(L"Assets/Shaders/iblDiffuse.hlsl", ShaderType::VERTEX_SHADER | ShaderType::PIXEL_SHADER);
-
     // Generate IBL textures
-
-    // Generate TextureCube
-    uint32_t textureSize = 8;
-    D3D11_TEXTURE2D_DESC diffuseDesc {
-      textureSize,
-      textureSize,
-      1,
-      6,
-      DXGI_FORMAT_R16G16B16A16_FLOAT,
-      { 1, 0 },
-      D3D11_USAGE_DEFAULT,
-      D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE,
-      0,
-      D3D11_RESOURCE_MISC_TEXTURECUBE
-    };
-    result = device->CreateTexture2D(
-      &diffuseDesc,
-      nullptr,
-      diffuseReflectionTexture.GetAddressOf()
-    );
-    assert(SUCCEEDED(result));
-
-    // Create SRV
-    D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = { };
-    srvDesc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
-    srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURECUBE;
-    srvDesc.TextureCube = { 0, 1 };
-
-    result = device->CreateShaderResourceView(
-      diffuseReflectionTexture.Get(),
-      nullptr,
-      diffuseReflectionView.GetAddressOf()
-    );
-    assert(SUCCEEDED(result));
-
-    // Create RTVs
-    ComPtr<ID3D11RenderTargetView> diffuseRTVs[6];
-    for (uint32_t i = 0; i < 6; ++i) {
-      D3D11_RENDER_TARGET_VIEW_DESC rtvDesc {};
-      rtvDesc.Format = diffuseDesc.Format;
-      rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2DARRAY;
-      rtvDesc.Texture2DArray.MipSlice = 0;
-      rtvDesc.Texture2DArray.ArraySize = 1;
-      rtvDesc.Texture2DArray.FirstArraySlice = i;
-
-      result = device->CreateRenderTargetView(
-        diffuseReflectionTexture.Get(),
-        &rtvDesc,
-        diffuseRTVs[i].GetAddressOf()
-      );
-      assert(SUCCEEDED(result));
-    }
-
-    // Create buffer
-    diffuseBuffer.Init();
-
-    // Generate input data
-    glm::vec4 front[6] = {
-      { 1, 0, 0, 0 },
-      { -1, 0, 0, 0 },
-      { 0, 1, 0, 0 },
-      { 0, -1, 0, 0 },
-      { 0, 0, 1, 0 },
-      { 0, 0, -1, 0 },
-    };
-
-    glm::vec4 right[6] = {
-      { 0, 0, -1, 0 },
-      { 0, 0, 1, 0 },
-      { 1, 0, 0, 0 },
-      { 1, 0, 0, 0 },
-      { 1, 0, 0, 0 },
-      { -1, 0, 0, 0 },
-    };
-
-    glm::vec4 up[6] = {
-      { 0, 1, 0, 0 },
-      { 0, 1, 0, 0 },
-      { 0, 0, -1, 0 },
-      { 0, 0, 1, 0 },
-      { 0, 1, 0, 0 },
-      { 0, 1, 0, 0 },
-    };
-
-    glm::mat4 matrices[6];
-    for (uint32_t i = 0; i < 6; ++i) {
-      // It's inversed since glm matrices are column major
-      matrices[i] = glm::transpose(glm::mat4(
-        right[i], up[i], front[i], { 0, 0, 0, 1 }
-      ));
-    }
-
-    // Render onto faces
-    D3D11_VIEWPORT viewport {
-      0.0f,
-      0.0f,
-      float(textureSize),
-      float(textureSize),
-      0.0f,
-      1.0f,
-    };
-    UpdateConstantBuffer(0.0f);
-
-    ComPtr<ID3D11Texture2D> texture;
-    result = m_skyTexture->QueryInterface(IID_PPV_ARGS(texture.GetAddressOf()));
-    assert(SUCCEEDED(result));
-    D3D11_TEXTURE2D_DESC desc = {};
-    texture->GetDesc(&desc);
-    diffuseBuffer.data.cubemapSize = float(desc.Width);
-
-    dc->RSSetViewports(1, &viewport);
-    dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-    dc->VSSetConstantBuffers(13, 1, diffuseBuffer.GetAddressOf());
-    dc->PSSetConstantBuffers(13, 1, diffuseBuffer.GetAddressOf());
-    dc->VSSetConstantBuffers(0, 1, m_constantBuffer.GetAddressOf());
-    dc->PSSetConstantBuffers(0, 1, m_constantBuffer.GetAddressOf());
-    dc->PSSetShaderResources(0, 1, &m_skyTextureView);
-    diffuseIblPipeline.Bind();
-    for (uint32_t i = 0; i < 6; ++i) {
-      dc->OMSetRenderTargets(1, diffuseRTVs[i].GetAddressOf(), nullptr);
-      diffuseBuffer.data.normal = front[i];
-      diffuseBuffer.data.viewMatInv = matrices[i];
-      diffuseBuffer.ApplyChanges();
-      dc->Draw(3, 0);
-    }
+    ReflectionCapture capture;
+    capture.Init();
+    m_diffuseTexture = capture.GenerateDiffuseTexture(8, m_skyTextureView);
 
     TextureManager::SaveToDDS(
       Engine::GetDirectory(L"cubemap.dds"),
-      diffuseReflectionTexture.Get(),
-      TextureManager::FileFormat(DXGI_FORMAT_R16G16B16A16_FLOAT),//::BC6_UNSIGNED,
+      m_diffuseTexture->GetResource(),
+      TextureManager::FileFormat(DXGI_FORMAT_R16G16B16A16_FLOAT),
       false
     );
   }
@@ -329,7 +205,7 @@ namespace Flame {
     m_skyboxPipeline.Bind();
     dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
     //dc->PSSetShaderResources(0, 1, &m_skyTextureView);
-    dc->PSSetShaderResources(0, 1, diffuseReflectionView.GetAddressOf());
+    dc->PSSetShaderResources(0, 1, m_diffuseTexture->GetResourceViewAddress());
     dc->Draw(3, 0);
   }
 

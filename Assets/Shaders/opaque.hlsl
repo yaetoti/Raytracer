@@ -97,21 +97,19 @@ float3 Fresnel(float NoL, float3 F0) {
 
 // Height-correlated Smith G2 for GGX,
 // Filament, 4.4.2 Geometric shadowing
-float Gmf(float rough, float NoV, float NoL)
-{
-	NoV *= NoV;
-	NoL *= NoL;
+float Gmf(float rough, float NoV, float NoL) {
+  NoV *= NoV;
+  NoL *= NoL;
   float rough4 = pow(rough, 4);
-	return 2.0 / (sqrt(1 + rough4 * (1 - NoV) / NoV) + sqrt(1 + rough4 * (1 - NoL) / NoL));
+  return 2.0 / (sqrt(1 + rough4 * (1 - NoV) / NoV) + sqrt(1 + rough4 * (1 - NoL) / NoL));
 }
 
 // GGX normal distribution,
 // Real-Time Rendering 4th Edition, page 340, equation 9.41
-float Ndf(float rough, float NoH)
-{
-	float denom = NoH * NoH * (pow(rough, 4) - 1.0) + 1.0;
-	denom = PI * denom * denom;
-	return pow(rough, 2) / denom;
+float Ndf(float rough, float NoH) {
+  float denom = NoH * NoH * (pow(rough, 4) - 1.0) + 1.0;
+  denom = PI * denom * denom;
+  return pow(rough, 2) / denom;
 }
 
 float SolidAngle(float radius, float distance) {

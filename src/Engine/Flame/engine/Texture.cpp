@@ -5,6 +5,12 @@
 #include <winerror.h>
 
 namespace Flame {
+  Texture::Texture(ComPtr<ID3D11Resource> resource, ComPtr<ID3D11ShaderResourceView> resourceView):
+  m_resource(std::move(resource)),
+  m_resourceView(std::move(resourceView)) {
+
+  }
+
   bool Texture::InitFromFile(const wchar_t* path) {
     HRESULT result = DirectX::CreateDDSTextureFromFile(
       DxContext::Get()->d3d11Device.Get(),

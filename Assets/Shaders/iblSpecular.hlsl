@@ -136,31 +136,40 @@ float3 RandomGGX(out float NdotH, uint index, uint N, float rough4, float3x3 rot
   return mul(H, rotation);
 }
 
+// GGX normal distribution,
+// Real-Time Rendering 4th Edition, page 340, equation 9.41
+float Ndf(float rough, float NoH) {
+  float denom = NoH * NoH * (pow(rough, 4) - 1.0) + 1.0;
+  denom = PI * denom * denom;
+  return pow(rough, 2) / denom;
+}
+
 static const uint kSamples = 1000000;
-static const float kProbability = 1 / (2 * PI);
+static const float kProbability = 1 / kSamples;
 
 float4 PSMain(VSOutput input) : SV_TARGET {
   float3 light = 0;
   float3 normal = normalize(input.cameraToPixelDir);
   float3x3 basis = BasisFromDir(normal);
 
+  uint numSamples = 0;
   for (uint i = 0; i < kSamples; ++i) {
-    float NdotV;
-    float3 lightDir = mul(RandomHemisphere(NdotV, i, kSamples), basis);
-    // TODO reflect lightdir over halfvector
-    float3 viewDir = mul(float3(sqrt(1 - NdotV * NdotV), 0, NdotV), basis);
+    float NdotH;
+    float3 halfVector = mul(RandomGGX(NdotH, i, kSamples, /* TODO roughness */), basis);
+    float3 lightDir = reflect(input.normal, halfVector);
+    float ndf = Ndf(NdotH);
+    float sampleProbability = (4 / (2 * PI * ndf)) * kProbability;
+    float3 irradiance = skyTexture.SampleLevel(g_pointWrap, lightDir, HemisphereMip(sampleProbability, g_cubemapSize));
 
-    float NdotH; // TODO get
-    float3 halfVector = RandomGGX(NdotH, i, kSamples, /* TODO roughness */);
+    if (dot(g_normal.xyz, lightDir) <= 0.01) {
+      continue;
+    }
 
-
-    float3 irradiance = skyTexture.SampleLevel(g_pointWrap, lightDir, HemisphereMip(kProbability, g_cubemapSize));
-    float NoL = max(dot(g_normal, lightDir), 0.01);
-
-    light += ((irradiance * NdotV) / PI) * (1 - Fresnel(NoL, 0.04));
+    ++numSamples;
+    light += (irradiance * ndf * 0.25) * ((4 * dot(normal, halfVector)) / (ndf * NdotH))
   }
 
-  light *= (2 * PI) / kSamples;
+  light /= numSamples;
 
   //float3 color = normalize(input.cameraToPixelDir) * 0.5 + 0.5;
   //float3 color = g_normal * 0.5 + 0.5;

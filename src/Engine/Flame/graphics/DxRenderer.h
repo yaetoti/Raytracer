@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <Flame/engine/ShaderPipeline.h>
+#include <Flame/engine/Texture.h>
 #include <wrl/client.h>
 
 #include "buffers/ConstantBuffer.h"
@@ -13,13 +14,6 @@
 #include "Flame/camera/AlignedCamera.h"
 
 namespace Flame {
-  struct IblDiffuseData final {
-    glm::mat4 viewMatInv;
-    glm::vec4 normal;
-    float cubemapSize;
-    float padding0[3];
-  };
-
   struct DxRenderer final {
     template <typename T>
     using ComPtr = Microsoft::WRL::ComPtr<T>;
@@ -76,15 +70,12 @@ namespace Flame {
     ID3D11Resource* m_skyTexture;
     ID3D11ShaderResourceView* m_skyTextureView;
 
+    std::shared_ptr<Texture> m_diffuseTexture;
+    std::shared_ptr<Texture> m_specularTexture;
+
     static constexpr const wchar_t* kSkyboxPath = L"Assets/Textures/lake_beach.dds";
     //static constexpr const wchar_t* kSkyboxPath = L"Assets/Textures/night_street.dds";
     //static constexpr const wchar_t* kSkyboxPath = L"Assets/Textures/stars.dds";
     static constexpr const wchar_t* kSkyShaderPath = L"Assets/Shaders/sky.hlsl";
-
-    // Diffuse IBL
-    ComPtr<ID3D11Texture2D> diffuseReflectionTexture;
-    ComPtr<ID3D11ShaderResourceView> diffuseReflectionView;
-    ConstantBuffer<IblDiffuseData> diffuseBuffer;
-    ShaderPipeline diffuseIblPipeline;
   };
 }

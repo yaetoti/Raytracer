@@ -1,3 +1,5 @@
+#include "samplers.hlsli"
+
 /*----- Defines -----*/
 
 #define CBUFFER_GENERAL b0
@@ -74,10 +76,3 @@ cbuffer MeshBuffer : register(CBUFFER_MESH) {
   float4x4 g_meshToModel;
   float4x4 g_modelToMesh;
 };
-
-
-/*----- SampleStates -----*/
-
-SamplerState g_pointWrap : register(s0);
-SamplerState g_linearWrap : register(s1);
-SamplerState g_anisotropicWrap : register(s2);
