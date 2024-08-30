@@ -6,6 +6,9 @@ Texture2D<float4> normalTexture : register(t2);
 Texture2D<float4> metallicTexture : register(t3);
 Texture2D<float4> roughnessTexture : register(t4);
 
+TextureCube<float4> irradianceTexture : register(t5);
+TextureCube<float4> reflectionTexture : register(t6);
+
 // TODO generate metallic
 // TODO change layout
 
@@ -88,8 +91,7 @@ float2 GetSpotLightUv(float4 pointWS, float4x4 lightMat, float lightAngleCos) {
 }
 
 // Schlick's approximation of Fresnel reflectance
-float3 Fresnel(float NoL, float3 F0)
-{
+float3 Fresnel(float NoL, float3 F0) {
 	return F0 + (1 - F0) * pow(1 - NoL, 5);
 }
 
@@ -139,7 +141,7 @@ float4 PSMain(VSOutput input) : SV_TARGET
   }
 
   float3 light = 0.0;
-  float3 F0 = 0.04;
+  float3 F0 = lerp(0.04.xxx, albedo, metallic);
   float3 viewDir = normalize(g_cameraPosition.xyz - input.positionWorld.xyz);
 
   // Direct light

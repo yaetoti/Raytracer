@@ -1,6 +1,6 @@
 #include "Texture.h"
 #include "Flame/graphics/DxContext.h"
-#include "Flame/utils/DDSTextureLoader11.h"
+#include <DDSTextureLoader/DDSTextureLoader11.h>
 #include <cassert>
 #include <winerror.h>
 

@@ -6,9 +6,14 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 set(BUILD_SHARED_LIBS OFF)
 set(GLM_BUILD_TESTS OFF)
+# Assimp
 set(ASSIMP_BUILD_TESTS OFF)
 set(ASSIMP_BUILD_ZLIB ON)
 set(ASSIMP_INSTALL OFF)
+# DirectXTex
+set(BUILD_DX12 OFF)
+set(BUILD_TOOLS OFF)
+set(BUILD_SAMPLE OFF)
 
 add_definitions(
   -DUNICODE
@@ -20,6 +25,7 @@ add_definitions(
 
 add_subdirectory(vendor/glm)
 add_subdirectory(vendor/assimp)
+add_subdirectory(vendor/directxtex)
 add_subdirectory(src/ConsoleLib)
 add_subdirectory(src/Engine)
 add_subdirectory(src/Project)

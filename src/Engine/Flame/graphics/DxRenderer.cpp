@@ -13,6 +13,7 @@
 #include <iostream>
 #include <limits>
 #include <winnt.h>
+#include <Flame/engine/Engine.h>
 #include <Flame/engine/TextureManager.h>
 
 #include "Flame/utils/draggers/IDragger.h"
@@ -237,6 +238,13 @@ namespace Flame {
       diffuseBuffer.ApplyChanges();
       dc->Draw(3, 0);
     }
+
+    TextureManager::SaveToDDS(
+      Engine::GetDirectory(L"cubemap.dds"),
+      diffuseReflectionTexture.Get(),
+      TextureManager::FileFormat(DXGI_FORMAT_R16G16B16A16_FLOAT),//::BC6_UNSIGNED,
+      false
+    );
   }
 
   void DxRenderer::Cleanup() {
@@ -320,7 +328,7 @@ namespace Flame {
     auto dc = DxContext::Get()->d3d11DeviceContext.Get();
     m_skyboxPipeline.Bind();
     dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-    //dc->PSSetShaderResources(0, 1, &m_textureView);
+    //dc->PSSetShaderResources(0, 1, &m_skyTextureView);
     dc->PSSetShaderResources(0, 1, diffuseReflectionView.GetAddressOf());
     dc->Draw(3, 0);
   }

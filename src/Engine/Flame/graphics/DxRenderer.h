@@ -76,8 +76,9 @@ namespace Flame {
     ID3D11Resource* m_skyTexture;
     ID3D11ShaderResourceView* m_skyTextureView;
 
-    //static constexpr const wchar_t* kSkyboxPath = L"Assets/Textures/night_street.dds";
     static constexpr const wchar_t* kSkyboxPath = L"Assets/Textures/lake_beach.dds";
+    //static constexpr const wchar_t* kSkyboxPath = L"Assets/Textures/night_street.dds";
+    //static constexpr const wchar_t* kSkyboxPath = L"Assets/Textures/stars.dds";
     static constexpr const wchar_t* kSkyShaderPath = L"Assets/Shaders/sky.hlsl";
 
     // Diffuse IBL

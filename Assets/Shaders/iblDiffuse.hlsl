@@ -101,7 +101,8 @@ float HemisphereMip(float sampleProbability, float cubemapSize)
 }
 
 static const uint kSamples = 1000000;
-static const float kProbability = 1 / (2 * PI);
+//static const float kProbability = 1 / (2 * PI);
+static const float kProbability = 1 / kSamples;
 
 float4 PSMain(VSOutput input) : SV_TARGET {
   float3 light = 0;
@@ -110,7 +111,8 @@ float4 PSMain(VSOutput input) : SV_TARGET {
 
   for (uint i = 0; i < kSamples; ++i) {
     float NdotV;
-    float3 lightDir = normalize(mul(RandomHemisphere(NdotV, i, kSamples), basis));
+    float3 lightDir = mul(RandomHemisphere(NdotV, i, kSamples), basis);
+
     float3 irradiance = skyTexture.SampleLevel(g_pointWrap, lightDir, HemisphereMip(kProbability, g_cubemapSize));
     float NoL = max(dot(g_normal, lightDir), 0.01);
 
@@ -118,6 +120,7 @@ float4 PSMain(VSOutput input) : SV_TARGET {
   }
 
   light *= (2 * PI) / kSamples;
+  //light /= (2 * PI);
 
   //float3 color = normalize(input.cameraToPixelDir) * 0.5 + 0.5;
   //float3 color = g_normal * 0.5 + 0.5;
