@@ -6,6 +6,7 @@
 #include "events/MouseScrollWindowEvent.h"
 
 #include <d3d11.h>
+#include <dxgiformat.h>
 #include <windowsx.h>
 
 namespace Flame {
@@ -121,6 +122,60 @@ namespace Flame {
       }
     }
 
+    // Create HDR texture
+    {
+      D3D11_TEXTURE2D_DESC desc {
+        m_width,
+        m_height,
+        1,
+        1,
+        DXGI_FORMAT_R16G16B16A16_FLOAT,
+        { 4, 0 },
+        D3D11_USAGE_DEFAULT,
+        D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE,
+        0,
+        0
+      };
+
+      result = DxContext::Get()->d3d11Device->CreateTexture2D(&desc, nullptr, m_d3d11RenderTextureHdr.GetAddressOf());
+      assert(SUCCEEDED(result));
+      if (FAILED(result)) {
+        return false;
+      }
+    }
+
+    // Create HDR RTV
+    {
+      result = DxContext::Get()->d3d11Device->CreateRenderTargetView(
+        m_d3d11RenderTextureHdr.Get(),
+        nullptr,
+        m_d3d11TargetViewHdr.GetAddressOf()
+      );
+      assert(SUCCEEDED(result));
+      if (FAILED(result)) {
+        return false;
+      }
+    }
+
+    // Create HDR resource view
+    {
+      D3D11_SHADER_RESOURCE_VIEW_DESC desc {
+        .Format = DXGI_FORMAT_R16G16B16A16_FLOAT,
+        .ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D,
+        .Texture2D { 0, 1 }
+      };
+
+      result = DxContext::Get()->d3d11Device->CreateShaderResourceView(
+        m_d3d11RenderTextureHdr.Get(),
+        nullptr,
+        m_d3d11TargetSrvHdr.GetAddressOf()
+      );
+      assert(SUCCEEDED(result));
+      if (FAILED(result)) {
+        return false;
+      }
+    }
+
     // Create reversed depth buffer
     {
       D3D11_TEXTURE2D_DESC desc {
@@ -194,6 +249,9 @@ namespace Flame {
   }
 
   void Window::DiscardResources() {
+    m_d3d11TargetSrvHdr.Reset();
+    m_d3d11TargetViewHdr.Reset();
+    m_d3d11RenderTextureHdr.Reset();
     m_d3d11TargetView.Reset();
     m_d3d11RenderTexture.Reset();
     m_dxgiSwapChain.Reset();
@@ -262,6 +320,14 @@ namespace Flame {
     return ComPtr(m_d3d11DepthStencilState);
   }
 
+  Window::ComPtr<ID3D11RenderTargetView> Window::GetTargetViewHdr() const {
+    return ComPtr(m_d3d11TargetViewHdr);
+  }
+
+  Window::ComPtr<ID3D11ShaderResourceView> Window::GetTargetSrvHdr() const {
+    return ComPtr(m_d3d11TargetSrvHdr);
+  }
+
   uint32_t Window::GetWidth() const {
     return m_width;
   }
@@ -298,6 +364,9 @@ namespace Flame {
     m_framebufferInfo.bmiHeader.biHeight = static_cast<LONG>(m_framebuffer.GetHeight());
 
     HRESULT result;
+    m_d3d11TargetSrvHdr.Reset();
+    m_d3d11TargetViewHdr.Reset();
+    m_d3d11RenderTextureHdr.Reset();
     m_d3d11TargetView.Reset();
     m_d3d11RenderTexture.Reset();
     m_d3d11DepthStencilView.Reset();
@@ -326,6 +395,60 @@ namespace Flame {
         m_d3d11RenderTexture.Get(),
         nullptr,
         m_d3d11TargetView.GetAddressOf()
+      );
+      assert(SUCCEEDED(result));
+      if (FAILED(result)) {
+        return;
+      }
+    }
+
+    // Create HDR texture
+    {
+      D3D11_TEXTURE2D_DESC desc {
+        m_width,
+        m_height,
+        1,
+        1,
+        DXGI_FORMAT_R16G16B16A16_FLOAT,
+        { 4, 0 },
+        D3D11_USAGE_DEFAULT,
+        D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE,
+        0,
+        0
+      };
+
+      result = DxContext::Get()->d3d11Device->CreateTexture2D(&desc, nullptr, m_d3d11RenderTextureHdr.GetAddressOf());
+      assert(SUCCEEDED(result));
+      if (FAILED(result)) {
+        return;
+      }
+    }
+
+    // Create HDR RTV
+    {
+      result = DxContext::Get()->d3d11Device->CreateRenderTargetView(
+        m_d3d11RenderTextureHdr.Get(),
+        nullptr,
+        m_d3d11TargetViewHdr.GetAddressOf()
+      );
+      assert(SUCCEEDED(result));
+      if (FAILED(result)) {
+        return;
+      }
+    }
+
+    // Create HDR resource view
+    {
+      D3D11_SHADER_RESOURCE_VIEW_DESC desc {
+        .Format = DXGI_FORMAT_R16G16B16A16_FLOAT,
+        .ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D,
+        .Texture2D { 0, 1 }
+      };
+
+      result = DxContext::Get()->d3d11Device->CreateShaderResourceView(
+        m_d3d11RenderTextureHdr.Get(),
+        nullptr,
+        m_d3d11TargetSrvHdr.GetAddressOf()
       );
       assert(SUCCEEDED(result));
       if (FAILED(result)) {

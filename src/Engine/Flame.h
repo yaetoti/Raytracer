@@ -3,6 +3,7 @@
 #include "Flame/camera/AlignedCamera.h"
 #include "Flame/camera/CameraController.h"
 #include "Flame/camera/SpaceshipCamera.h"
+#include "Flame/engine/LightSystem.h"
 #include "Flame/engine/Mesh.h"
 #include "Flame/engine/MeshBvh.h"
 #include "Flame/engine/MeshSystem.h"
@@ -10,6 +11,8 @@
 #include "Flame/engine/ModelManager.h"
 #include "Flame/engine/TextureManager.h"
 #include "Flame/engine/Transform.h"
+#include "Flame/engine/TransformSystem.h"
+#include "Flame/graphics/PostProcess.h"
 #include "Flame/graphics/buffers/ConstantBuffer.h"
 #include "Flame/graphics/buffers/IndexBuffer.h"
 #include "Flame/graphics/buffers/VertexBuffer.h"
@@ -20,7 +23,6 @@
 #include "Flame/graphics/groups/OpaqueGroup.h"
 #include "Flame/graphics/groups/ShaderGroup.h"
 #include "Flame/graphics/Material.h"
-#include "Flame/graphics/Renderer.h"
 #include "Flame/graphics/shaders/PixelShader.h"
 #include "Flame/graphics/shaders/VertexShader.h"
 #include "Flame/graphics/shaders/GeometryShader.h"
@@ -66,14 +68,20 @@ namespace Flame {
   struct Engine final {
     static void Init() {
       DxContext::Get()->Init();
+      ModelManager::Get()->Init();
       MeshSystem::Get()->Init();
+      LightSystem::Get()->Init();
+      PostProcess::Get()->Init();
     }
 
     static void Cleanup() {
+      PostProcess::Get()->Cleanup();
       TextureManager::Get()->Cleanup();
+      LightSystem::Get()->Cleanup();
       MeshSystem::Get()->Cleanup();
       MeshSystem::Get()->Cleanup();
       ModelManager::Get()->Cleanup();
+      TransformSystem::Get()->Cleanup();
       DxContext::Get()->Cleanup();
     }
   };

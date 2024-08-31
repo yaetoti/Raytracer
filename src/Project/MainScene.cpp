@@ -66,67 +66,6 @@ void MainScene::Initialize() {
     object->SetRotation(glm::radians(glm::vec3(0.0f, 0.0f, 0.0f)));
     m_hitables.emplace_back(std::move(object));
   }
-
-  // TODO separate debug rendering? Add automatically
-  Flame::Sphere lightSphere(
-    glm::vec3(0.0f),
-    0.1f
-  );
-
-  // Point lights
-  {
-    auto light = std::make_unique<Flame::PointLight>();
-    light->position = glm::vec3(5.0f, 6.0f, -3.0f);
-    light->color = Flame::MathUtils::ColorFromHex(0xFA3120);
-    light->intensity = 14.0f;
-    light->constantFadeoff = 0.0f;
-    light->linearFadeoff = 1.2f;
-    light->quadraticFadeoff = 0.18f;
-    lightSphere.center = light->position;
-
-    m_pointLights.emplace_back(std::move(light));
-    m_hitables.emplace_back(std::make_unique<Flame::SphereObject>(lightSphere, 0));
-  }
-  {
-    auto light = std::make_unique<Flame::PointLight>();
-    light->position = glm::vec3(3.0f, 3.0f, 1.0f);
-    light->color = Flame::MathUtils::ColorFromHex(0x2C1EF7);
-    light->intensity = 12.0f;
-    light->constantFadeoff = 0.0f;
-    light->linearFadeoff = 0.7f;
-    light->quadraticFadeoff = 0.18f;
-    lightSphere.center = light->position;
-
-    m_pointLights.emplace_back(std::move(light));
-    m_hitables.emplace_back(std::make_unique<Flame::SphereObject>(lightSphere, 0));
-  }
-
-  // Spotlights
-  {
-    auto light = std::make_unique<Flame::SpotLight>();
-    light->color = glm::vec3(1.0f, 1.0f, 1.0f);
-    light->position = glm::vec3(6.0f, 0.8f, -1.0f);
-    light->direction = glm::vec3(-1.0f, 0.0f, 0.0f);
-    light->intensity = 20.0f;
-    light->cutoffCosineInner = glm::cos(glm::radians(5.0f));
-    light->cutoffCosineOuter = glm::cos(glm::radians(12.0f));
-    light->constantFadeoff = 0.0f;
-    light->linearFadeoff = 0.2f;
-    light->quadraticFadeoff = 0.04f;
-    lightSphere.center = light->position;
-
-    m_spotLights.emplace_back(std::move(light));
-    m_hitables.emplace_back(std::make_unique<Flame::SphereObject>(lightSphere, 0));
-  }
-
-  // Direct lights
-  {
-    auto light = std::make_unique<Flame::DirectLight>();
-    light->color = glm::vec3(0.066666f, 0.070588f, 0.180392f);
-    light->direction = glm::vec3(0.0f, -1.0f, 0.0f);
-    light->intensity = 1.0f;
-    m_directLights.emplace_back(std::move(light));
-  }
 }
 
 void MainScene::Update(float deltaTime) {

@@ -3,6 +3,7 @@
 #include <vector>
 #include <glm/glm.hpp>
 
+#include "Flame/engine/TransformSystem.h"
 #include "ShaderGroup.h"
 #include "Flame/engine/Transform.h"
 #include "Flame/engine/Model.h"
@@ -13,16 +14,19 @@ namespace Flame {
   struct OpaqueInstanceData final {
     struct ShaderData final {
       glm::mat4 modelMatrix;
+      float specularExponent;
     };
 
     ShaderData GetShaderData() const {
-      ShaderData data;
-      data.modelMatrix = transform.GetMat();
-      return data;
+      return ShaderData {
+        TransformSystem::Get()->At(transformId)->transform.GetMat(),
+        specularExponent
+      };
     }
 
   public:
-    Transform transform;
+    uint32_t transformId;
+    float specularExponent;
   };
 
   struct OpaqueMaterialData final {
@@ -33,7 +37,7 @@ namespace Flame {
     void Init();
     void Cleanup();
 
-    bool HitInstance(const Ray& ray, HitRecord<PerInstance*>& record, float tMin, float tMax) const;
+    void InitInstanceBuffer();
     void UpdateInstanceBuffer();
     void Render();
 
@@ -45,5 +49,6 @@ namespace Flame {
     PixelShader m_pixelShader;
 
     inline static const wchar_t* kShaderPath = L"Assets/Shaders/opaque.hlsl";
+    inline static const wchar_t* kFlashlightTexturePath = L"Assets/Textures/flashlight_1.dds";
   };
 }

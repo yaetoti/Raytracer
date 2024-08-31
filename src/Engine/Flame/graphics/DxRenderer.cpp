@@ -1,4 +1,5 @@
 #include "DxRenderer.h"
+#include "Flame/engine/LightSystem.h"
 #include "Flame/engine/MeshSystem.h"
 #include "Flame/math/HitRecord.h"
 #include "Flame/utils/PtrProxy.h"
@@ -10,8 +11,15 @@
 #include <d3dcompiler.h>
 #include <glm/ext/matrix_transform.hpp>
 #include <iostream>
+#include <limits>
+#include <winnt.h>
 
 #include "Flame/utils/draggers/IDragger.h"
+
+#include "Flame/utils/Random.h"
+#include "Flame/math/MathUtils.h"
+#include "PostProcess.h"
+#include "glm/ext.hpp"
 
 namespace Flame {
   DxRenderer::DxRenderer(std::shared_ptr<Window> window, std::shared_ptr<AlignedCamera> camera)
@@ -95,16 +103,19 @@ namespace Flame {
   void DxRenderer::Render(float time, float deltaTime) {
     ID3D11DeviceContext* dc = DxContext::Get()->d3d11DeviceContext.Get();
     auto targetView = m_window->GetTargetView();
+    auto targetViewHdr = m_window->GetTargetViewHdr();
+    auto targetSrvHdr = m_window->GetTargetSrvHdr();
     auto depthStencilView = m_window->GetDepthStencilView();
     auto depthStencilState = m_window->GetDepthStencilState();
 
     // Set target
-    dc->OMSetRenderTargets(1, targetView.GetAddressOf(), depthStencilView.Get());
+    //dc->OMSetRenderTargets(1, targetView.GetAddressOf(), depthStencilView.Get());
+    dc->OMSetRenderTargets(1, targetViewHdr.GetAddressOf(), depthStencilView.Get());
     dc->OMSetDepthStencilState(depthStencilState.Get(), 0);
     dc->RSSetState(m_rasterizerState.Get());
 
     float clearColor[4] = { 0.12f, 0.12f, 0.12f, 1.0f };
-    dc->ClearRenderTargetView(targetView.Get(), clearColor);
+    dc->ClearRenderTargetView(targetViewHdr.Get(), clearColor);
     dc->ClearDepthStencilView(depthStencilView.Get(), D3D11_CLEAR_DEPTH, 0.0f, 0);
 
     // Set Samplers
@@ -147,17 +158,28 @@ namespace Flame {
 
       m_constantBuffer.data.time = time;
       m_constantBuffer.data.isNormalVisMode = m_isNormalVisMode;
+      m_constantBuffer.data.evFactor = m_evFactor;
 
       m_constantBuffer.ApplyChanges();
     }
 
-    dc->VSSetConstantBuffers(0, 1, m_constantBuffer.GetAddressOf());
-    dc->PSSetConstantBuffers(0, 1, m_constantBuffer.GetAddressOf());
-    dc->GSSetConstantBuffers(0, 1, m_constantBuffer.GetAddressOf());
-    dc->HSSetConstantBuffers(0, 1, m_constantBuffer.GetAddressOf());
-    dc->DSSetConstantBuffers(0, 1, m_constantBuffer.GetAddressOf());
+    // Set constant buffers
+    LightSystem::Get()->CommitChanges();
+    ID3D11Buffer* buffers[] {
+      m_constantBuffer.Get(),
+      LightSystem::Get()->GetConstantBuffer()
+    };
+
+    dc->VSSetConstantBuffers(0, ARRAYSIZE(buffers), buffers);
+    dc->PSSetConstantBuffers(0, ARRAYSIZE(buffers), buffers);
+    dc->GSSetConstantBuffers(0, ARRAYSIZE(buffers), buffers);
+    dc->HSSetConstantBuffers(0, ARRAYSIZE(buffers), buffers);
+    dc->DSSetConstantBuffers(0, ARRAYSIZE(buffers), buffers);
 
     MeshSystem::Get()->Render(deltaTime);
+
+    // Resolve HDR -> LDR
+    PostProcess::Get()->Resolve(targetSrvHdr.Get(), targetView.Get());
   }
 
   void DxRenderer::Resize(uint32_t width, uint32_t height) {
@@ -175,5 +197,13 @@ namespace Flame {
 
   bool DxRenderer::GetNormalVisMode() const {
     return m_isNormalVisMode;
+  }
+
+  float DxRenderer::GetEvFactor() const {
+    return m_evFactor;
+  }
+
+  void DxRenderer::SetEvFactor(float evFactor) {
+    m_evFactor = evFactor;
   }
 }

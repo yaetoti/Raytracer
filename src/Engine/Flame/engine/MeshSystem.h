@@ -3,6 +3,7 @@
 #include <memory>
 #include <glm/glm.hpp>
 #include "Flame/graphics/groups/TextureOnlyGroup.h"
+#include "Flame/graphics/groups/EmissionOnlyGroup.h"
 #include "Model.h"
 #include "Flame/graphics/groups/HologramGroup.h"
 #include "Flame/graphics/groups/OpaqueGroup.h"
@@ -13,6 +14,7 @@ namespace Flame {
     OPAQUE_GROUP,
     HOLOGRAM_GROUP,
     TEXTURE_ONLY_GROUP,
+    EMISSION_ONLY_GROUP,
     COUNT
   };
 
@@ -22,6 +24,7 @@ namespace Flame {
         OpaqueGroup::PerInstance* perInstanceOpaque;
         HologramGroup::PerInstance* perInstanceHologram;
         TextureOnlyGroup::PerInstance* perInstanceTextureOnly;
+        EmissionOnlyGroup::PerInstance* perInstanceEmissionOnly;
       };
       GroupType groupType;
     };
@@ -32,6 +35,11 @@ namespace Flame {
     void Cleanup();
     void Update(float deltaTime);
     void Render(float deltaTime);
+
+    OpaqueGroup* GetOpaqueGroup();
+    HologramGroup* GetHologramGroup();
+    TextureOnlyGroup* GetTextureOnlyGroup();
+    EmissionOnlyGroup* GetEmissionOnlyGroup();
 
     bool Hit(const Ray& ray, HitRecord<HitResult>& record, float tMin, float tMax) const;
 
@@ -46,11 +54,12 @@ namespace Flame {
     OpaqueGroup m_opaqueGroup;
     HologramGroup m_hologramGroup;
     TextureOnlyGroup m_textureOnlyGroup;
+    EmissionOnlyGroup m_emissionOnlyGroup;
     // Skybox
     VertexShader m_skyVertexShader;
     PixelShader m_skyPixelShader;
     ID3D11ShaderResourceView* m_textureView;
 
-    static constexpr const wchar_t* kSkyboxPath = L"Assets/Textures/lake_beach.dds";
+    static constexpr const wchar_t* kSkyboxPath = L"Assets/Textures/night_street.dds";
   };  
 }

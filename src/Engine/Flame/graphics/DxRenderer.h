@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Flame/graphics/shaders/PixelShader.h"
+#include "Flame/graphics/shaders/VertexShader.h"
 #include "Flame/window/Window.h"
 
 #include <memory>
@@ -22,6 +24,7 @@ namespace Flame {
       float resolution[4];
       float cameraPosition[4];
       float time;
+      float evFactor;
       bool isNormalVisMode;
     };
 
@@ -36,6 +39,9 @@ namespace Flame {
     void SetNormalVisMode(bool isNormalVisMode);
     bool GetNormalVisMode() const;
 
+    float GetEvFactor() const;
+    void SetEvFactor(float evFactor);
+
   private:
     std::shared_ptr<Window> m_window;
     std::shared_ptr<AlignedCamera> m_camera;
@@ -49,5 +55,7 @@ namespace Flame {
 
     std::vector<float> m_resolution;
     bool m_isNormalVisMode = false;
+
+    float m_evFactor = 0.0f;
   };
 }

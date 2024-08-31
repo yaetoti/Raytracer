@@ -37,6 +37,9 @@ private:
 
   std::unique_ptr<Flame::IDragger> m_dragger;
 
+  bool m_flashlightGrabbed = true;
+  uint32_t m_flashlightId;
+
   uint32_t m_frames = 0;
   uint32_t m_lastFps = 0;
   float m_fpsTimer = 0.0f;

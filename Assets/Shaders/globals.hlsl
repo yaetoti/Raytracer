@@ -1,3 +1,51 @@
+/*----- Lights -----*/
+
+
+#define NUM_DIRECT_LIGHTS 1
+#define NUM_POINT_LIGHTS 8
+#define NUM_SPOT_LIGHTS 1
+
+struct DirectLight {
+  float4 direction;
+  float4 color;
+  float intensity;
+
+  float3 padding0;
+};
+
+struct PointLight {
+  float4 position;
+  float4 color;
+  float intensity;
+
+  float constantFadeoff;
+  float linearFadeoff;
+  float quadraticFadeoff;
+};
+
+struct SpotLight {
+  float4 position;
+  float4 direction;
+  float4 color;
+  float intensity;
+
+  float cutoffCosineInner;
+  float cutoffCosineOuter;
+
+  float constantFadeoff;
+  float linearFadeoff;
+  float quadraticFadeoff;
+
+  float2 padding0;
+
+  // For flashlight
+  float4x4 lightMat; // WStoVS
+};
+
+
+/*----- Buffers -----*/
+
+
 cbuffer ConstantBuffer : register(b0)
 {
   float4x4 g_viewMatrix;
@@ -9,8 +57,23 @@ cbuffer ConstantBuffer : register(b0)
   float4 g_resolution;
   float4 g_cameraPosition;
   float g_time;
+  float g_evFactor;
   bool g_isNormalVisMode;
 };
+
+cbuffer LightBuffer : register(b1) {
+  DirectLight g_directLights[NUM_DIRECT_LIGHTS];
+  PointLight g_pointLights[NUM_POINT_LIGHTS];
+  SpotLight g_spotLights[NUM_SPOT_LIGHTS];
+  uint g_directLightsCount;
+  uint g_pointLightsCount;
+  uint g_spotLightsCount;
+  float padding0;
+};
+
+
+/*----- SampleStates -----*/
+
 
 SamplerState g_pointWrap : register(s0);
 SamplerState g_linearWrap : register(s1);

@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Flame/engine/Model.h"
+#include "Flame/engine/TransformSystem.h"
+#include "Flame/utils/SolidVector.h"
 
 #include <vector>
 #include <memory>
@@ -88,11 +90,11 @@ namespace Flame {
     // ShaderGroup
     virtual ~ShaderGroup() = default;
 
-    std::vector<std::shared_ptr<PerModel>>& GetModels() {
+    SolidVector<std::shared_ptr<PerModel>>& GetModels() {
       return m_models;
     }
 
-    const std::vector<std::shared_ptr<PerModel>>& GetModels() const {
+    const SolidVector<std::shared_ptr<PerModel>>& GetModels() const {
       return m_models;
     }
 
@@ -107,11 +109,49 @@ namespace Flame {
       return numInstances;
     }
 
-    std::shared_ptr<PerModel> AddModel(std::shared_ptr<Model> model) {
-      return m_models.emplace_back(std::make_shared<PerModel>(std::move(model)));
+    uint32_t AddModel(std::shared_ptr<Model> model) {
+      return m_models.emplace(std::make_shared<PerModel>(std::move(model)));
+    }
+
+    std::shared_ptr<PerModel> GetModel(uint32_t id) const {
+      return m_models[id];
+    }
+
+    bool HitInstance(const Ray& ray, HitRecord<PerInstance*>& record, float tMin, float tMax) const {
+      HitRecord<const Model*> record0;
+
+      // Go through all instances and find the closest one
+      for (const auto & perModel : GetModels()) {
+        const auto& model = *perModel->GetModel();
+
+        for (const auto & perMaterial : perModel->GetMaterials()) {
+          for (const auto & perInstance : perMaterial->GetInstances()) {
+            // TODO we could store these as we use them often, but definitely not in PerInstance as we copy it entirely into the buffer
+            // Transform ray
+            glm::mat4 modelMat = TransformSystem::Get()->At(perInstance->GetData().transformId)->transform.GetMat();
+            glm::mat4 modelMatInv = glm::inverse(modelMat);
+            glm::vec4 position = modelMatInv * glm::vec4(ray.origin, 1.0f);
+            glm::vec3 direction = modelMatInv * glm::vec4(ray.direction, 0.0f);
+            Ray rayModel { position / position.w, direction };
+
+            // Hit model in model space
+            if (model.Hit(rayModel, record0, tMin, tMax)) {
+              // If hit - update tMax and InvTransform the results
+              tMax = record0.time;
+              position = modelMat * glm::vec4(record0.point, 1.0f);
+              record.time = tMax;
+              record.point = position / position.w;
+              record.normal = glm::normalize(modelMat * glm::vec4(record0.normal, 0.0f));
+              record.data = perInstance.get();
+            }
+          }
+        }
+      }
+
+      return record.data != nullptr;
     }
 
   private:
-    std::vector<std::shared_ptr<PerModel>> m_models;
+    SolidVector<std::shared_ptr<PerModel>> m_models;
   };
 }

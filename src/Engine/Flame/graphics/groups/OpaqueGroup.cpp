@@ -1,4 +1,5 @@
 #include "OpaqueGroup.h"
+#include "Flame/engine/TextureManager.h"
 
 namespace Flame {
   void OpaqueGroup::Init() {
@@ -12,6 +13,7 @@ namespace Flame {
         { "MODEL", 1, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
         { "MODEL", 2, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
         { "MODEL", 3, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+        { "SPECULAR", 0, DXGI_FORMAT_R32_FLOAT, 1, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
       };
 
       m_vertexShader.Init(kShaderPath, desc, ARRAYSIZE(desc));
@@ -19,12 +21,6 @@ namespace Flame {
 
     // Load pixel shader
     m_pixelShader.Init(kShaderPath);
-
-    // TODO FIX. This creates the need for initialization only after parsing the scene graph
-    // Create instance buffer
-    HRESULT result;
-    result = m_instanceBuffer.Init(GetInstanceCount(), D3D11_CPU_ACCESS_WRITE, D3D11_USAGE_DYNAMIC);
-    assert(SUCCEEDED(result));
   }
 
   void OpaqueGroup::Cleanup() {
@@ -35,38 +31,10 @@ namespace Flame {
     GetModels().clear();
   }
 
-  bool OpaqueGroup::HitInstance(const Ray& ray, HitRecord<PerInstance*>& record, float tMin, float tMax) const {
-    HitRecord<const Model*> record0;
-
-    // Go through all instances and find the closest one
-    for (const auto & perModel : GetModels()) {
-      const auto& model = *perModel->GetModel();
-
-      for (const auto & perMaterial : perModel->GetMaterials()) {
-        for (const auto & perInstance : perMaterial->GetInstances()) {
-          // TODO we could store these as we use them often, but definitely not in PerInstance as we copy it entirely into the buffer
-          // Transform ray
-          const glm::mat4& modelMat = perInstance->GetData().transform.GetMat();
-          glm::mat4 modelMatInv = glm::inverse(modelMat);
-          glm::vec4 position = modelMatInv * glm::vec4(ray.origin, 1.0f);
-          glm::vec3 direction = modelMatInv * glm::vec4(ray.direction, 0.0f);
-          Ray rayModel { position / position.w, direction };
-
-          // Hit model in model space
-          if (model.Hit(rayModel, record0, tMin, tMax)) {
-            // If hit - update tMax and InvTransform the results
-            tMax = record0.time;
-            position = modelMat * glm::vec4(record0.point, 1.0f);
-            record.time = tMax;
-            record.point = position / position.w;
-            record.normal = glm::normalize(modelMat * glm::vec4(record0.normal, 0.0f));
-            record.data = perInstance.get();
-          }
-        }
-      }
-    }
-
-    return record.data != nullptr;
+  void OpaqueGroup::InitInstanceBuffer() {
+    m_instanceBuffer.Reset();
+    HRESULT result = m_instanceBuffer.Init(GetInstanceCount(), D3D11_CPU_ACCESS_WRITE, D3D11_USAGE_DYNAMIC);
+    assert(SUCCEEDED(result));
   }
 
   void OpaqueGroup::UpdateInstanceBuffer() {
@@ -98,6 +66,9 @@ namespace Flame {
     dc->IASetInputLayout(m_vertexShader.GetInputLayout());
     dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
+    // Set light texture
+    dc->PSSetShaderResources(0, 1, TextureManager::Get()->GetTexture(kFlashlightTexturePath)->GetResourceViewAddress());
+
     uint32_t numRenderedInstances = 0;
     for (const auto & perModel : GetModels()) {
       // Set buffers
@@ -120,6 +91,8 @@ namespace Flame {
       dc->IASetIndexBuffer(perModel->GetModel()->m_indices.Get(), DXGI_FORMAT_R32_UINT, 0);
 
       for (const auto & perMaterial : perModel->GetMaterials()) {
+        // TODO set material via ConstantBuffer
+
         const auto& instances = perMaterial->GetInstances();
         uint32_t numInstances = instances.size();
         if (numInstances == 0) {
