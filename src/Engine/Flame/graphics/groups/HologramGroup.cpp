@@ -7,6 +7,8 @@ namespace Flame {
       D3D11_INPUT_ELEMENT_DESC desc[] = {
         { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
         { "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        { "TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        { "BITANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
         { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
         { "MODEL", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 0, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
         { "MODEL", 1, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
@@ -51,9 +53,11 @@ namespace Flame {
       uint32_t numCopied = 0;
 
       for (const auto & perModel : GetModels()) {
-        for (const auto & perMaterial : perModel->GetMaterials()) {
-          for (const auto & perInstance : perMaterial->GetInstances()) {
-            destPtr[numCopied++] = perInstance->GetData().GetShaderData();
+        for (const auto & perMesh : perModel->GetMeshes()) {
+          for (const auto & perMaterial : perMesh->GetMaterials()) {
+            for (const auto & perInstance : perMaterial->GetInstances()) {
+              destPtr[numCopied++] = perInstance->GetData().GetShaderData();
+            }
           }
         }
       }
@@ -77,6 +81,8 @@ namespace Flame {
 
     uint32_t numRenderedInstances = 0;
     for (const auto & perModel : GetModels()) {
+      const auto& model = perModel->GetModel();
+
       // Set buffers
       ID3D11Buffer* buffers[] = {
         perModel->GetModel()->m_vertices.Get(),
@@ -96,17 +102,23 @@ namespace Flame {
       dc->IASetVertexBuffers(0, 2, buffers, strides, offsets);
       dc->IASetIndexBuffer(perModel->GetModel()->m_indices.Get(), DXGI_FORMAT_R32_UINT, 0);
 
-      for (const auto & perMaterial : perModel->GetMaterials()) {
-        const auto& instances = perMaterial->GetInstances();
-        uint32_t numInstances = instances.size();
-        if (numInstances == 0) {
-          continue;
-        }
+      const auto& perMeshArray = perModel->GetMeshes();
+      for (uint32_t meshId = 0; meshId < perMeshArray.size(); ++meshId) {
+        const auto& perMesh = perMeshArray[meshId];
 
-        // Aaah, so that's why we have MeshRange... Finally
-        // TODO replace Model index offsetting with correct draw call parameters
-        dc->DrawIndexedInstanced(perModel->GetModel()->m_indexNum, numInstances, 0, 0, numRenderedInstances);
-        numRenderedInstances += numInstances;
+        for (const auto & perMaterial : perMesh->GetMaterials()) {
+          const auto& instances = perMaterial->GetInstances();
+          const auto& range = model->m_ranges[meshId];
+          uint32_t numInstances = instances.size();
+          if (numInstances == 0) {
+            continue;
+          }
+
+          // Aaah, so that's why we have MeshRange... Finally
+          // TODO replace Model index offsetting with correct draw call parameters
+          dc->DrawIndexedInstanced(range.indexNum, numInstances, range.indexOffset, range.vertexOffset, numRenderedInstances);
+          numRenderedInstances += numInstances;
+        }
       }
     }
 

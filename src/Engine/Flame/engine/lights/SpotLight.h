@@ -11,19 +11,15 @@ namespace Flame {
     struct ShaderData final {
       float position[4];
       float direction[4];
-      float color[4];
-      float intensity;
+      float radiance[3];
+      float radius;
 
       float cutoffCosineInner;
       float cutoffCosineOuter;
 
-      float constantFadeoff;
-      float linearFadeoff;
-      float quadraticFadeoff;
-
       float padding0[2];
 
-      glm::mat4 lightMat;
+      glm::mat4 lightMat; // WStoVS
     };
 
   public:
@@ -48,13 +44,10 @@ namespace Flame {
       return ShaderData {
         { position.x, position.y, position.z, 1.0f },
         { axisFront.x, axisFront.y, axisFront.z, 0.0f },
-        { color.x, color.y, color.z, 1.0f },
-        intensity,
+        { radiance.x, radiance.y, radiance.z },
+        radius,
         cutoffCosineInner,
         cutoffCosineOuter,
-        constantFadeoff,
-        linearFadeoff,
-        quadraticFadeoff,
         { 0, 0 },
         lightMat
       };
@@ -65,16 +58,10 @@ namespace Flame {
     glm::vec3 axisFront;
     glm::vec3 axisUp;
     glm::vec3 axisRight;
-    glm::vec3 color;
-    float intensity;
+    glm::vec3 radiance;
+    float radius;
 
     float cutoffCosineInner;
     float cutoffCosineOuter;
-
-    float constantFadeoff;
-    float linearFadeoff;
-    float quadraticFadeoff;
-
-    // Texture mask
   };
 }

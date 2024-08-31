@@ -5,10 +5,8 @@
 
 namespace Flame {
   std::shared_ptr<Model> ModelManager::GetModel(const std::string& path) {
-    if (!m_models.contains(path)) {
-      if (!LoadModel(path)) {
-        return nullptr;
-      }
+    if (!LoadModel(path)) {
+      return nullptr;
     }
 
     return m_models.at(path);
@@ -66,6 +64,8 @@ namespace Flame {
 
     mesh.vertices.resize(VERT_PER_SIZE * SIDES);
     mesh.normals.resize(VERT_PER_SIZE * SIDES);
+    mesh.tangents.resize(VERT_PER_SIZE * SIDES);
+    mesh.bitangents.resize(VERT_PER_SIZE * SIDES);
     mesh.uvs.resize(VERT_PER_SIZE * SIDES);
 
     int sideMasks[6][3] = {
@@ -148,6 +148,8 @@ namespace Flame {
 
     mesh.vertices.resize(VERT_PER_SIZE * SIDES);
     mesh.normals.resize(VERT_PER_SIZE * SIDES);
+    mesh.tangents.resize(VERT_PER_SIZE * SIDES);
+    mesh.bitangents.resize(VERT_PER_SIZE * SIDES);
     mesh.uvs.resize(VERT_PER_SIZE * SIDES);
 
     int sideMasks[6][3] = {

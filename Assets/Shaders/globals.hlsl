@@ -1,3 +1,12 @@
+/*----- Defines -----*/
+
+#define CBUFFER_GENERAL b0
+#define CBUFFER_LIGHT b1
+#define CBUFFER_MESH b2
+
+static const float PI = 3.14159265f;
+
+
 /*----- Lights -----*/
 
 
@@ -7,46 +16,36 @@
 
 struct DirectLight {
   float4 direction;
-  float4 color;
-  float intensity;
-
-  float3 padding0;
+  float3 radiance;
+  float solidAngle;
 };
 
 struct PointLight {
   float4 position;
-  float4 color;
-  float intensity;
-
-  float constantFadeoff;
-  float linearFadeoff;
-  float quadraticFadeoff;
+  float3 radiance;
+  float radius;
 };
 
 struct SpotLight {
   float4 position;
   float4 direction;
-  float4 color;
-  float intensity;
+  float3 radiance;
+  float radius;
 
   float cutoffCosineInner;
   float cutoffCosineOuter;
 
-  float constantFadeoff;
-  float linearFadeoff;
-  float quadraticFadeoff;
-
   float2 padding0;
 
   // For flashlight
-  float4x4 lightMat; // WStoVS
+  float4x4 lightViewMat; // WStoVS
 };
 
 
 /*----- Buffers -----*/
 
 
-cbuffer ConstantBuffer : register(b0)
+cbuffer ConstantBuffer : register(CBUFFER_GENERAL)
 {
   float4x4 g_viewMatrix;
   float4x4 g_projectionMatrix;
@@ -61,7 +60,7 @@ cbuffer ConstantBuffer : register(b0)
   bool g_isNormalVisMode;
 };
 
-cbuffer LightBuffer : register(b1) {
+cbuffer LightBuffer : register(CBUFFER_LIGHT) {
   DirectLight g_directLights[NUM_DIRECT_LIGHTS];
   PointLight g_pointLights[NUM_POINT_LIGHTS];
   SpotLight g_spotLights[NUM_SPOT_LIGHTS];
@@ -69,6 +68,11 @@ cbuffer LightBuffer : register(b1) {
   uint g_pointLightsCount;
   uint g_spotLightsCount;
   float padding0;
+};
+
+cbuffer MeshBuffer : register(CBUFFER_MESH) {
+  float4x4 g_meshToModel;
+  float4x4 g_modelToMesh;
 };
 
 

@@ -6,7 +6,10 @@ struct VSInput
 {
   float3 position : POSITION;
   float3 normal : NORMAL;
+  float3 tangent : TANGENT;
+  float3 bitangent : BITANGENT;
   float2 uv : TEXCOORD;
+  
   float4x4 modelMatrix : MODEL;
   float3 mainColor : MAIN_COLOR;
   float3 secondaryColor : SECONDARY_COLOR;

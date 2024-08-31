@@ -5,8 +5,11 @@ Texture2D<float4> texture0 : register(t0);
 struct VSInput
 {
   float3 position : POSITION;
-  float3 normal : POSITION;
+  float3 normal : NORMAL;
+  float3 tangent : TANGENT;
+  float3 bitangent : BITANGENT;
   float2 uv : TEXCOORD;
+  
   float4x4 modelMatrix : MODEL;
 };
 

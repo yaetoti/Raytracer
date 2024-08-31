@@ -5,6 +5,8 @@
 #include "Flame/engine/Transform.h"
 #include "Flame/engine/lights/PointLight.h"
 #include "Flame/engine/lights/SpotLight.h"
+#include "Flame/graphics/groups/HologramGroup.h"
+#include "glm/fwd.hpp"
 #include "glm/trigonometric.hpp"
 #include <Flame/engine/MeshSystem.h>
 #include <cmath>
@@ -76,73 +78,123 @@ void Application::Init() {
   {
     auto* group = Flame::MeshSystem::Get()->GetOpaqueGroup();
 
-    auto modelId0 = group->AddModel(mm->GetModel("Assets/Models/Samurai/Samurai1.obj"));
-    auto model0 = group->GetModel(modelId0);
-    auto material1 = model0->AddMaterial({});
-    material1->AddInstance({ ts->Insert({ Transform(glm::vec3(-2, -2, 0)) }), 4.0f });
-    material1->AddInstance({ ts->Insert({ Transform(glm::vec3(-2, 2, 0)) }), 4.0f });
-    material1->AddInstance({ ts->Insert({ Transform(glm::vec3(2, -2, 0)) }), 4.0f });
-    material1->AddInstance({ ts->Insert({ Transform(glm::vec3(2, 2, 0)) }), 4.0f });
-    auto material2 = model0->AddMaterial({});
-    material2->AddInstance({ ts->Insert({ Transform(glm::vec3(0, 0, 2)) }), 4.0f });
-    material2->AddInstance({ ts->Insert({ Transform(glm::vec3(0, 0, -2)) }), 4.0f });
+    // Statue
+    {
+      uint32_t transformId = ts->Insert({ Transform(glm::vec3(-2, -2, 0)) });
 
-    auto modelId1 = group->AddModel(mm->GetModel("Assets/Cube.obj"));
-    auto model1 = group->GetModel(modelId1);
-    auto material3 = model1->AddMaterial({});
-    material3->AddInstance({ ts->Insert({ Transform(glm::vec3(-2, -2, 2), glm::vec3(0.5f)) }), 4.0f });
-    material3->AddInstance({ ts->Insert({ Transform(glm::vec3(-2, 2, -2)) }), 4.0f });
-    material3->AddInstance({ ts->Insert({ Transform(glm::vec3(2, -2, -2), glm::vec3(0.1f)) }), 4.0f });
-    material3->AddInstance({ ts->Insert({ Transform(glm::vec3(2, 2, 2)) }), 4.0f });
+      uint32_t modelId = group->AddModel(mm->GetModel("Assets/Models/EastTower/EastTower.fbx"));
+      auto& model = group->GetModels()[modelId];
+      uint32_t materialId;
+
+      materialId = model->GetMeshes()[3]->AddMaterial({
+        tm->GetTexture(L"Assets/Models/EastTower/dds/Statue_BaseColor.dds")->GetResourceView(),
+        tm->GetTexture(L"Assets/Models/EastTower/dds/Statue_Normal.dds")->GetResourceView(),
+        tm->GetTexture(L"Assets/Models/EastTower/dds/Statue_Metallic.dds")->GetResourceView(),
+        tm->GetTexture(L"Assets/Models/EastTower/dds/Statue_Roughness.dds")->GetResourceView()
+      });
+      auto& material = model->GetMeshes()[3]->GetMaterials()[materialId];
+      material->AddInstance({ transformId });
+    }
+
+    // Plane
+    {
+      group->AddInstance(
+        mm->GetModel("Assets/Models/Floor/Floor.fbx"),
+        {
+          tm->GetTexture(L"Assets/Models/Floor/dds/Albedo.dds")->GetResourceView(),
+          tm->GetTexture(L"Assets/Models/Floor/dds/Normal.dds")->GetResourceView(),
+          tm->GetTexture(L"Assets/Models/Floor/dds/Metallic.dds")->GetResourceView(),
+          tm->GetTexture(L"Assets/Models/Floor/dds/Roughness.dds")->GetResourceView()
+        },
+        {
+          ts->Insert({ Transform(glm::vec3(0, -6, 0)) })
+        }
+      );
+    }
+
+    // Cube
+    {
+      uint32_t modelId = group->AddModel(mm->GetModel("Assets/Models/Floor/PbrCube.fbx"));
+      auto& model = group->GetModels()[modelId];
+      uint32_t materialId;
+      uint32_t materialId1;
+
+      materialId = model->GetMeshes()[0]->AddMaterial({
+        tm->GetTexture(L"Assets/Models/Floor/dds/Albedo.dds")->GetResourceView(),
+        tm->GetTexture(L"Assets/Models/Floor/dds/Normal.dds")->GetResourceView(),
+        tm->GetTexture(L"Assets/Models/Floor/dds/Metallic.dds")->GetResourceView(),
+        tm->GetTexture(L"Assets/Models/Floor/dds/Roughness.dds")->GetResourceView()
+      });
+      auto& material = model->GetMeshes()[0]->GetMaterials()[materialId];
+      material->AddInstance({ ts->Insert({ Transform(glm::vec3(0, 6, 0), glm::vec3(0.01f)) }) });
+      material->AddInstance({ ts->Insert({ Transform(glm::vec3(-3, 8, 3), glm::vec3(0.01f)) }) });
+
+      materialId1 = model->GetMeshes()[0]->AddMaterial({
+        tm->GetTexture(L"Assets/Models/Floor/dds-bathroom/Albedo.dds")->GetResourceView(),
+        tm->GetTexture(L"Assets/Models/Floor/dds-bathroom/Normal.dds")->GetResourceView(),
+        tm->GetTexture(L"Assets/Models/Floor/dds-bathroom/Metallic.dds")->GetResourceView(),
+        tm->GetTexture(L"Assets/Models/Floor/dds-bathroom/Roughness.dds")->GetResourceView()
+      });
+      auto& material1 = model->GetMeshes()[0]->GetMaterials()[materialId1];
+
+      material1->AddInstance({ ts->Insert({ Transform(glm::vec3(-3, 6, 0), glm::vec3(0.01f)) }) });
+    }
   }
   
   // Hologram group
   {
     auto* group = ms->GetHologramGroup();
 
-    auto modelId0 = group->AddModel(mm->GetModel("Assets/Models/Samurai/Samurai1.obj"));
-    auto model0 = group->GetModel(modelId0);
-    auto material0 = model0->AddMaterial({});
-    material0->AddInstance({ ts->Insert({ Transform(glm::vec3(0.0f), glm::vec3(0.5f)) }), glm::vec3(0, 1, 1), glm::vec3(1, 0, 0) });
-    material0->AddInstance({ ts->Insert({ Transform(glm::vec3(1.25f, 0.0f, 0.0f)) }), glm::vec3(0, 1, 0), glm::vec3(0, 1, 1) });
+    Flame::HologramInstanceData data0[] {
+      { ts->Insert({ Transform(glm::vec3(0.0f), glm::vec3(0.5f)) }), glm::vec3(0, 1, 1), glm::vec3(1, 0, 0) },
+      { ts->Insert({ Transform(glm::vec3(1.25f, 0.0f, 0.0f)) }), glm::vec3(0, 1, 0), glm::vec3(0, 1, 1) },
+    };
+    group->AddInstances(mm->GetModel("Assets/Models/Samurai/Samurai1.obj"), {}, data0);
     
-    auto modelId1 = group->AddModel(mm->GetModel("Assets/Cube.obj"));
-    auto model1 = group->GetModel(modelId1);
-    auto material1 = model1->AddMaterial({});
-    material1->AddInstance({ ts->Insert({ Transform(glm::vec3(0.0f, -8.0f, 0.0f), glm::vec3(2.5f)) }), glm::vec3(1, 0, 1), glm::vec3(1, 0, 1) });
-    material1->AddInstance({ ts->Insert({ Transform(glm::vec3(-8.0f, 0.0f, 0.0f), glm::vec3(3.5f)) }), glm::vec3(1, 0, 0), glm::vec3(1, 0, 0) });
-    material1->AddInstance({ ts->Insert({ Transform(glm::vec3(0.0f, 0.0f, -8.0f), glm::vec3(1.5f)) }), glm::vec3(0, 0, 1), glm::vec3(0, 0, 1) });
+    Flame::HologramInstanceData data1[] {
+      { ts->Insert({ Transform(glm::vec3(0.0f, -8.0f, 0.0f), glm::vec3(2.5f)) }), glm::vec3(1, 0, 1), glm::vec3(1, 0, 1) },
+      { ts->Insert({ Transform(glm::vec3(-8.0f, 0.0f, 0.0f), glm::vec3(3.5f)) }), glm::vec3(1, 0, 0), glm::vec3(1, 0, 0) },
+      { ts->Insert({ Transform(glm::vec3(0.0f, 0.0f, -8.0f), glm::vec3(1.5f)) }), glm::vec3(0, 0, 1), glm::vec3(0, 0, 1) },
+    };
+    group->AddInstances(mm->GetModel("Assets/Cube.obj"), {}, data1);
   }
 
   // TextureOnly group
   {
     auto* group = ms->GetTextureOnlyGroup();
 
-    auto modelId0 = group->AddModel(mm->GetModel("Assets/Models/OtherCube/OtherCube.obj"));
-    auto model0 = group->GetModel(modelId0);
-    auto material0 = model0->AddMaterial({ tm->GetTexture(L"Assets/Models/OtherCube/OtherCube.dds")->GetResourceView() });
-    material0->AddInstance({ ts->Insert({ Transform(glm::vec3(0.0f, 6.0f, 20.0f), glm::vec3(10.0f)) }) });
-    auto material1 = model0->AddMaterial({ tm->GetTexture(L"Assets/Models/OtherCube/AnotherCube.dds")->GetResourceView() });
-    material1->AddInstance({ ts->Insert({ Transform(glm::vec3(3.0f, 7.0f, 3.0f), glm::vec3(1.5f)) }) });
+    group->AddInstance(
+      mm->GetModel("Assets/Models/OtherCube/OtherCube.obj"),
+      { tm->GetTexture(L"Assets/Models/OtherCube/OtherCube.dds")->GetResourceView() },
+      { ts->Insert({ Transform(glm::vec3(0.0f, 6.0f, 20.0f), glm::vec3(10.0f)) }) }
+    );
+
+    group->AddInstance(
+      mm->GetModel("Assets/Models/OtherCube/OtherCube.obj"),
+      { tm->GetTexture(L"Assets/Models/OtherCube/AnotherCube.dds")->GetResourceView() },
+      { ts->Insert({ Transform(glm::vec3(3.0f, 7.0f, 3.0f), glm::vec3(1.5f)) }) }
+    );
   }
 
   // EmissionOnly group and PointLights
   {
     auto* group = ms->GetEmissionOnlyGroup();
 
-    auto transformId = ts->Insert({ Transform(glm::vec3(8.0f, 0.0f, 0.0f), glm::vec3(0.1f)) });
+    float radius = 0.1f;
+    glm::vec3 radiance = MathUtils::RadianceFromIrradiance(MathUtils::ColorFromHex(0xf194ff), radius, 1.0f);
+    auto transformId = ts->Insert({ Transform(glm::vec3(8.0f, 0.0f, 0.0f), glm::vec3(radius)) });
 
-    auto modelId0 = group->AddModel(mm->GetBuiltinModel(Flame::ModelManager::BuiltinModelType::UNIT_SPHERE));
-    auto model0 = group->GetModel(modelId0);
-    auto material0 = model0->AddMaterial({});
-    material0->AddInstance({ transformId, MathUtils::ColorFromHex(0xf194ff) });
+    group->AddInstance(
+      mm->GetBuiltinModel(Flame::ModelManager::BuiltinModelType::UNIT_SPHERE),
+      { },
+      { transformId, MathUtils::ColorFromHex(0xf194ff) }
+    );
 
     ls->AddPointLight(std::make_shared<PointLight>(
       transformId,
       glm::vec3(0, 0, 0),
-      MathUtils::ColorFromHex(0xf194ff),
-      4.0f,
-      0.0f, 1.2f, 0.18f
+      radiance,
+      radius
     ));
   }
 
@@ -153,22 +205,24 @@ void Application::Init() {
   ms->GetEmissionOnlyGroup()->InitInstanceBuffer();
 
   // Init lights
+  float sunRadius = 696340.0f;
+  float sunDistance = 150000000.0f;
   ls->AddDirectLight(std::make_shared<DirectLight>(
-    MathUtils::ColorFromHex(0x000000),
-    glm::vec3(0, -1, 0),
-    1.0f
+    glm::normalize(glm::vec3(0, -1, 1)),
+    MathUtils::RadianceFromIrradiance(MathUtils::ColorFromHex(0x888888), sunRadius, sunDistance),
+    MathUtils::SolidAngle(sunRadius, sunDistance)
   ));
 
+  float flashlightRadius = 0.01f;
   m_flashlightId = ls->AddSpotLight(std::make_shared<SpotLight>(
     glm::vec3(0.0f),
     glm::vec3(0.0f, 0.0f, 1.0f),
     glm::vec3(0.0f, 1.0f, 0.0f),
     glm::vec3(1.0f, 0.0f, 0.0f),
-    MathUtils::ColorFromHex(0xFFFFFF),
-    1.5f,
+    MathUtils::RadianceFromIrradiance(MathUtils::ColorFromHex(0xBBBBBB), flashlightRadius, 5.0f),
+    flashlightRadius,
     glm::cos(glm::radians(20.0f)),
-    glm::cos(glm::radians(25.0f)),
-    1.0f, 0.045f, 0.0075f
+    glm::cos(glm::radians(25.0f))
   ));
 }
 
