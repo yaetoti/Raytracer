@@ -26,9 +26,6 @@ VSOutput VSMain(uint vertexId : SV_VERTEXID) {
   if (vertexId == 0) {
     result.position = float4(-1.0, 3.0, 1.0, 1.0);
     result.cameraToPixelDir = mul(float4(-1.0f, 3.0f, 1.0f, 0.0f), g_viewMatInv).xyz;
-    //result.cameraToPixelDir = mul(g_frustumTL, g_viewMatInv).xyz;
-    //result.cameraToPixelDir = mul(g_viewMatInv, g_frustumTL).xyz;
-    //result.cameraToPixelDir = g_frustumTL.xyz;
     result.uv = float2(0, 2);
     return result;
   }
@@ -37,9 +34,6 @@ VSOutput VSMain(uint vertexId : SV_VERTEXID) {
   if (vertexId == 1) {
     result.position = float4(3.0, -1.0, 1.0, 1.0);
     result.cameraToPixelDir = mul(float4(3.0, -1.0, 1.0, 0.0), g_viewMatInv).xyz;
-    //result.cameraToPixelDir = mul(g_frustumBR, g_viewMatInv).xyz;
-    //result.cameraToPixelDir = mul(g_viewMatInv, g_frustumBR).xyz;
-    //result.cameraToPixelDir = g_frustumBR.xyz;
     result.uv = float2(2, 0);
     return result;
   }
@@ -48,9 +42,6 @@ VSOutput VSMain(uint vertexId : SV_VERTEXID) {
   if (vertexId == 2) {
     result.position = float4(-1.0, -1.0, 1.0, 1.0);
     result.cameraToPixelDir = mul(float4(-1.0, -1.0, 1.0, 0.0), g_viewMatInv).xyz;
-    //result.cameraToPixelDir = mul(g_frustumBL, g_viewMatInv).xyz;
-    //result.cameraToPixelDir = mul(g_viewMatInv, g_frustumBL).xyz;
-    //result.cameraToPixelDir = g_frustumBL.xyz;
     result.uv = float2(0, 0);
     return result;
   }
@@ -102,12 +93,9 @@ float HemisphereMip(float sampleProbability, float cubemapSize)
   return log4;
 }
 
-static const uint kSamples = 1000;
-//static const float kProbability = 1 / (2 * PI);
-static const float kProbability = 1 / kSamples;
-
 float4 PSMain(VSOutput input) : SV_TARGET {
   float3 light = 0;
+  float probability = 1.0 / g_samples;
   float3 normal = normalize(input.cameraToPixelDir);
   float3x3 basis = BasisFromDir(normal);
 
@@ -117,18 +105,17 @@ float4 PSMain(VSOutput input) : SV_TARGET {
   skyTexture.GetDimensions(0, width, height, levels);
   float cubemapSize = max(width, height);
 
-  for (uint i = 0; i < kSamples; ++i) {
+  for (uint i = 0; i < g_samples; ++i) {
     float NdotV;
-    float3 lightDir = mul(RandomHemisphere(NdotV, i, kSamples), basis);
+    float3 lightDir = mul(RandomHemisphere(NdotV, i, g_samples), basis);
 
-    float3 irradiance = skyTexture.SampleLevel(g_pointWrap, lightDir, HemisphereMip(kProbability, cubemapSize));
+    float3 irradiance = skyTexture.SampleLevel(g_pointWrap, lightDir, HemisphereMip(probability, cubemapSize));
     float NoL = max(dot(g_normal, lightDir), 0.01);
 
     light += ((irradiance * NdotV) / PI) * (1 - Fresnel(NoL, 0.04));
   }
 
-  light *= (2 * PI) / kSamples;
-  //light /= (2 * PI);
+  light *= (2 * PI) / g_samples;
 
   //float3 color = normalize(input.cameraToPixelDir) * 0.5 + 0.5;
   //float3 color = g_normal * 0.5 + 0.5;
