@@ -1,13 +1,6 @@
-// Data
+#include "buffer.hlsl"
 
-cbuffer ConstantBuffer : register(b0)
-{
-  float4x4 viewMatrix;
-  float4x4 projectionMatrix;
-  float4 g_resolution;
-  float4 g_cameraPosition;
-  float g_time;
-};
+// Data
 
 struct VSInput
 {
@@ -20,12 +13,19 @@ struct VSInput
 
 struct VSOutput
 {
+  float4x4 modelMatrix : MODEL;
   float4 position : SV_POSITION;
   float3 normal : NORMAL;
   float3 positionLocal : POSITION_LOCAL;
   float3 normalLocal : NORMAL_LOCAL;
   nointerpolation float3 mainColor : MAIN_COLOR;
   nointerpolation float3 secondaryColor : SECONDARY_COLOR;
+};
+
+struct PatchOutput
+{
+  float EdgeFactors[3] : SV_TessFactor;
+  float InsideFactor : SV_InsideTessFactor;
 };
 
 // BEGIN ShaderToy https://www.shadertoy.com/view/WttcRB
@@ -183,15 +183,14 @@ float3 colorDistortion(float3 mainColor, float3 secondaryColor, float3 pos, floa
 VSOutput VSMain(VSInput input)
 {
   VSOutput result;
-  float4 pos = float4(input.position + vertexDistortion(input.position, input.normal), 1.0);
-  pos = mul(projectionMatrix, mul(viewMatrix, mul(input.modelMatrix, pos)));
   
   float3 axisX = normalize(input.modelMatrix[0].xyz);
   float3 axisY = normalize(input.modelMatrix[1].xyz);
   float3 axisZ = normalize(input.modelMatrix[2].xyz);
   float3 worldN = input.normal.x * axisX + input.normal.y * axisY + input.normal.z * axisZ;
   
-  result.position = pos;
+  result.modelMatrix = input.modelMatrix;
+  result.position = float4(input.position, 1.0);
   result.positionLocal = input.position;
   result.normal = worldN;
   result.normalLocal = input.normal;
@@ -200,14 +199,95 @@ VSOutput VSMain(VSInput input)
   return result;
 }
 
+// Hull
+[outputcontrolpoints(3)]
+[domain("tri")]
+[outputtopology("triangle_cw")]
+[partitioning("integer")]
+[patchconstantfunc("PatchMain")]
+VSOutput HSMain(InputPatch<VSOutput, 3> input, uint pointId : SV_OutputControlPointID, uint patchId : SV_PrimitiveID)
+{
+  return input[pointId];
+}
+
+// Patch
+
+PatchOutput PatchMain(InputPatch<VSOutput, 3> input, uint patchId : SV_PrimitiveID)
+{
+  PatchOutput output;
+  float3 positionWorld[3];
+  positionWorld[0] = mul(input[0].modelMatrix, input[0].positionLocal).xyz;
+  positionWorld[1] = mul(input[1].modelMatrix, input[1].positionLocal).xyz;
+  positionWorld[2] = mul(input[2].modelMatrix, input[2].positionLocal).xyz;
+  float3 v0v1 = positionWorld[1] - positionWorld[0];
+  float3 v0v2 = positionWorld[2] - positionWorld[0];
+  float3 v1v2 = positionWorld[2] - positionWorld[1];
+  
+  output.EdgeFactors[0] = length(v0v1) * 100;
+  output.EdgeFactors[1] = length(v0v2) * 100;
+  output.EdgeFactors[2] = length(v1v2) * 100;
+  output.InsideFactor = max(max(output.EdgeFactors[0], output.EdgeFactors[1]), output.EdgeFactors[2]);
+  return output;
+}
+
+// Domain
+
+[domain("tri")]
+VSOutput DSMain(PatchOutput control, float3 loc : SV_DomainLocation, const OutputPatch<VSOutput, 3> input)
+{
+  VSOutput result;
+  result.position = loc.x * input[0].position + loc.y * input[1].position + loc.z * input[2].position;
+  result.normal = loc.x * input[0].normal + loc.y * input[1].normal + loc.z * input[2].normal;
+  result.positionLocal = loc.x * input[0].positionLocal + loc.y * input[1].positionLocal + loc.z * input[2].positionLocal;
+  result.normalLocal = loc.x * input[0].normalLocal + loc.y * input[1].normalLocal + loc.z * input[2].normalLocal;
+  result.mainColor = input[0].mainColor;
+  result.secondaryColor = input[0].secondaryColor;
+  result.modelMatrix = input[0].modelMatrix;
+  return result;
+}
+
+// Geometry
+
+[maxvertexcount(3)]
+void GSMain(triangle VSOutput input[3] : SV_POSITION, inout TriangleStream<VSOutput> output)
+{
+  //float3 normalTri = (input[0].normalLocal + input[1].normalLocal + input[2].normalLocal) / 3;
+  float3 v0v1 = input[1].position.xyz - input[0].position.xyz;
+  float3 v0v2 = input[2].position.xyz - input[0].position.xyz;
+  float3 normalTri = normalize(cross(v0v1, v0v2));
+  float3 positionTri = (input[0].position.xyz + input[1].position.xyz + input[2].position.xyz) / 3;
+
+  for (int i = 0; i < 3; ++i)
+  {
+    float4 pos = input[i].position;
+    //pos += float4(vertexDistortion(input[i].position, input[i].normal), 1.0);
+    pos += float4(vertexDistortion(positionTri, normalTri), 0.0);
+    //pos += clamp(10 - pow(5 * sin(0.5 * g_time), 2), 0.0, 10.0) * float4(normalTri, 0.0);
+    
+    pos = mul(input[i].modelMatrix, pos);
+    input[i].position = mul(projectionMatrix, mul(viewMatrix, pos));
+    
+    output.Append(input[i]);
+  }
+  
+  output.RestartStrip();
+}
+
 // Pixel
 
 float4 PSMain(VSOutput input) : SV_TARGET
 {
   float2 uv = (input.position.xy - (g_resolution.xy / 2.0)) / g_resolution.x;
-    
-  float4 color1 = float4(0.05, 0.05, 0.05, 0.0);
-  float4 color2 = float4((input.normal + 1.0.rrr) * 0.5.rrr, 0.0);
+  float4 distortedColor = float4(colorDistortion(input.mainColor, input.secondaryColor, mul(input.modelMatrix, float4(input.positionLocal, 1.0)).xyz, input.normal), 1.0);
   
-  return color1 + float4(colorDistortion(input.mainColor, input.secondaryColor, input.positionLocal, input.normalLocal), 1.0);
+  if (g_isNormalVisMode)
+  {
+    float4 color = float4((input.normal + 1.0.rrr) * 0.5.rrr, 0.0);
+    return color + distortedColor;
+  }
+  else
+  {
+    float4 color = float4(0.05, 0.05, 0.05, 1.0);
+    return color + distortedColor;
+  }
 }

@@ -1,10 +1,4 @@
-cbuffer ConstantBuffer : register(b0)
-{
-  float4x4 viewMatrix;
-  float4x4 projectionMatrix;
-  float4 g_resolution;
-  float g_time;
-};
+#include "buffer.hlsl"
 
 //#define PART1
 #ifdef PART1
@@ -45,8 +39,11 @@ struct VSInput
 
 struct VSOutput
 {
+  float4x4 modelMatrix : MODEL;
   float4 position : SV_POSITION;
   float3 normal : NORMAL;
+  float3 positionLocal : POSITION_LOCAL;
+  float3 normalLocal : NORMAL_LOCAL;
 };
 
 VSOutput VSMain(VSInput input)
@@ -60,6 +57,9 @@ VSOutput VSMain(VSInput input)
   float3 axisZ = normalize(input.modelMatrix[2].xyz);
   float3 worldN = input.normal.x * axisX + input.normal.y * axisY + input.normal.z * axisZ;
   
+  result.modelMatrix = input.modelMatrix;
+  result.positionLocal = input.position;
+  result.normalLocal = input.normal;
   result.normal = worldN;
   return result;
 }
@@ -135,7 +135,18 @@ float4 PSMain(VSOutput input) : SV_TARGET
   float4 blended = 1.0.rrrr - (1.0.rrrr - col) * (1.0.rrrr - background);
   
   //return blended;
-  return float4((input.normal + 1.0.rrr) * 0.5.rrr, 1.0);
+  //return float4((input.normal + 1.0.rrr) * 0.5.rrr, 1.0);
+  
+  if (g_isNormalVisMode)
+  {
+    float4 color = float4((input.normal + 1.0.rrr) * 0.5.rrr, 0.0);
+    return color;
+  }
+  else
+  {
+    float4 color = float4(0.95, 0.95, 0.85, 1.0);
+    return color * dot(normalize(g_cameraPosition - mul(input.modelMatrix, float4(input.positionLocal, 1.0))), normalize(input.normal));
+  }
 }
 
 #endif

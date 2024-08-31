@@ -1,6 +1,5 @@
 #include "DxRenderer.h"
 #include "Flame/engine/MeshSystem.h"
-#include "Flame/engine/OpaqueGroup.h"
 #include "Flame/math/HitRecord.h"
 #include "Flame/utils/PtrProxy.h"
 
@@ -83,11 +82,15 @@ namespace Flame {
       m_constantBuffer.data.cameraPosition[2] = cameraPos.z;
       m_constantBuffer.data.cameraPosition[3] = 1;
       std::memcpy(m_constantBuffer.data.resolution, m_resolution.data(), m_resolution.size() * sizeof(float));
+      m_constantBuffer.data.isNormalVisMode = m_isNormalVisMode;
       m_constantBuffer.ApplyChanges();
     }
 
     dc->VSSetConstantBuffers(0, 1, m_constantBuffer.GetAddressOf());
     dc->PSSetConstantBuffers(0, 1, m_constantBuffer.GetAddressOf());
+    dc->GSSetConstantBuffers(0, 1, m_constantBuffer.GetAddressOf());
+    dc->HSSetConstantBuffers(0, 1, m_constantBuffer.GetAddressOf());
+    dc->DSSetConstantBuffers(0, 1, m_constantBuffer.GetAddressOf());
 
     MeshSystem::Get()->Render(deltaTime);
   }
@@ -99,5 +102,13 @@ namespace Flame {
     m_resolution[1] = static_cast<float>(height);
     m_resolution[2] = 1.0f / m_resolution[0];
     m_resolution[3] = 1.0f / m_resolution[1];
+  }
+
+  void DxRenderer::SetNormalVisMode(bool isNormalVisMode) {
+    m_isNormalVisMode = isNormalVisMode;
+  }
+
+  bool DxRenderer::GetNormalVisMode() const {
+    return m_isNormalVisMode;
   }
 }

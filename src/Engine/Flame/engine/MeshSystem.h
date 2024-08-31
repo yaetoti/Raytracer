@@ -1,9 +1,9 @@
 #pragma once
 #include <memory>
 #include <glm/glm.hpp>
-#include "HologramGroup.h"
 #include "Model.h"
-#include "OpaqueGroup.h"
+#include "Flame/graphics/groups/HologramGroup.h"
+#include "Flame/graphics/groups/OpaqueGroup.h"
 #include "Flame/window/Window.h"
 
 namespace Flame {

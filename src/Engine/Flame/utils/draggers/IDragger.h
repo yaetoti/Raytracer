@@ -10,14 +10,14 @@ namespace Flame {
   struct OpaqueInstanceDragger final : IDragger {
     explicit OpaqueInstanceDragger(const HitRecord<MeshSystem::HitResult>& record, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
     : m_draggable(record.data.perInstanceOpaque)
-    , m_offset(m_draggable->data.transform.GetPosition() - record.point)
+    , m_offset(m_draggable->GetData().transform.GetPosition() - record.point)
     , m_distanceToPlane(glm::dot(cameraDirection, record.point - cameraPosition)) {
     }
 
     void Drag(const Ray& r, const glm::vec3& cameraDirection) override {
       float approachToPlane = glm::dot(r.direction, cameraDirection);
       float approachTime = m_distanceToPlane / approachToPlane;
-      m_draggable->data.transform.SetPosition(r.AtParameter(approachTime) + m_offset);
+      m_draggable->GetData().transform.SetPosition(r.AtParameter(approachTime) + m_offset);
     }
 
   private:
@@ -29,14 +29,14 @@ namespace Flame {
   struct HologramInstanceDragger final : IDragger {
     explicit HologramInstanceDragger(const HitRecord<MeshSystem::HitResult>& record, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
     : m_draggable(record.data.perInstanceHologram)
-    , m_offset(m_draggable->data.transform.GetPosition() - record.point)
+    , m_offset(m_draggable->GetData().transform.GetPosition() - record.point)
     , m_distanceToPlane(glm::dot(cameraDirection, record.point - cameraPosition)) {
     }
 
     void Drag(const Ray& r, const glm::vec3& cameraDirection) override {
       float approachToPlane = glm::dot(r.direction, cameraDirection);
       float approachTime = m_distanceToPlane / approachToPlane;
-      m_draggable->data.transform.SetPosition(r.AtParameter(approachTime) + m_offset);
+      m_draggable->GetData().transform.SetPosition(r.AtParameter(approachTime) + m_offset);
     }
 
   private:
