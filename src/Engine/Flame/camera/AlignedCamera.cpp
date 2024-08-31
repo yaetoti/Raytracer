@@ -83,6 +83,27 @@ namespace Flame {
     return m_iView;
   }
 
+  glm::vec3 AlignedCamera::GetToFrustumTlNear() const {
+    InvalidateMatrices();
+    return m_toCornerTl;
+  }
+
+  glm::vec3 AlignedCamera::GetToFrustumBlNear() const {
+    InvalidateMatrices();
+    return m_toCornerBl;
+  }
+
+  glm::vec3 AlignedCamera::GetToFrustumBrNear() const {
+    InvalidateMatrices();
+    return m_toCornerBr;
+  }
+
+  glm::vec4 AlignedCamera::ClipToWorld(glm::vec4 position) const {
+    InvalidateMatrices();
+    position = m_iView * (m_iProjection * position);
+    return position / position.w;
+  }
+
   Ray AlignedCamera::GetRay(uint32_t x, uint32_t y) const {
     // TODO assert failed
     assert(x < m_width && y < m_height);
@@ -125,21 +146,32 @@ namespace Flame {
       static_cast<float>(m_width) / static_cast<float>(m_height),
       m_near, m_far
     );
+    // m_projection = glm::perspectiveFovRH_ZO(
+    //   glm::radians(m_fov),
+    //   static_cast<float>(m_width), static_cast<float>(m_height),
+    //   m_far, m_near
+    // );
     m_iProjection = glm::inverse(m_projection);
     m_iView = glm::translate(m_position) * GetRotationMat();
     m_view = glm::inverse(m_iView);
 
-    glm::vec4 target = m_iView * m_iProjection * glm::vec4(-1.0f, 1.0f, 1.0f, 1.0f);
+    // Near
+    // TopLeft
+    glm::vec4 target = m_iView * (m_iProjection * glm::vec4(-1.0f, 1.0f, 1.0f, 1.0f));
     m_cornerTl = glm::vec3(target) / target.w;
+    // BottomLeft
+    target = m_iView * (m_iProjection * glm::vec4(-1.0f, -1.0f, 1.0f, 1.0f));
+    m_cornerBl = glm::vec3(target) / target.w;
+    // BottomRight
+    target = m_iView * (m_iProjection * glm::vec4(1.0f, -1.0f, 1.0f, 1.0f));
+    m_cornerBr = glm::vec3(target) / target.w;
 
-    target = m_iView * m_iProjection * glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-    glm::vec3 cornerTr = glm::vec3(target) / target.w;
+    m_toRightCorner = m_cornerBr - m_cornerBl;
+    m_toBottomCorner = m_cornerBl - m_cornerTl;
 
-    target = m_iView * m_iProjection * glm::vec4(-1.0f, -1.0f, 1.0f, 1.0f);
-    glm::vec3 cornerBl = glm::vec3(target) / target.w;
-
-    m_toRightCorner = cornerTr - m_cornerTl;
-    m_toBottomCorner = cornerBl - m_cornerTl;
+    m_toCornerTl = m_cornerTl - m_position;
+    m_toCornerBl = m_cornerBl - m_position;
+    m_toCornerBr = m_cornerBr - m_position;
 
     m_matricesDirty = false;
   }

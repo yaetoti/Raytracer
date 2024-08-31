@@ -3,7 +3,7 @@
 Application::Application() {
   m_window = std::make_shared<Flame::Window>(L"Flame 🔥", 160, 90, 1);
   m_input = &m_window->GetInputSystem();
-  m_camera = std::make_shared<Flame::AlignedCamera>(m_window->GetWidth(), m_window->GetHeight(), 90.0f, 0.01f, 1000.0f);
+  m_camera = std::make_shared<Flame::AlignedCamera>(m_window->GetWidth(), m_window->GetHeight(), 60.0f, 0.01f, 1000.0f);
   m_camera->SetPosition(glm::vec3(0, 0, 2));
   m_meshSystem = std::make_shared<Flame::MeshSystem>();
   m_dxRenderer = std::make_unique<Flame::DxRenderer>(m_window, m_camera);
@@ -92,7 +92,7 @@ float Application::GetDeltaTime() const {
 
 void Application::UpdateCamera(float deltaTime) {
   // TODO Move into CameraController
-  static float baseSpeed = 0.5f;
+  static float baseSpeed = 5.0f;
   float speed = baseSpeed;
   float rollSpeedDeg = 90.0f;
 

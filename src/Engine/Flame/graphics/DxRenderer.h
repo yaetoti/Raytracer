@@ -16,6 +16,9 @@ namespace Flame {
     struct PerFrame final {
       glm::mat4 viewMatrix;
       glm::mat4 projectionMatrix;
+      float frustumTL[4];
+      float frustumBR[4];
+      float frustumBL[4];
       float resolution[4];
       float cameraPosition[4];
       float time;
@@ -39,6 +42,10 @@ namespace Flame {
     ComPtr<ID3D11RasterizerState> m_rasterizerState;
     ConstantBuffer<PerFrame> m_constantBuffer;
     InputSystem* m_input;
+
+    ComPtr<ID3D11SamplerState> m_pointSampler;
+    ComPtr<ID3D11SamplerState> m_linearSampler;
+    ComPtr<ID3D11SamplerState> m_anisotropicSampler;
 
     std::vector<float> m_resolution;
     bool m_isNormalVisMode = false;

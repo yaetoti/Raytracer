@@ -1,4 +1,4 @@
-#include "buffer.hlsl"
+#include "globals.hlsl"
 
 // Data
 
@@ -6,6 +6,7 @@ struct VSInput
 {
   float3 position : POSITION;
   float3 normal : NORMAL;
+  float2 uv : TEXCOORD;
   float4x4 modelMatrix : MODEL;
   float3 mainColor : MAIN_COLOR;
   float3 secondaryColor : SECONDARY_COLOR;
@@ -265,7 +266,7 @@ void GSMain(triangle VSOutput input[3] : SV_POSITION, inout TriangleStream<VSOut
     //pos += clamp(10 - pow(5 * sin(0.5 * g_time), 2), 0.0, 10.0) * float4(normalTri, 0.0);
     
     pos = mul(input[i].modelMatrix, pos);
-    input[i].position = mul(projectionMatrix, mul(viewMatrix, pos));
+    input[i].position = mul(g_projectionMatrix, mul(g_viewMatrix, pos));
     
     output.Append(input[i]);
   }

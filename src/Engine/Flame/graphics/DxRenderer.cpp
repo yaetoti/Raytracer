@@ -6,6 +6,7 @@
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
+#include <d3d11.h>
 #include <d3dcompiler.h>
 #include <glm/ext/matrix_transform.hpp>
 #include <iostream>
@@ -43,9 +44,48 @@ namespace Flame {
     // Create constant buffer
     result = m_constantBuffer.Init();
     assert(SUCCEEDED(result));
+
+    // Create samplers
+    {
+      D3D11_SAMPLER_DESC desc {};
+      desc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
+      desc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+      desc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+      desc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+      desc.MaxLOD = D3D11_FLOAT32_MAX;
+      desc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+      result = DxContext::Get()->d3d11Device->CreateSamplerState(&desc, m_pointSampler.GetAddressOf());
+      assert(SUCCEEDED(result));
+    }
+    {
+      D3D11_SAMPLER_DESC desc {};
+      desc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+      desc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+      desc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+      desc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+      desc.MaxLOD = D3D11_FLOAT32_MAX;
+      desc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+      result = DxContext::Get()->d3d11Device->CreateSamplerState(&desc, m_linearSampler.GetAddressOf());
+      assert(SUCCEEDED(result));
+    }
+    {
+      D3D11_SAMPLER_DESC desc {};
+      desc.Filter = D3D11_FILTER_ANISOTROPIC;
+      desc.MaxAnisotropy = 8;
+      desc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+      desc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+      desc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+      desc.MaxLOD = D3D11_FLOAT32_MAX;
+      desc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+      result = DxContext::Get()->d3d11Device->CreateSamplerState(&desc, m_anisotropicSampler.GetAddressOf());
+      assert(SUCCEEDED(result));
+    }
   }
 
   void DxRenderer::Cleanup() {
+    m_pointSampler.Reset();
+    m_linearSampler.Reset();
+    m_anisotropicSampler.Reset();
     m_constantBuffer.Reset();
   }
 
@@ -67,6 +107,11 @@ namespace Flame {
     dc->ClearRenderTargetView(targetView.Get(), clearColor);
     dc->ClearDepthStencilView(depthStencilView.Get(), D3D11_CLEAR_DEPTH, 0.0f, 0);
 
+    // Set Samplers
+    dc->PSSetSamplers(0, 1, m_pointSampler.GetAddressOf());
+    dc->PSSetSamplers(1, 1, m_linearSampler.GetAddressOf());
+    dc->PSSetSamplers(2, 1, m_anisotropicSampler.GetAddressOf());
+
     // Constant buffer magic
     {
       glm::mat4 view = m_camera->GetViewMatrix();
@@ -74,15 +119,35 @@ namespace Flame {
 
       m_constantBuffer.data.viewMatrix = view;
       m_constantBuffer.data.projectionMatrix = projection;
+      
+      glm::vec3 toTl = glm::vec3(m_camera->ClipToWorld(glm::vec4(-1.0f, 3.0f, 0.0f, 1.0f))) - m_camera->GetPosition();
+      glm::vec3 toBl = glm::vec3(m_camera->ClipToWorld(glm::vec4(-1.0f, -1.0f, 0.0f, 1.0f))) - m_camera->GetPosition();
+      glm::vec3 toBr = glm::vec3(m_camera->ClipToWorld(glm::vec4(3.0f, -1.0f, 0.0f, 1.0f))) - m_camera->GetPosition();
+      m_constantBuffer.data.frustumTL[0] = toTl.x;
+      m_constantBuffer.data.frustumTL[1] = toTl.y;
+      m_constantBuffer.data.frustumTL[2] = toTl.z;
+      m_constantBuffer.data.frustumTL[3] = 1;
 
-      m_constantBuffer.data.time = time;
+      m_constantBuffer.data.frustumBL[0] = toBl.x;
+      m_constantBuffer.data.frustumBL[1] = toBl.y;
+      m_constantBuffer.data.frustumBL[2] = toBl.z;
+      m_constantBuffer.data.frustumBL[3] = 1;
+
+      m_constantBuffer.data.frustumBR[0] = toBr.x;
+      m_constantBuffer.data.frustumBR[1] = toBr.y;
+      m_constantBuffer.data.frustumBR[2] = toBr.z;
+      m_constantBuffer.data.frustumBR[3] = 1;
+
       const glm::vec3& cameraPos = m_camera->GetPosition();
       m_constantBuffer.data.cameraPosition[0] = cameraPos.x;
       m_constantBuffer.data.cameraPosition[1] = cameraPos.y;
       m_constantBuffer.data.cameraPosition[2] = cameraPos.z;
       m_constantBuffer.data.cameraPosition[3] = 1;
       std::memcpy(m_constantBuffer.data.resolution, m_resolution.data(), m_resolution.size() * sizeof(float));
+
+      m_constantBuffer.data.time = time;
       m_constantBuffer.data.isNormalVisMode = m_isNormalVisMode;
+
       m_constantBuffer.ApplyChanges();
     }
 

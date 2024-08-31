@@ -1,12 +1,13 @@
-#include "buffer.hlsl"
+#include "globals.hlsl"
 
 //#define PART1
 #ifdef PART1
 
 struct VSInput
 {
-  float4 position : POSITION;
-  float4 color : COLOR;
+  float3 position : POSITION;
+  float3 color : COLOR;
+  float2 uv : TEXCOORD;
 };
 
 struct VSOutput
@@ -18,8 +19,8 @@ struct VSOutput
 VSOutput VSMain(VSInput input)
 {
   VSOutput result;
-  result.position = input.position;
-  result.color = input.color;
+  result.position = float4(input.position, 1.0);
+  result.color = float4(input.color, 1.0);
   return result;
 }
 
@@ -50,7 +51,7 @@ VSOutput VSMain(VSInput input)
 {
   VSOutput result;
   // RHS multiplication since matrices are column-major
-  result.position = mul(projectionMatrix, mul(viewMatrix, mul(input.modelMatrix, float4(input.position, 1.0))));
+  result.position = mul(g_projectionMatrix, mul(g_viewMatrix, mul(input.modelMatrix, float4(input.position, 1.0))));
   
   float3 axisX = normalize(input.modelMatrix[0].xyz);
   float3 axisY = normalize(input.modelMatrix[1].xyz);
