@@ -1,15 +1,10 @@
 #pragma once
 
+#include "Flame.h"
+
 #include <memory>
 
-#include "Flame/layers/Scene.h"
-#include "Flame/math/IHitable.h"
-#include "Flame/math/Mesh.h"
-#include "Flame/objects/SphereObject.h"
-#include "Flame/window/InputSystem.h"
-#include "Flame/window/Window.h"
-
-struct MainScene : Flame::Scene {
+struct MainScene : Flame::SceneOld {
   explicit MainScene(Flame::Window& window);
   ~MainScene() override = default;
 
@@ -26,5 +21,5 @@ private:
   Flame::InputSystem& m_input;
 
   // TODO move to scene?
-  std::vector<std::unique_ptr<Flame::Mesh>> m_meshes; 
+  std::vector<std::unique_ptr<Flame::MeshOld>> m_meshes; 
 };

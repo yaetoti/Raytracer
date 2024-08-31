@@ -9,7 +9,7 @@ namespace Flame {
 
   struct Sphere final : IHitable {
     explicit Sphere(const glm::vec3& center, const float& radius);
-    bool Hit(const Ray& r, HitRecord& record, float tMin, float tMax) const override;
+    bool Hit(const Ray& r, HitRecordOld& record, float tMin, float tMax) const override;
 
     friend std::ostream& operator<<(std::ostream& out, const Sphere& s);
 

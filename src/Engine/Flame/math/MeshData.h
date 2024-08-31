@@ -6,14 +6,14 @@
 #include <glm/vec3.hpp>
 
 namespace Flame {
-  struct Face final {
-    Face() = default;
-    explicit Face(uint32_t idV0, uint32_t idV1, uint32_t idV2, uint32_t idNormal)
+  struct FaceOld final {
+    FaceOld() = default;
+    explicit FaceOld(uint32_t idV0, uint32_t idV1, uint32_t idV2, uint32_t idNormal)
     : vertices({ idV0, idV1, idV2 })
     , normal(idNormal) {
     }
 
-    friend std::ostream& operator<<(std::ostream& os, const Face& obj) {
+    friend std::ostream& operator<<(std::ostream& os, const FaceOld& obj) {
       return os << "f "
         << obj.vertices[0] << "//" << obj.normal << ' '
         << obj.vertices[1] << "//" << obj.normal << ' '
@@ -43,7 +43,7 @@ namespace Flame {
 
     std::vector<glm::vec3> vertices;
     std::vector<glm::vec3> normals;
-    std::vector<Face> faces;
+    std::vector<FaceOld> faces;
   };
 
   struct MaterialBinding final {

@@ -6,7 +6,7 @@ namespace Flame {
   , normal(normal) {
   }
 
-  bool Plane::Hit(const Ray& r, HitRecord& record, float tMin, float tMax) const {
+  bool Plane::Hit(const Ray& r, HitRecordOld& record, float tMin, float tMax) const {
     float t = glm::dot(normal, position - r.origin) / glm::dot(normal, r.direction);
     if (t > tMin && t < tMax) {
       record.point = r.AtParameter(t);

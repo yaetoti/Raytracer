@@ -6,7 +6,7 @@ namespace Flame {
   , m_materialId(materialId) {
   }
 
-  bool PlaneObject::Hit(const Ray& r, HitRecord& record, float tMin, float tMax) const {
+  bool PlaneObject::Hit(const Ray& r, HitRecordOld& record, float tMin, float tMax) const {
     if (m_plane.Hit(r, record, tMin, tMax)) {
       record.materialId = m_materialId;
       return true;

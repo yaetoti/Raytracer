@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.26 FATAL_ERROR)
 project(Flame)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 set(BUILD_SHARED_LIBS OFF)
@@ -23,7 +24,12 @@ add_subdirectory(src/ConsoleLib)
 add_subdirectory(src/Engine)
 add_subdirectory(src/Project)
 
+if("${CMAKE_BUILD_TYPE}" STREQUAL "")
+  message(SEND_ERROR "CMAKE_BUILD_TYPE is empty - can't copy resources.")
+  message(SEND_ERROR "Set it manually or if you use VSCode try to set the generator to Ninja in Extensions -> CMakeTools -> Extension Settings -> Generator")
+endif()
+
 add_custom_target(copy_resources ALL
-  COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different "${PROJECT_SOURCE_DIR}/Assets" "${PROJECT_BINARY_DIR}/bin/$<CONFIG>/Assets"
-  COMMENT Copying resources to the build directory...
+  COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different "${PROJECT_SOURCE_DIR}/Assets" "${PROJECT_BINARY_DIR}/bin/${CMAKE_BUILD_TYPE}/Assets"
+  COMMENT "Copying resources to the build directory..."
 )

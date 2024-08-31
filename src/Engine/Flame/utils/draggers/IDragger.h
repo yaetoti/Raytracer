@@ -1,60 +1,60 @@
 #pragma once
 
-#include <Flame/math/Sphere.h>
-
-#include "Flame/objects/MeshObject.h"
-
 namespace Flame {
   struct IDragger {
     virtual ~IDragger() = default;
 
-    virtual void Drag(const Ray& r) = 0;
+    virtual void Drag(const Ray& r, const glm::vec3& cameraDirection) = 0;
   };
 
-  struct ISphereDragger : IDragger {
-    explicit ISphereDragger(Sphere* draggable, const HitRecord& record)
-    : m_draggable(draggable)
-    , m_hitTime(record.time)
-    , m_offset(draggable->center - record.point) {
+  struct OpaqueInstanceDragger final : IDragger {
+    explicit OpaqueInstanceDragger(const HitRecord<MeshSystem::HitResult>& record, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
+    : m_draggable(record.data.perInstanceOpaque)
+    , m_offset(m_draggable->data.transform.GetPosition() - record.point)
+    , m_distanceToPlane(glm::dot(cameraDirection, record.point - cameraPosition)) {
     }
 
-    void Drag(const Ray& r) override {
-      m_draggable->center = r.AtParameter(m_hitTime) + m_offset;
+    void Drag(const Ray& r, const glm::vec3& cameraDirection) override {
+      float approachToPlane = glm::dot(r.direction, cameraDirection);
+      float approachTime = m_distanceToPlane / approachToPlane;
+      m_draggable->data.transform.SetPosition(r.AtParameter(approachTime) + m_offset);
     }
 
   private:
-    Sphere* m_draggable;
-    float m_hitTime;
+    OpaqueGroup::PerInstance* m_draggable;
     glm::vec3 m_offset;
+    float m_distanceToPlane;
   };
 
-  struct IMeshDragger : IDragger {
-    explicit IMeshDragger(MeshObject* draggable, const HitRecord& record)
-    : m_draggable(draggable)
-    , m_hitTime(record.time)
-    , m_offset(draggable->Position() - record.point) {
+  struct HologramInstanceDragger final : IDragger {
+    explicit HologramInstanceDragger(const HitRecord<MeshSystem::HitResult>& record, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
+    : m_draggable(record.data.perInstanceHologram)
+    , m_offset(m_draggable->data.transform.GetPosition() - record.point)
+    , m_distanceToPlane(glm::dot(cameraDirection, record.point - cameraPosition)) {
     }
 
-    void Drag(const Ray& r) override {
-      m_draggable->SetPosition(r.AtParameter(m_hitTime) + m_offset);
+    void Drag(const Ray& r, const glm::vec3& cameraDirection) override {
+      float approachToPlane = glm::dot(r.direction, cameraDirection);
+      float approachTime = m_distanceToPlane / approachToPlane;
+      m_draggable->data.transform.SetPosition(r.AtParameter(approachTime) + m_offset);
     }
 
   private:
-    MeshObject* m_draggable;
-    float m_hitTime;
+    HologramGroup::PerInstance* m_draggable;
     glm::vec3 m_offset;
+    float m_distanceToPlane;
   };
 
   struct DraggerFactory final {
-    static std::unique_ptr<IDragger> CreateDragger(const HitRecord& record) {
-      if (auto sphere = dynamic_cast<Flame::Sphere*>(record.hitable)) {
-        return std::make_unique<ISphereDragger>(sphere, record);
+    static std::unique_ptr<IDragger> CreateDragger(const HitRecord<MeshSystem::HitResult>& record, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection) {
+      switch (record.data.groupType) {
+        case GroupType::OPAQUE_GROUP:
+          return std::make_unique<OpaqueInstanceDragger>(record, cameraPosition, cameraDirection);
+        case GroupType::HOLOGRAM_GROUP:
+          return std::make_unique<HologramInstanceDragger>(record, cameraPosition, cameraDirection);
+        default:
+          return nullptr;
       }
-      if (auto sphere = dynamic_cast<Flame::MeshObject*>(record.hitable)) {
-        return std::make_unique<IMeshDragger>(sphere, record);
-      }
-
-      return nullptr;
     }
   };
 }

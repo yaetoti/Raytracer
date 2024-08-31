@@ -8,7 +8,7 @@ namespace Flame {
   , radius(radius) {
   }
 
-  bool Sphere::Hit(const Ray& r, HitRecord& record, float tMin, float tMax) const {
+  bool Sphere::Hit(const Ray& r, HitRecordOld& record, float tMin, float tMax) const {
     glm::vec3 oc = r.origin - center;
 
     float b = glm::dot(oc, r.direction);

@@ -6,7 +6,7 @@ namespace Flame {
   struct TriangleObject final : IHitable {
     TriangleObject(glm::vec3 p1, glm::vec3 p2, glm::vec3 p3, glm::vec3 normal, int materialId);
 
-    bool Hit(const Ray& r, HitRecord& record, float tMin, float tMax) const override;
+    bool Hit(const Ray& r, HitRecordOld& record, float tMin, float tMax) const override;
 
     glm::vec3 point1;
     glm::vec3 point2;

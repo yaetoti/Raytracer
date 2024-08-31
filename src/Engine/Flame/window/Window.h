@@ -1,15 +1,16 @@
 ﻿#pragma once
 
-#include "events/WindowEvent.h"
-#include "Flame/render/Framebuffer.h"
 #include "Flame/utils/EventDispatcher.h"
+#include "Flame/graphics/Framebuffer.h"
+#include "Flame/graphics/DxContext.h"
+#include "events/WindowEvent.h"
 #include "InputSystem.h"
-#include "Flame/render/DxContext.h"
 
 #include <functional>
 #include <unordered_map>
 #include <Windows.h>
 #include <wrl/client.h>
+
 
 namespace Flame {
   struct Window final {
@@ -34,7 +35,9 @@ namespace Flame {
     EventDispatcher<WindowEvent>& GetDispatcher();
     IDXGISwapChain1* GetSwapChain() const;
     ID3D11Texture2D* GetRenderTexture() const;
-    ID3D11RenderTargetView* GetTargetView() const;
+    ComPtr<ID3D11RenderTargetView> GetTargetView() const;
+    ComPtr<ID3D11DepthStencilView> GetDepthStencilView() const;
+    ComPtr<ID3D11DepthStencilState> GetDepthStencilState() const;
 
     bool HandleWindowMessage(UINT msg, WPARAM wParam, LPARAM lParam) const;
 
@@ -71,5 +74,8 @@ namespace Flame {
     ComPtr<IDXGISwapChain1> m_dxgiSwapChain;
     ComPtr<ID3D11Texture2D> m_d3d11RenderTexture;
     ComPtr<ID3D11RenderTargetView> m_d3d11TargetView;
+    ComPtr<ID3D11Texture2D> m_d3d11DepthTexture;
+    ComPtr<ID3D11DepthStencilView> m_d3d11DepthStencilView;
+    ComPtr<ID3D11DepthStencilState> m_d3d11DepthStencilState;
   };
 }

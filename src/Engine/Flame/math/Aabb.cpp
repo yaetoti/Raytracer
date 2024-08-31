@@ -6,7 +6,7 @@ namespace Flame {
   , m_max(max) {
   }
 
-  bool Aabb::Hit(const Ray& r, HitRecord& record, float tMin, float tMax) const {
+  bool Aabb::Hit(const Ray& r, HitRecord<const Aabb*>& record, float tMin, float tMax) const {
     for (int d = 0; d < 3; ++d) {
       float t1 = (m_min[d] - r.origin[d]) / r.direction[d];
       float t2 = (m_max[d] - r.origin[d]) / r.direction[d];
@@ -18,7 +18,7 @@ namespace Flame {
     }
 
     record.time = tMin;
-    record.hitable = const_cast<Aabb*>(this);
+    record.data = this;
     return true;
   }
 
@@ -86,6 +86,6 @@ namespace Flame {
   }
 
   std::ostream& operator<<(std::ostream& out, const Aabb& box) {
-    return out << "Aabb { " << box.m_min << ", " << box.m_max << " }";
+    return out << "AabbOld { " << box.m_min << ", " << box.m_max << " }";
   }
 }

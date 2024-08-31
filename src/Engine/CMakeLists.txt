@@ -6,6 +6,8 @@ file(GLOB_RECURSE SRC_FILES "${PROJECT_SOURCE_DIR}/*.cpp")
 include_directories(
   ${CMAKE_SOURCE_DIR}/src/Engine
   ${CMAKE_SOURCE_DIR}/vendor/glm
+  ${CMAKE_SOURCE_DIR}/vendor/assimp/include
+  ${CMAKE_BINARY_DIR}/vendor/assimp/include
 )
 
 add_library(${PROJECT_NAME} ${SRC_FILES})

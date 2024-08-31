@@ -84,7 +84,7 @@ namespace Flame {
             std::stof(tokens[3])
           );
         }
-        // Face
+        // FaceOld
         else if (tokens[0] == L"f") {
           if (tokens.size() != 4) {
             continue;
