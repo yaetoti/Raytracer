@@ -34,6 +34,10 @@ namespace Flame {
     Resize(m_window->GetWidth(), m_window->GetHeight());
   }
 
+  DxRenderer::~DxRenderer() {
+    Cleanup();
+  }
+
   void DxRenderer::Init() {
     auto device = DxContext::Get()->d3d11Device;
     auto dc = DxContext::Get()->d3d11DeviceContext;
@@ -102,7 +106,7 @@ namespace Flame {
     dc->PSSetSamplers(1, 1, m_linearSampler.GetAddressOf());
     dc->PSSetSamplers(2, 1, m_anisotropicSampler.GetAddressOf());
 
-    // Init skybox shaders
+    // Init shaders
     m_skyboxPipeline.Init(kSkyShaderPath, ShaderType::VERTEX_SHADER | ShaderType::PIXEL_SHADER);
     {
       auto texture = TextureManager::Get()->GetTexture(kSkyboxPath);
@@ -110,18 +114,21 @@ namespace Flame {
       m_skyTexture = texture->GetResource();
     }
 
+    m_testPipeline.Init(L"Assets/Shaders/test.hlsl", ShaderType::VERTEX_SHADER | ShaderType::PIXEL_SHADER);
+
     // Generate IBL textures
     ReflectionCapture capture;
     capture.Init();
     //m_diffuseTexture = capture.GenerateDiffuseTexture(256, m_skyTextureView);
-    m_specularTexture = capture.GenerateSpecularTexture(1024, m_skyTextureView);
+    //m_specularTexture = capture.GenerateSpecularTexture(1024, m_skyTextureView);
+    //m_reflectanceTexture = capture.GenerateReflectanceTexture(1024);
 
-    TextureManager::SaveToDDS(
-      Engine::GetDirectory(L"cubemap.dds"),
-      m_specularTexture->GetResource(),
-      TextureManager::FileFormat(DXGI_FORMAT_R16G16B16A16_FLOAT),
-      false
-    );
+    // TextureManager::SaveToDDS(
+    //   Engine::GetDirectory(L"cubemap.dds"),
+    //   m_reflectanceTexture->GetResource(),
+    //   TextureManager::FileFormat(DXGI_FORMAT_R8G8B8A8_UNORM),
+    //   false
+    // );
   }
 
   void DxRenderer::Cleanup() {
@@ -169,10 +176,17 @@ namespace Flame {
     dc->ClearRenderTargetView(targetViewHdr.Get(), clearColor);
     dc->ClearDepthStencilView(depthStencilView.Get(), D3D11_CLEAR_DEPTH, 0.0f, 0);
 
+    // Draw something in the foreground
+    // m_testPipeline.Bind();
+    // dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    // dc->Draw(3, 0);
+
     MeshSystem::Get()->Render(deltaTime);
     RenderSkybox();
 
+
     // Resolve HDR -> LDR
+    //dc->OMSetRenderTargets(1, PtrProxy<ID3D11RenderTargetView*>(nullptr).Ptr(), nullptr);
     PostProcess::Get()->Resolve(targetSrvHdr.Get(), targetView.Get());
   }
 
@@ -193,21 +207,13 @@ namespace Flame {
     return m_isNormalVisMode;
   }
 
-  float DxRenderer::GetEvFactor() const {
-    return m_evFactor;
-  }
-
-  void DxRenderer::SetEvFactor(float evFactor) {
-    m_evFactor = evFactor;
-  }
-
   void DxRenderer::RenderSkybox() {
     auto dc = DxContext::Get()->d3d11DeviceContext.Get();
     m_skyboxPipeline.Bind();
     dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-    //dc->PSSetShaderResources(0, 1, &m_skyTextureView);
+    dc->PSSetShaderResources(0, 1, &m_skyTextureView);
     //dc->PSSetShaderResources(0, 1, m_diffuseTexture->GetResourceViewAddress());
-    dc->PSSetShaderResources(0, 1, m_specularTexture->GetResourceViewAddress());
+    //dc->PSSetShaderResources(0, 1, m_specularTexture->GetResourceViewAddress());
     dc->Draw(3, 0);
   }
 
@@ -245,7 +251,6 @@ namespace Flame {
 
     m_constantBuffer.data.time = time;
     m_constantBuffer.data.isNormalVisMode = m_isNormalVisMode;
-    m_constantBuffer.data.evFactor = m_evFactor;
 
     m_constantBuffer.ApplyChanges();
   }

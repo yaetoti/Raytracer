@@ -1,7 +1,5 @@
 #include "globals.hlsl"
 
-// TODO pass frustum corners in a constant buffer
-
 TextureCube<float4> skyTexture : register(t0);
 
 struct VSOutput {
@@ -10,8 +8,6 @@ struct VSOutput {
 };
 
 VSOutput VSMain(uint vertexId : SV_VERTEXID) {
-  // Why do we need UV?
-
   VSOutput result;
 
   // TopLeft
@@ -39,7 +35,7 @@ VSOutput VSMain(uint vertexId : SV_VERTEXID) {
 }
 
 float4 PSMain(VSOutput input) : SV_TARGET {
-  //return skyTexture.Sample(g_anisotropicWrap, input.cameraToPixelDir);
-  return skyTexture.SampleLevel(g_anisotropicWrap, input.cameraToPixelDir, 5);
+  return skyTexture.Sample(g_anisotropicWrap, input.cameraToPixelDir);
+  //return skyTexture.SampleLevel(g_anisotropicWrap, input.cameraToPixelDir, 5);
   //return skyTexture.Sample(g_pointWrap, input.cameraToPixelDir);
 }

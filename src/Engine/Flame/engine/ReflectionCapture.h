@@ -30,11 +30,17 @@ namespace Flame {
       float padding0[2];
     };
 
+    struct IblReflectanceData final {
+      uint32_t samples;
+      float padding0[3];
+    };
+
     void Init();
     void Cleanup();
 
     std::shared_ptr<Texture> GenerateDiffuseTexture(uint32_t textureSize, ID3D11ShaderResourceView* skyboxView);
     std::shared_ptr<Texture> GenerateSpecularTexture(uint32_t textureSize, ID3D11ShaderResourceView* skyboxView);
+    std::shared_ptr<Texture> GenerateReflectanceTexture(uint32_t textureSize);
 
   private:
     static std::shared_ptr<Texture> CreateCubemap(uint32_t textureSize, DXGI_FORMAT format, uint32_t mipLevels);
@@ -43,13 +49,17 @@ namespace Flame {
     static uint32_t GetTextureSizeLevel(uint32_t size, uint32_t mipLevel);
 
   private:
-    // Diffuse IBL
+    // Diffuse
     ConstantBuffer<IblDiffuseData> diffuseBuffer;
     ShaderPipeline diffusePipeline;
 
-    // Specular IBL
+    // Specular
     ConstantBuffer<IblSpecularData> specularBuffer;
     ShaderPipeline specularPipeline;
+
+    // Reflectance
+    ShaderPipeline reflectancePipeline;
+    ConstantBuffer<IblReflectanceData> reflectanceBuffer;
 
     inline static const glm::vec4 kCubemapFront[6] = {
       { 1, 0, 0, 0 },

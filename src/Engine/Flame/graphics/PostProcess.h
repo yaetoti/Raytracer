@@ -1,39 +1,32 @@
 #pragma once
 
 #include <Flame/engine/ShaderPipeline.h>
-#include <Flame/engine/ShaderType.h>
-
-#include "Flame/graphics/DxContext.h"
+#include "buffers/ConstantBuffer.h"
 
 namespace Flame {
   struct PostProcess final {
-    void Init() {
-      m_pipeline.Init(kShaderPath, ShaderType::VERTEX_SHADER | ShaderType::PIXEL_SHADER);
-    }
+    struct ResolveBuffer final {
+      float evFactor;
+    };
 
-    void Cleanup() {
-      m_pipeline.Reset();
-    }
+    void Init();
+    void Cleanup();
 
-    void Resolve(ID3D11ShaderResourceView* src, ID3D11RenderTargetView* dst) {
-      ID3D11DeviceContext* dc = DxContext::Get()->d3d11DeviceContext.Get();
-      dc->OMSetRenderTargets(1, &dst, nullptr);
-      dc->PSSetShaderResources(0, 1, &src);
-      m_pipeline.Bind();
-      dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-      dc->Draw(3, 0);
-    }
+    float GetEvFactor() const;
+    void SetEvFactor(float evFactor);
 
-    static PostProcess* Get() {
-      static PostProcess instance;
-      return &instance;
-    }
+    void Resolve(ID3D11ShaderResourceView* src, ID3D11RenderTargetView* dst) const;
+
+    static PostProcess* Get();
 
   private:
     PostProcess() = default;
 
   private:
     ShaderPipeline m_pipeline;
+    ConstantBuffer<ResolveBuffer> m_buffer;
+    mutable bool m_bufferDirty = true;
+
     inline static const wchar_t* kShaderPath = L"Assets/Shaders/resolve.hlsl";
   };
 }

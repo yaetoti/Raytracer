@@ -27,11 +27,11 @@ namespace Flame {
       float resolution[4];
       float cameraPosition[4];
       float time;
-      float evFactor;
       bool isNormalVisMode;
     };
 
     explicit DxRenderer(std::shared_ptr<Window> window, std::shared_ptr<AlignedCamera> camera);
+    ~DxRenderer();
 
     void Init();
     void Cleanup();
@@ -41,9 +41,6 @@ namespace Flame {
 
     void SetNormalVisMode(bool isNormalVisMode);
     bool GetNormalVisMode() const;
-
-    float GetEvFactor() const;
-    void SetEvFactor(float evFactor);
 
   private:
     void RenderSkybox();
@@ -63,8 +60,6 @@ namespace Flame {
     std::vector<float> m_resolution;
     bool m_isNormalVisMode = false;
 
-    float m_evFactor = 0.0f;
-
     // Skybox
     ShaderPipeline m_skyboxPipeline;
     ID3D11Resource* m_skyTexture;
@@ -72,6 +67,10 @@ namespace Flame {
 
     std::shared_ptr<Texture> m_diffuseTexture;
     std::shared_ptr<Texture> m_specularTexture;
+    std::shared_ptr<Texture> m_reflectanceTexture;
+
+    // Foreground Output TODO remove
+    ShaderPipeline m_testPipeline;
 
     static constexpr const wchar_t* kSkyboxPath = L"Assets/Textures/lake_beach.dds";
     //static constexpr const wchar_t* kSkyboxPath = L"Assets/Textures/night_street.dds";

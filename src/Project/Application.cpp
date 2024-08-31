@@ -17,7 +17,6 @@ Application::Application() {
   m_input = &m_window->GetInputSystem();
   m_camera = std::make_shared<Flame::AlignedCamera>(m_window->GetWidth(), m_window->GetHeight(), 60.0f, 0.01f, 1000.0f);
   m_camera->SetPosition(glm::vec3(0, 0, 2));
-  m_meshSystem = std::make_shared<Flame::MeshSystem>();
   m_dxRenderer = std::make_unique<Flame::DxRenderer>(m_window, m_camera);
   m_dragger = nullptr;
 }
@@ -227,6 +226,10 @@ void Application::Init() {
   m_dxRenderer->Init();
 }
 
+void Application::Cleanup() {
+
+}
+
 void Application::Update(float deltaTime) {
   if (m_input->IsKeyPressed(VK_ESCAPE)) {
     PostQuitMessage(0);
@@ -253,12 +256,12 @@ void Application::Update(float deltaTime) {
   // Update EV100
   const float evSpeed = 1.0f;
 
-  if (m_input->IsKeyPressed(VK_ADD)) {
-    m_dxRenderer->SetEvFactor(m_dxRenderer->GetEvFactor() + evSpeed * deltaTime);
+  if (m_input->IsKeyPressed(VK_OEM_PLUS)) {
+    Flame::PostProcess::Get()->SetEvFactor(Flame::PostProcess::Get()->GetEvFactor() + evSpeed * deltaTime);
   }
 
-  if (m_input->IsKeyPressed(VK_SUBTRACT)) {
-    m_dxRenderer->SetEvFactor(m_dxRenderer->GetEvFactor() - evSpeed * deltaTime);
+  if (m_input->IsKeyPressed(VK_OEM_MINUS)) {
+    Flame::PostProcess::Get()->SetEvFactor(Flame::PostProcess::Get()->GetEvFactor() - evSpeed * deltaTime);
   }
 }
 

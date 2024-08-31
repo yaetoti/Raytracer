@@ -8,6 +8,8 @@ namespace Flame {
     diffuseBuffer.Init();
     specularPipeline.Init(L"Assets/Shaders/iblSpecular.hlsl", ShaderType::VERTEX_SHADER | ShaderType::PIXEL_SHADER);
     specularBuffer.Init();
+    reflectancePipeline.Init(L"Assets/Shaders/iblReflectance.hlsl", ShaderType::VERTEX_SHADER | ShaderType::PIXEL_SHADER);
+    reflectanceBuffer.Init();
   }
 
   void ReflectionCapture::Cleanup() {
@@ -15,6 +17,8 @@ namespace Flame {
     diffuseBuffer.Reset();
     specularPipeline.Reset();
     specularBuffer.Reset();
+    reflectancePipeline.Reset();
+    reflectanceBuffer.Reset();
   }
 
   std::shared_ptr<Texture> ReflectionCapture::GenerateDiffuseTexture(uint32_t textureSize, ID3D11ShaderResourceView* skyboxView) {
@@ -48,6 +52,9 @@ namespace Flame {
       diffuseBuffer.ApplyChanges();
       dc->Draw(3, 0);
     }
+
+    // Cleanup
+    dc->OMSetRenderTargets(0, nullptr, nullptr);
 
     return texture;
   }
@@ -91,7 +98,73 @@ namespace Flame {
       }
     }
 
+    // Cleanup
+    dc->OMSetRenderTargets(0, nullptr, nullptr);
+
     return texture;
+  }
+
+  std::shared_ptr<Texture> ReflectionCapture::GenerateReflectanceTexture(uint32_t textureSize) {
+    auto device = DxContext::Get()->d3d11Device;
+    auto dc = DxContext::Get()->d3d11DeviceContext;
+    HRESULT result;
+    ComPtr<ID3D11Texture2D> texture;
+    ComPtr<ID3D11ShaderResourceView> textureView;
+
+    // Create texture
+    {
+      D3D11_TEXTURE2D_DESC desc {
+        textureSize,
+        textureSize,
+        1,
+        1,
+        DXGI_FORMAT_R8G8B8A8_UNORM,
+        { 1, 0 },
+        D3D11_USAGE_DEFAULT,
+        D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE,
+        0,
+        0
+      };
+      result = device->CreateTexture2D(&desc, nullptr, texture.ReleaseAndGetAddressOf());
+      assert(SUCCEEDED(result));
+    }
+
+    // Create SRV
+    {
+      D3D11_SHADER_RESOURCE_VIEW_DESC desc {};
+      desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+      desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+      desc.Texture2D = { 0, 1 };
+      result = device->CreateShaderResourceView(texture.Get(), &desc, textureView.ReleaseAndGetAddressOf());
+      assert(SUCCEEDED(result));
+    }
+
+    // Create RTV
+    ComPtr<ID3D11RenderTargetView> rtv;
+    device->CreateRenderTargetView(texture.Get(), nullptr, rtv.ReleaseAndGetAddressOf());
+
+    // Render
+    D3D11_VIEWPORT viewport {
+      0.0f,
+      0.0f,
+      float(textureSize),
+      float(textureSize),
+      0.0f,
+      1.0f
+    };
+    dc->RSSetViewports(1, &viewport);
+    reflectancePipeline.Bind();
+    dc->OMSetRenderTargets(1, rtv.GetAddressOf(), nullptr);
+    dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    dc->PSSetConstantBuffers(0, 1, reflectanceBuffer.GetAddressOf());
+    reflectanceBuffer.data.samples = 1024;
+    reflectanceBuffer.ApplyChanges();
+    dc->Draw(3, 0);
+
+    // Cleanup
+    dc->OMSetRenderTargets(0, nullptr, nullptr);
+
+    return std::make_shared<Texture>(std::move(texture), std::move(textureView));
   }
 
   std::shared_ptr<Texture> ReflectionCapture::CreateCubemap(uint32_t textureSize, DXGI_FORMAT format, uint32_t mipLevels) {

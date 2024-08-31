@@ -52,7 +52,5 @@ namespace Flame {
     HologramGroup m_hologramGroup;
     TextureOnlyGroup m_textureOnlyGroup;
     EmissionOnlyGroup m_emissionOnlyGroup;
-
-    ShaderPipeline m_testPipeline;
   };
 }

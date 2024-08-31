@@ -2,6 +2,11 @@
 
 static const float PI = 3.1415926535897;
 
+cbuffer IblBuffer : register(b0) {
+  uint g_samples;
+  float3 g_padding0;
+};
+
 struct VSOutput {
   float4 position : SV_POSITION;
   float2 uv : UV;
@@ -121,15 +126,15 @@ float Gmf(float rough, float NoV, float NoL) {
 float4 PSMain(VSOutput input) : SV_TARGET {
   float4 result = float4(0.0, 0.0, 0.0, 1.0);
   float probability = 1.0 / g_samples;
-  float NoV = input.uv.v;
-  float roughness = input.uv.u;
+  float NoV = input.uv.x;
+  float roughness = input.uv.y;
   float3 viewDir = float3(sqrt(1.0 - NoV * NoV), 0, NoV);
   float3 normal = float3(0, 0, 1);
 
   uint samples = 0;
   for (uint i = 0; i < g_samples; ++i) {
     float NoH;
-    float3 halfVector = RandomGGX(NoH, i, g_samples, pow(g_roughness, 4), basis);
+    float3 halfVector = RandomGGX(NoH, i, g_samples, pow(roughness, 4), float3x3(1, 0, 0, 0, 1, 0, 0, 0, 1));
     float3 lightDir = reflect(viewDir, halfVector);
 
     float NoL = dot(normal, lightDir);
@@ -140,8 +145,8 @@ float4 PSMain(VSOutput input) : SV_TARGET {
     }
 
     ++samples;
-    float ndf = Ndf(g_roughness * g_roughness, NoH);
-    float gmf = Ndf(g_roughness, NoV, NoL);
+    float ndf = Ndf(roughness * roughness, NoH);
+    float gmf = Gmf(roughness, NoV, NoL);
     result.r += (gmf * (1 - pow(1 - HoV, 5)) * HoV) / (NoV * NoH);
     result.g += (gmf * (1 - pow(HoV, 5)) * HoV) / (NoV * NoH);
   }

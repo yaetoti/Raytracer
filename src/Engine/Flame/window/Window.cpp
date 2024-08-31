@@ -161,8 +161,8 @@ namespace Flame {
     {
       D3D11_SHADER_RESOURCE_VIEW_DESC desc {
         .Format = DXGI_FORMAT_R16G16B16A16_FLOAT,
-        .ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D,
-        .Texture2D { 0, 1 }
+        .ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DMS,
+        .Texture2DMS { }
       };
 
       result = DxContext::Get()->d3d11Device->CreateShaderResourceView(
@@ -443,8 +443,8 @@ namespace Flame {
     {
       D3D11_SHADER_RESOURCE_VIEW_DESC desc {
         .Format = DXGI_FORMAT_R16G16B16A16_FLOAT,
-        .ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D,
-        .Texture2D { 0, 1 }
+        .ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DMS,
+        .Texture2DMS { }
       };
 
       result = DxContext::Get()->d3d11Device->CreateShaderResourceView(

@@ -58,27 +58,22 @@ namespace Flame {
       if (FAILED(result)) {
         return false;
       }
-
-      result = d3d11Debug->ReportLiveDeviceObjects(D3D11_RLDO_SUMMARY | D3D11_RLDO_DETAIL);
-      assert(SUCCEEDED(result));
-      if (FAILED(result)) {
-        return false;
-      }
     }
 
     return true;
   }
 
   void DxContext::Cleanup() {
-    d3d11Debug.Reset();
     d3d11DeviceContext->ClearState();
     d3d11DeviceContext->Flush();
     d3d11DeviceContext.Reset();
-    d3d11Device.Reset();
     dxgiOutput.Reset();
     dxgiAdapter.Reset();
     dxgiFactory2.Reset();
     dxgiFactory.Reset();
+    d3d11Debug->ReportLiveDeviceObjects(D3D11_RLDO_SUMMARY | D3D11_RLDO_DETAIL);
+    d3d11Debug.Reset();
+    d3d11Device.Reset();
   }
 
   DxContext* DxContext::Get() {
