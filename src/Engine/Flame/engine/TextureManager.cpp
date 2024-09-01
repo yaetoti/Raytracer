@@ -22,7 +22,7 @@ namespace Flame {
     return false;
   }
 
-  void TextureManager::SaveToDDS(const std::wstring& filename, ID3D11Resource* texture, FileFormat format, bool generateMips) {
+  void TextureManager::SaveToDDS(const std::wstring& filename, ID3D11Resource* texture, DXGI_FORMAT format, bool generateMips) {
     DirectX::ScratchImage scratchImage;
     HRESULT result;
     result = DirectX::CaptureTexture(
@@ -44,7 +44,7 @@ namespace Flame {
 
     DirectX::ScratchImage compressed;
     if (DirectX::IsCompressed(DXGI_FORMAT(format))) {
-      if (FileFormat::BC6_UNSIGNED <= format && format <= FileFormat::BC7_SRGB) {
+      if (DXGI_FORMAT_BC6H_UF16 <= format && format <= DXGI_FORMAT_BC7_UNORM_SRGB) {
         result = DirectX::Compress(
           DxContext::Get()->d3d11Device.Get(),
           imagePtr->GetImages(),
@@ -61,7 +61,7 @@ namespace Flame {
           imagePtr->GetImages(),
           imagePtr->GetImageCount(),
           imagePtr->GetMetadata(),
-          DXGI_FORMAT(format),
+          format,
           DirectX::TEX_COMPRESS_PARALLEL,
           1.f,
           compressed

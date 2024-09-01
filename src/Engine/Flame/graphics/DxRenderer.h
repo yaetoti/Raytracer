@@ -5,6 +5,7 @@
 #include "Flame/window/Window.h"
 
 #include <memory>
+#include <Flame/engine/ReflectionCapture.h>
 #include <Flame/engine/ShaderPipeline.h>
 #include <Flame/engine/Texture.h>
 #include <wrl/client.h>
@@ -71,6 +72,7 @@ namespace Flame {
 
     // Foreground Output TODO remove
     ShaderPipeline m_testPipeline;
+    ReflectionCapture m_capture;
 
     static constexpr const wchar_t* kSkyboxPath = L"Assets/Textures/lake_beach.dds";
     //static constexpr const wchar_t* kSkyboxPath = L"Assets/Textures/night_street.dds";

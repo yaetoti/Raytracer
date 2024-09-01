@@ -118,7 +118,7 @@ namespace Flame {
         textureSize,
         1,
         1,
-        DXGI_FORMAT_R8G8B8A8_UNORM,
+        DXGI_FORMAT_R16G16_FLOAT,
         { 1, 0 },
         D3D11_USAGE_DEFAULT,
         D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE,
@@ -132,7 +132,7 @@ namespace Flame {
     // Create SRV
     {
       D3D11_SHADER_RESOURCE_VIEW_DESC desc {};
-      desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+      desc.Format = DXGI_FORMAT_R16G16_FLOAT;
       desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
       desc.Texture2D = { 0, 1 };
       result = device->CreateShaderResourceView(texture.Get(), &desc, textureView.ReleaseAndGetAddressOf());
@@ -157,7 +157,7 @@ namespace Flame {
     dc->OMSetRenderTargets(1, rtv.GetAddressOf(), nullptr);
     dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
     dc->PSSetConstantBuffers(0, 1, reflectanceBuffer.GetAddressOf());
-    reflectanceBuffer.data.samples = 1024;
+    reflectanceBuffer.data.samples = 1000000;
     reflectanceBuffer.ApplyChanges();
     dc->Draw(3, 0);
 

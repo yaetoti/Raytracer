@@ -116,19 +116,18 @@ namespace Flame {
 
     m_testPipeline.Init(L"Assets/Shaders/test.hlsl", ShaderType::VERTEX_SHADER | ShaderType::PIXEL_SHADER);
 
-    // Generate IBL textures
-    ReflectionCapture capture;
-    capture.Init();
-    //m_diffuseTexture = capture.GenerateDiffuseTexture(256, m_skyTextureView);
-    //m_specularTexture = capture.GenerateSpecularTexture(1024, m_skyTextureView);
-    //m_reflectanceTexture = capture.GenerateReflectanceTexture(1024);
+    // Generate IBL textures TODO remove rework or something
+    m_capture.Init();
+    //m_diffuseTexture = m_capture.GenerateDiffuseTexture(256, m_skyTextureView);
+    //m_specularTexture = m_capture.GenerateSpecularTexture(1024, m_skyTextureView);
+    m_reflectanceTexture = m_capture.GenerateReflectanceTexture(512);
 
-    // TextureManager::SaveToDDS(
-    //   Engine::GetDirectory(L"cubemap.dds"),
-    //   m_reflectanceTexture->GetResource(),
-    //   TextureManager::FileFormat(DXGI_FORMAT_R8G8B8A8_UNORM),
-    //   false
-    // );
+    TextureManager::SaveToDDS(
+      Engine::GetDirectory(L"cubemap.dds"),
+      m_reflectanceTexture->GetResource(),
+      DXGI_FORMAT_BC5_UNORM,
+      false
+    );
   }
 
   void DxRenderer::Cleanup() {
