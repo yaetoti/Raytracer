@@ -66,17 +66,11 @@ namespace Flame {
     ID3D11Resource* m_skyTexture;
     ID3D11ShaderResourceView* m_skyTextureView;
 
-    std::shared_ptr<Texture> m_diffuseTexture;
-    std::shared_ptr<Texture> m_specularTexture;
-    std::shared_ptr<Texture> m_reflectanceTexture;
-
     // Foreground Output TODO remove
     ShaderPipeline m_testPipeline;
-    ReflectionCapture m_capture;
 
     static constexpr const wchar_t* kSkyboxPath = L"Assets/Textures/lake_beach.dds";
     //static constexpr const wchar_t* kSkyboxPath = L"Assets/Textures/night_street.dds";
-    //static constexpr const wchar_t* kSkyboxPath = L"Assets/Textures/stars.dds";
     static constexpr const wchar_t* kSkyShaderPath = L"Assets/Shaders/sky.hlsl";
   };
 }

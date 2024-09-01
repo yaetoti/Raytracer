@@ -37,6 +37,7 @@ namespace Flame {
 
     void Init();
     void Cleanup();
+    void GenerateAndSaveTextures();
 
     std::shared_ptr<Texture> GenerateDiffuseTexture(uint32_t samples, uint32_t textureSize, ID3D11ShaderResourceView* skyboxView);
     std::shared_ptr<Texture> GenerateSpecularTexture(uint32_t samples, uint32_t textureSize, ID3D11ShaderResourceView* skyboxView);

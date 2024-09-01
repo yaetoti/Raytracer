@@ -1,6 +1,7 @@
 #include "OpaqueGroup.h"
 #include "Flame/engine/TextureManager.h"
 #include <d3d11.h>
+#include <Flame/engine/Engine.h>
 
 namespace Flame {
   void OpaqueGroup::Init() {
@@ -20,6 +21,10 @@ namespace Flame {
     m_pipeline.CreateInputLayout(desc);
 
     m_meshMatrixBuffer.Init();
+
+    m_diffuseView = TextureManager::Get()->GetTexture(Engine::GetDirectory(L"Generated\\Textures\\IBL\\diffuse.dds"))->GetResourceView();
+    m_specularView = TextureManager::Get()->GetTexture(Engine::GetDirectory(L"Generated\\Textures\\IBL\\specular.dds"))->GetResourceView();
+    m_reflectanceView = TextureManager::Get()->GetTexture(Engine::GetDirectory(L"Generated\\Textures\\IBL\\reflectance.dds")) -> GetResourceView();
   }
 
   void OpaqueGroup::Cleanup() {
@@ -68,6 +73,13 @@ namespace Flame {
 
     // Set light texture
     dc->PSSetShaderResources(0, 1, TextureManager::Get()->GetTexture(kFlashlightTexturePath)->GetResourceViewAddress());
+    // Set IBL textures
+    ID3D11ShaderResourceView* iblTextures[] = {
+      m_diffuseView,
+      m_specularView,
+      m_reflectanceView
+    };
+    dc->PSSetShaderResources(5, 3, iblTextures);
 
     uint32_t numRenderedInstances = 0;
     for (const auto & perModel : GetModels()) {

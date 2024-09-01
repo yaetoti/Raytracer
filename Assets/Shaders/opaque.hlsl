@@ -6,8 +6,9 @@ Texture2D<float4> normalTexture : register(t2);
 Texture2D<float4> metallicTexture : register(t3);
 Texture2D<float4> roughnessTexture : register(t4);
 
-TextureCube<float4> irradianceTexture : register(t5);
-TextureCube<float4> reflectionTexture : register(t6);
+TextureCube<float4> diffuseTexture : register(t5);
+TextureCube<float4> specularTexture : register(t6);
+Texture2D<float2> reflectanceTexture : register(t7);
 
 // TODO generate metallic
 // TODO change layout
@@ -132,8 +133,7 @@ float4 PSMain(VSOutput input) : SV_TARGET
   normal = normalize(normal * 2.0 - 1.0);
   normal = normalize(mul(tbnMatrix, normal));
 
-  if (g_isNormalVisMode)
-  {
+  if (g_isNormalVisMode) {
     float4 color = float4((normal + 1.0.rrr) * 0.5.rrr, 0.0);
     return color;
   }
@@ -141,6 +141,7 @@ float4 PSMain(VSOutput input) : SV_TARGET
   float3 light = 0.0;
   float3 F0 = lerp(0.04.xxx, albedo, metallic);
   float3 viewDir = normalize(g_cameraPosition.xyz - input.positionWorld.xyz);
+  float NoV = max(dot(normal, viewDir), 0.01);
 
   // Direct light
   for (uint i = 0; i < g_directLightsCount; ++i) {
@@ -151,7 +152,6 @@ float4 PSMain(VSOutput input) : SV_TARGET
     float NoH = max(dot(normal, halfReflect), 0.01);
     float NoL = max(dot(normal, lightDir), 0.01);
     float HoL = max(dot(halfReflect, lightDir), 0.01);
-    float NoV = max(dot(normal, viewDir), 0.01);
 
     float3 diffuse = ((solidAngle * albedo * (1 - metallic)) / PI) * (1 - Fresnel(NoL, F0)) * NoL;
     float3 specular = min(1, (solidAngle * Ndf(roughness, NoH)) / (4 * NoV)) * Gmf(roughness, NoV, NoL) * Fresnel(HoL, F0);
@@ -170,7 +170,6 @@ float4 PSMain(VSOutput input) : SV_TARGET
     float NoH = max(dot(normal, halfReflect), 0.01);
     float NoL = max(dot(normal, lightDir), 0.01);
     float HoL = max(dot(halfReflect, lightDir), 0.01);
-    float NoV = max(dot(normal, viewDir), 0.01);
 
     float3 diffuse = ((solidAngle * albedo * (1 - metallic)) / PI) * (1 - Fresnel(NoL, F0)) * NoL;
     float3 specular = min(1, (solidAngle * Ndf(roughness, NoH)) / (4 * NoV)) * Gmf(roughness, NoV, NoL) * Fresnel(HoL, F0);
@@ -189,7 +188,6 @@ float4 PSMain(VSOutput input) : SV_TARGET
     float NoH = max(dot(normal, halfReflect), 0.01);
     float NoL = max(dot(normal, lightDir), 0.01);
     float HoL = max(dot(halfReflect, lightDir), 0.01);
-    float NoV = max(dot(normal, viewDir), 0.01);
 
     float theta = dot(lightDir, -g_spotLights[i].direction);
     float epsilon = g_spotLights[i].cutoffCosineInner - g_spotLights[i].cutoffCosineOuter;
@@ -203,6 +201,21 @@ float4 PSMain(VSOutput input) : SV_TARGET
 
     light += g_spotLights[i].radiance * textureColor * intensity * (diffuse/* + specular*/);
   }
+
+  // Add IBL
+  float3 diffuseReflection = albedo * (1.0 - metallic) * diffuseTexture.SampleLevel(g_linearWrap, viewDir, 0.0);
+
+  // roughnessLinear is initial roughness value set by artist, not rough^2 or rough^4
+  float2 reflectanceLUT = reflectanceTexture.Sample(g_linearWrap, float2(roughness, NoV));
+  float3 reflectance = reflectanceLUT.x * F0 + reflectanceLUT.y;
+
+  float width;
+  float height;
+  float levels;
+  specularTexture.GetDimensions(0, width, height, levels);
+  float specularReflection = reflectance * specularTexture.SampleLevel(g_linearWrap, viewDir, roughness * levels);
+
+  light += diffuseReflection + specularReflection;
 
   return float4(light, 1.0);
 }

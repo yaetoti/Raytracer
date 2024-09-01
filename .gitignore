@@ -4,4 +4,4 @@ build/
 out/
 .cache/
 .idea/
-generated/
+Generated/

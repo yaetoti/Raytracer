@@ -152,6 +152,8 @@ float4 PSMain(VSOutput input) : SV_TARGET {
     float3 halfVector = RandomGGX(NoH, i, g_samples, pow(g_roughness, 4), basis);
     // Reflect saves vector's side direction, so we need '-' and it's actually pointing to light
     float3 lightDir = -reflect(viewDir, halfVector);
+    //float3 lightDir = -reflect(viewDir, g_normal);
+
     float ndf = Ndf(g_roughness * g_roughness, NoH);
     float sampleProbability = (4 / (2 * PI * ndf)) * probability;
     float3 irradiance = skyTexture.SampleLevel(g_anisotropicWrap, lightDir, HemisphereMip(sampleProbability, cubemapSize));
@@ -169,6 +171,5 @@ float4 PSMain(VSOutput input) : SV_TARGET {
   //return float4(pow(color, 8), 1.0);
   //return float4(1.0, 0.0, 0.0, 1.0);
 
-  //return skyTexture.Sample(g_anisotropicWrap, input.cameraToPixelDir);
   return float4(light, 1.0);
 }

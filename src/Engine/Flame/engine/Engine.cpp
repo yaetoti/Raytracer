@@ -6,11 +6,19 @@
 #include "LightSystem.h"
 #include "MeshSystem.h"
 #include "ModelManager.h"
+#include "ReflectionCapture.h"
 #include "TextureManager.h"
 
 namespace Flame {
   void Engine::Init() {
     DxContext::Get()->Init();
+
+    // Dependencies: ReflectionCapture -> TextureManager -> DxContext
+    ReflectionCapture capture;
+    capture.Init();
+    capture.GenerateAndSaveTextures();
+    capture.Cleanup();
+
     ModelManager::Get()->Init();
     MeshSystem::Get()->Init();
     LightSystem::Get()->Init();

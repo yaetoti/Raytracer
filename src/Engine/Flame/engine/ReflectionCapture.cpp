@@ -1,6 +1,10 @@
 #include "ReflectionCapture.h"
 
+#include <filesystem>
 #include <memory>
+
+#include "Engine.h"
+#include "TextureManager.h"
 
 namespace Flame {
   void ReflectionCapture::Init() {
@@ -19,6 +23,33 @@ namespace Flame {
     specularBuffer.Reset();
     reflectancePipeline.Reset();
     reflectanceBuffer.Reset();
+  }
+
+  void ReflectionCapture::GenerateAndSaveTextures() {
+    ID3D11ShaderResourceView* skyTextureView = TextureManager::Get()->GetTexture(Engine::GetDirectory(L"Assets\\Textures\\lake_beach.dds"))->GetResourceView();
+    auto diffuseTexture = GenerateDiffuseTexture(1000, 8, skyTextureView);
+    auto specularTexture = GenerateSpecularTexture(1000, 1024, skyTextureView);
+    auto reflectanceTexture = GenerateReflectanceTexture(1000, 512);
+
+    std::filesystem::create_directories(Engine::GetDirectory(L"Generated\\Textures\\IBL"));
+    TextureManager::SaveToDDS(
+      Engine::GetDirectory(L"Generated\\Textures\\IBL\\diffuse.dds"),
+      diffuseTexture->GetResource(),
+      DXGI_FORMAT_R16G16B16A16_FLOAT,
+      false
+    );
+    TextureManager::SaveToDDS(
+      Engine::GetDirectory(L"Generated\\Textures\\IBL\\specular.dds"),
+      specularTexture->GetResource(),
+      DXGI_FORMAT_R16G16B16A16_FLOAT,
+      false
+    );
+    TextureManager::SaveToDDS(
+      Engine::GetDirectory(L"Generated\\Textures\\IBL\\reflectance.dds"),
+      reflectanceTexture->GetResource(),
+      DXGI_FORMAT_BC5_UNORM,
+      false
+    );
   }
 
   std::shared_ptr<Texture> ReflectionCapture::GenerateDiffuseTexture(uint32_t samples, uint32_t textureSize, ID3D11ShaderResourceView* skyboxView) {

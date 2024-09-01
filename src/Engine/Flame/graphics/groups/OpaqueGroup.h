@@ -50,11 +50,15 @@ namespace Flame {
     void Render();
 
   private:
+    ShaderPipeline m_pipeline;
     VertexBuffer<OpaqueInstanceData::ShaderData> m_instanceBuffer;
     ConstantBuffer<OpaqueMeshData> m_meshMatrixBuffer;
     bool m_instanceBufferDirty = true;
 
-    ShaderPipeline m_pipeline;
+    // IBL
+    ID3D11ShaderResourceView* m_diffuseView = nullptr;
+    ID3D11ShaderResourceView* m_specularView = nullptr;
+    ID3D11ShaderResourceView* m_reflectanceView = nullptr;
 
     inline static const wchar_t* kShaderPath = L"Assets/Shaders/opaque.hlsl";
     inline static const wchar_t* kFlashlightTexturePath = L"Assets/Textures/flashlight_1.dds";
