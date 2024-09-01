@@ -15,12 +15,10 @@ struct VSOutput {
   float4 position : SV_POSITION;
   float3 cameraToPixelDir : TEXEL_DIRECTION;
   float2 uv : UV;
-  nointerpolation float3 normal : NORMAL;
 };
 
 VSOutput VSMain(uint vertexId : SV_VERTEXID) {
   VSOutput result;
-  result.normal = g_normal.xyz;
 
   // TopLeft
   if (vertexId == 0) {
@@ -66,8 +64,7 @@ float3 Fresnel(float NoL, float3 F0) {
 }
 
 // Frisvad with z == -1 problem avoidance
-void BasisFromDir(out float3 right, out float3 top, in float3 dir)
-{
+void BasisFromDir(out float3 right, out float3 top, in float3 dir) {
   float k = 1.0 / max(1.0 + dir.z, 0.00001);
   float a =  dir.y * k;
   float b =  dir.y * a;
@@ -77,8 +74,7 @@ void BasisFromDir(out float3 right, out float3 top, in float3 dir)
 }
 
 // Frisvad with z == -1 problem avoidance
-float3x3 BasisFromDir(float3 dir)
-{
+float3x3 BasisFromDir(float3 dir) {
   float3x3 rotation;
   rotation[2] = dir;
   BasisFromDir(rotation[0], rotation[1], dir);
@@ -86,13 +82,13 @@ float3x3 BasisFromDir(float3 dir)
 }
 
 // Determing which mip level to read in cubemap sampling with uniform/importance sampling
-float HemisphereMip(float sampleProbability, float cubemapSize)
-{
+float HemisphereMip(float sampleProbability, float cubemapSize) {
   float hemisphereTexels = cubemapSize * cubemapSize * 3;
   float log4 = 0.5 * log2(sampleProbability * hemisphereTexels);
   return log4;
 }
 
+// Input = micronormal
 float4 PSMain(VSOutput input) : SV_TARGET {
   float3 light = 0;
   float probability = 1.0 / g_samples;
@@ -101,18 +97,17 @@ float4 PSMain(VSOutput input) : SV_TARGET {
 
   uint width;
   uint height;
-  uint levels;
-  skyTexture.GetDimensions(0, width, height, levels);
+  skyTexture.GetDimensions(width, height);
   float cubemapSize = max(width, height);
 
   for (uint i = 0; i < g_samples; ++i) {
-    float NdotV;
-    float3 lightDir = mul(RandomHemisphere(NdotV, i, g_samples), basis);
+    float NoV;
+    float3 lightDir = mul(RandomHemisphere(NoV, i, g_samples), basis);
 
     float3 irradiance = skyTexture.SampleLevel(g_pointWrap, lightDir, HemisphereMip(probability, cubemapSize));
     float NoL = max(dot(g_normal, lightDir), 0.01);
 
-    light += ((irradiance * NdotV) / PI) * (1 - Fresnel(NoL, 0.04));
+    light += ((irradiance * NoV) / PI) * (1 - Fresnel(NoL, 0.04));
   }
 
   light *= (2 * PI) / g_samples;

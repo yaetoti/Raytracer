@@ -118,12 +118,24 @@ namespace Flame {
 
     // Generate IBL textures TODO remove rework or something
     m_capture.Init();
-    //m_diffuseTexture = m_capture.GenerateDiffuseTexture(256, m_skyTextureView);
-    //m_specularTexture = m_capture.GenerateSpecularTexture(1024, m_skyTextureView);
-    m_reflectanceTexture = m_capture.GenerateReflectanceTexture(512);
+    m_diffuseTexture = m_capture.GenerateDiffuseTexture(1000, 8, m_skyTextureView);
+    m_specularTexture = m_capture.GenerateSpecularTexture(1000, 1024, m_skyTextureView);
+    m_reflectanceTexture = m_capture.GenerateReflectanceTexture(1000, 512);
 
     TextureManager::SaveToDDS(
-      Engine::GetDirectory(L"cubemap.dds"),
+      Engine::GetDirectory(L"Assets\\Textures\\IBL\\diffuse.dds"),
+      m_diffuseTexture->GetResource(),
+      DXGI_FORMAT_R16G16B16A16_FLOAT,
+      false
+    );
+    TextureManager::SaveToDDS(
+      Engine::GetDirectory(L"Assets\\Textures\\IBL\\specular.dds"),
+      m_specularTexture->GetResource(),
+      DXGI_FORMAT_R16G16B16A16_FLOAT,
+      false
+    );
+    TextureManager::SaveToDDS(
+      Engine::GetDirectory(L"Assets\\Textures\\IBL\\reflectance.dds"),
       m_reflectanceTexture->GetResource(),
       DXGI_FORMAT_BC5_UNORM,
       false
@@ -210,9 +222,9 @@ namespace Flame {
     auto dc = DxContext::Get()->d3d11DeviceContext.Get();
     m_skyboxPipeline.Bind();
     dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-    dc->PSSetShaderResources(0, 1, &m_skyTextureView);
+    //dc->PSSetShaderResources(0, 1, &m_skyTextureView);
     //dc->PSSetShaderResources(0, 1, m_diffuseTexture->GetResourceViewAddress());
-    //dc->PSSetShaderResources(0, 1, m_specularTexture->GetResourceViewAddress());
+    dc->PSSetShaderResources(0, 1, m_specularTexture->GetResourceViewAddress());
     dc->Draw(3, 0);
   }
 

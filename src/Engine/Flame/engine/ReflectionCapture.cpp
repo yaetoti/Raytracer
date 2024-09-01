@@ -21,14 +21,14 @@ namespace Flame {
     reflectanceBuffer.Reset();
   }
 
-  std::shared_ptr<Texture> ReflectionCapture::GenerateDiffuseTexture(uint32_t textureSize, ID3D11ShaderResourceView* skyboxView) {
+  std::shared_ptr<Texture> ReflectionCapture::GenerateDiffuseTexture(uint32_t samples, uint32_t textureSize, ID3D11ShaderResourceView* skyboxView) {
     auto device = DxContext::Get()->d3d11Device;
     auto dc = DxContext::Get()->d3d11DeviceContext;
 
     auto texture = CreateCubemap(textureSize, DXGI_FORMAT_R16G16B16A16_FLOAT, 1);
     auto rtvArray = CreateCubemapRtv(texture->GetResource(), DXGI_FORMAT_R16G16B16A16_FLOAT, 0);
     auto transforms = GenerateTransformMatrices();
-    diffuseBuffer.data.samples = 1024;
+    diffuseBuffer.data.samples = samples;
 
     // Render onto faces
     D3D11_VIEWPORT viewport {
@@ -59,13 +59,13 @@ namespace Flame {
     return texture;
   }
 
-  std::shared_ptr<Texture> ReflectionCapture::GenerateSpecularTexture(uint32_t textureSize, ID3D11ShaderResourceView* skyboxView) {
+  std::shared_ptr<Texture> ReflectionCapture::GenerateSpecularTexture(uint32_t samples, uint32_t textureSize, ID3D11ShaderResourceView* skyboxView) {
     auto device = DxContext::Get()->d3d11Device;
     auto dc = DxContext::Get()->d3d11DeviceContext;
 
     auto texture = CreateCubemap(textureSize, DXGI_FORMAT_R16G16B16A16_FLOAT, 0);
     auto transforms = GenerateTransformMatrices();
-    specularBuffer.data.samples = 1024;
+    specularBuffer.data.samples = samples;
     dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
     dc->VSSetConstantBuffers(0, 1, specularBuffer.GetAddressOf());
     dc->PSSetConstantBuffers(0, 1, specularBuffer.GetAddressOf());
@@ -104,7 +104,7 @@ namespace Flame {
     return texture;
   }
 
-  std::shared_ptr<Texture> ReflectionCapture::GenerateReflectanceTexture(uint32_t textureSize) {
+  std::shared_ptr<Texture> ReflectionCapture::GenerateReflectanceTexture(uint32_t samples, uint32_t textureSize) {
     auto device = DxContext::Get()->d3d11Device;
     auto dc = DxContext::Get()->d3d11DeviceContext;
     HRESULT result;
@@ -157,7 +157,7 @@ namespace Flame {
     dc->OMSetRenderTargets(1, rtv.GetAddressOf(), nullptr);
     dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
     dc->PSSetConstantBuffers(0, 1, reflectanceBuffer.GetAddressOf());
-    reflectanceBuffer.data.samples = 1000000;
+    reflectanceBuffer.data.samples = samples;
     reflectanceBuffer.ApplyChanges();
     dc->Draw(3, 0);
 

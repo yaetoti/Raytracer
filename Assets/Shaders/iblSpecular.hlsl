@@ -16,12 +16,10 @@ struct VSOutput {
   float4 position : SV_POSITION;
   float3 cameraToPixelDir : TEXEL_DIRECTION;
   float2 uv : UV;
-  nointerpolation float3 normal : NORMAL;
 };
 
 VSOutput VSMain(uint vertexId : SV_VERTEXID) {
   VSOutput result;
-  result.normal = g_normal.xyz;
 
   // TopLeft
   if (vertexId == 0) {
@@ -67,8 +65,7 @@ float3 Fresnel(float NoL, float3 F0) {
 }
 
 // Frisvad with z == -1 problem avoidance
-void BasisFromDir(out float3 right, out float3 top, in float3 dir)
-{
+void BasisFromDir(out float3 right, out float3 top, in float3 dir) {
   float k = 1.0 / max(1.0 + dir.z, 0.00001);
   float a =  dir.y * k;
   float b =  dir.y * a;
@@ -78,8 +75,7 @@ void BasisFromDir(out float3 right, out float3 top, in float3 dir)
 }
 
 // Frisvad with z == -1 problem avoidance
-float3x3 BasisFromDir(float3 dir)
-{
+float3x3 BasisFromDir(float3 dir) {
   float3x3 rotation;
   rotation[2] = dir;
   BasisFromDir(rotation[0], rotation[1], dir);
@@ -87,8 +83,7 @@ float3x3 BasisFromDir(float3 dir)
 }
 
 // Determing which mip level to read in cubemap sampling with uniform/importance sampling
-float HemisphereMip(float sampleProbability, float cubemapSize)
-{
+float HemisphereMip(float sampleProbability, float cubemapSize) {
   float hemisphereTexels = cubemapSize * cubemapSize * 3;
   float log4 = 0.5 * log2(sampleProbability * hemisphereTexels);
   return log4;
@@ -138,35 +133,33 @@ float Ndf(float rough2, float NoH) {
   return rough2 / denom;
 }
 
+// Input = viewDir (to viewer)
 float4 PSMain(VSOutput input) : SV_TARGET {
   float3 light = 0;
   float probability = 1.0 / g_samples;
   float3 viewDir = normalize(input.cameraToPixelDir);
   float3 normal = viewDir;
-  float3x3 basis = BasisFromDir(input.normal);
+  float3x3 basis = BasisFromDir(g_normal);
 
   uint width;
   uint height;
-  uint levels;
-  skyTexture.GetDimensions(0, width, height, levels);
+  skyTexture.GetDimensions(width, height);
   float cubemapSize = max(width, height);
 
   uint samples = 0;
   for (uint i = 0; i < g_samples; ++i) {
-    float NdotH;
-    float3 halfVector = RandomGGX(NdotH, i, g_samples, pow(g_roughness, 4), basis);
-    float3 lightDir = reflect(viewDir, halfVector);
-    //float3 lightDir = reflect(viewDir, input.normal);
-    float ndf = Ndf(g_roughness * g_roughness, NdotH);
+    float NoH;
+    float3 halfVector = RandomGGX(NoH, i, g_samples, pow(g_roughness, 4), basis);
+    // Reflect saves vector's side direction, so we need '-' and it's actually pointing to light
+    float3 lightDir = -reflect(viewDir, halfVector);
+    float ndf = Ndf(g_roughness * g_roughness, NoH);
     float sampleProbability = (4 / (2 * PI * ndf)) * probability;
     float3 irradiance = skyTexture.SampleLevel(g_anisotropicWrap, lightDir, HemisphereMip(sampleProbability, cubemapSize));
 
-    if (dot(g_normal.xyz, lightDir) <= 0.001) {
-      continue;
+    if (dot(g_normal.xyz, lightDir) >= 0.000001) {
+      ++samples;
+      light += (irradiance * ndf * 0.25) * ((4 * dot(normal, halfVector)) / (ndf * NoH));
     }
-
-    ++samples;
-    light += (irradiance * ndf * 0.25) * ((4 * dot(normal, halfVector)) / (ndf * NdotH));
   }
 
   light /= samples;

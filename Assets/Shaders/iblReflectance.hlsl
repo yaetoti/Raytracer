@@ -95,7 +95,6 @@ float2 PSMain(VSOutput input) : SV_TARGET {
     if (NoL > 0.000001 && HoV > 0.000001) {
       samples += 1;
       float gmf = Gmf(roughness4, NoV, NoL);
-      //float gmf = GeometrySmith(normal, viewDir, lightDir, roughness);
       result.r += (gmf * (1 - pow(1 - HoV, 5)) * HoV) / (NoV * NoH);
       result.g += (gmf * pow(1 - HoV, 5) * HoV) / (NoV * NoH);
     }
