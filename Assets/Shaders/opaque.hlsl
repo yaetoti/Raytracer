@@ -13,9 +13,10 @@ Texture2D<float2> reflectanceTexture : register(t7);
 // TODO generate metallic
 // TODO change layout
 
-struct VSInput
-{
+struct VSInput {
+  // MeshSpace
   float3 position : POSITION;
+  // MeshSpace
   float3 normal : NORMAL;
   float3 tangent : TANGENT;
   float3 bitangent : BITANGENT;
@@ -27,15 +28,16 @@ struct VSInput
 
 struct VSOutput
 {
-  float4x4 modelMatrix : MODEL;
+  // WorldSpace
+  float3x3 tbn : TBN;
 
   float4 positionLocal : POSITION_LOCAL;
   float4 positionWorld : POSITION_WORLD;
   float4 positionCameraCentered : POSITION_CAMERA_CENTERED;
   float4 positionProj : SV_POSITION;
 
-  float3 normal : NORMAL;
   float3 normalLocal : NORMAL_LOCAL;
+  float3 normalWorld : NORMAL_WORLD;
 
   float3 tangent : TANGENT;
   float3 bitangent : BITANGENT;
@@ -45,6 +47,7 @@ struct VSOutput
 VSOutput VSMain(VSInput input)
 {
   VSOutput result;
+
   // Position
   result.positionLocal = mul(g_meshToModel, float4(input.position, 1.0));
   result.positionWorld = mul(input.modelMatrix, result.positionLocal);
@@ -52,19 +55,20 @@ VSOutput VSMain(VSInput input)
   result.positionProj = mul(g_projectionMatrix, mul(g_viewMatrix, result.positionWorld));
 
   // Normal
-  result.normalLocal = mul(g_meshToModel, float4(input.normal, 0.0)).xyz;
+  result.normalLocal = normalize(mul((float3x3)g_meshToModel, input.normal));
+  result.normalWorld = normalize(mul((float3x3)input.modelMatrix, result.normalLocal));
 
-  float3 axisX = normalize(input.modelMatrix[0].xyz);
-  float3 axisY = normalize(input.modelMatrix[1].xyz);
-  float3 axisZ = normalize(input.modelMatrix[2].xyz);
-  float3 worldN = result.normalLocal.x * axisX + result.normalLocal.y * axisY + result.normalLocal.z * axisZ;
-  
-  result.modelMatrix = input.modelMatrix;
-  result.normal = worldN;
-
-  result.tangent = mul(g_meshToModel, float4(input.tangent, 0.0)).xyz;
-  result.bitangent = mul(g_meshToModel, float4(input.bitangent, 0.0)).xyz;
+  result.tangent = normalize(mul((float3x3)input.modelMatrix, mul((float3x3)g_meshToModel, input.tangent)));
+  result.bitangent = normalize(mul((float3x3)input.modelMatrix, mul((float3x3)g_meshToModel, input.bitangent)));
   result.uv = input.uv;
+
+  // Despite matrices are col_major, per-element constructor is always row-major
+  result.tbn = float3x3(
+    result.tangent.x, result.bitangent.x, result.normalWorld.x,
+    result.tangent.y, result.bitangent.y, result.normalWorld.y,
+    result.tangent.z, result.bitangent.z, result.normalWorld.z
+  );
+
   return result;
 }
 
@@ -102,7 +106,7 @@ float Gmf(float rough, float NoV, float NoL) {
   NoV *= NoV;
   NoL *= NoL;
   float rough4 = pow(rough, 4);
-  return 2.0 / (sqrt(1 + rough4 * (1 - NoV) / NoV) + sqrt(1 + rough4 * (1 - NoL) / NoL));
+  return 2.0 / (sqrt(1 + rough4 * (1 - NoV) / NoV) * sqrt(1 + rough4 * (1 - NoL) / NoL));
 }
 
 // GGX normal distribution,
@@ -119,19 +123,14 @@ float SolidAngle(float radius, float distance) {
 
 float4 PSMain(VSOutput input) : SV_TARGET
 {
-  float3 albedo = albedoTexture.Sample(g_anisotropicWrap, input.uv).xyz;
-  float3 normal = normalTexture.Sample(g_anisotropicWrap, input.uv).xyz;
-  float metallic = metallicTexture.Sample(g_anisotropicWrap, input.uv).x;
-  float roughness = roughnessTexture.Sample(g_anisotropicWrap, input.uv).x;
+  float3 albedo = albedoTexture.Sample(g_linearWrap, input.uv).xyz;
+  float3 normal = normalTexture.Sample(g_linearWrap, input.uv).xyz;
+  float metallic = metallicTexture.Sample(g_linearWrap, input.uv).x;
+  float roughness = roughnessTexture.Sample(g_linearWrap, input.uv).x;
 
-  float3x3 tbnMatrix = float3x3(
-    input.tangent.x, input.bitangent.x, input.normalLocal.x,
-    input.tangent.y, input.bitangent.y, input.normalLocal.y,
-    input.tangent.z, input.bitangent.z, input.normalLocal.z
-  );
-
-  normal = normalize(normal * 2.0 - 1.0);
-  normal = normalize(mul(tbnMatrix, normal));
+  //normal.y = -normal.y;
+  normal = normal * 2.0 - 1.0;
+  normal = normalize(mul(input.tbn, normal));
 
   if (g_isNormalVisMode) {
     float4 color = float4((normal + 1.0.rrr) * 0.5.rrr, 0.0);
@@ -156,7 +155,7 @@ float4 PSMain(VSOutput input) : SV_TARGET
     float3 diffuse = ((solidAngle * albedo * (1 - metallic)) / PI) * (1 - Fresnel(NoL, F0)) * NoL;
     float3 specular = min(1, (solidAngle * Ndf(roughness, NoH)) / (4 * NoV)) * Gmf(roughness, NoV, NoL) * Fresnel(HoL, F0);
 
-    light += g_directLights[i].radiance * (diffuse + specular);
+    //light += g_directLights[i].radiance * (diffuse + specular);
   }
 
   // Point light
@@ -174,7 +173,7 @@ float4 PSMain(VSOutput input) : SV_TARGET
     float3 diffuse = ((solidAngle * albedo * (1 - metallic)) / PI) * (1 - Fresnel(NoL, F0)) * NoL;
     float3 specular = min(1, (solidAngle * Ndf(roughness, NoH)) / (4 * NoV)) * Gmf(roughness, NoV, NoL) * Fresnel(HoL, F0);
 
-    light += g_pointLights[i].radiance * (diffuse + specular);
+    //light += g_pointLights[i].radiance * (diffuse + specular);
   }
 
   // Spot light
@@ -199,23 +198,24 @@ float4 PSMain(VSOutput input) : SV_TARGET
     float3 diffuse = ((solidAngle * albedo * (1 - metallic)) / PI) * (1 - Fresnel(NoL, F0)) * NoL;
     float3 specular = min(1, (solidAngle * Ndf(roughness, NoH)) / (4 * NoV)) * Gmf(roughness, NoV, NoL) * Fresnel(HoL, F0);
 
-    light += g_spotLights[i].radiance * textureColor * intensity * (diffuse/* + specular*/);
+    //light += g_spotLights[i].radiance * textureColor * intensity * (diffuse/* + specular*/);
   }
 
   // Add IBL
-  float3 diffuseReflection = albedo * (1.0 - metallic) * diffuseTexture.SampleLevel(g_linearWrap, viewDir, 0.0);
+  float3 diffuseReflection = albedo * (1.0 - metallic) * diffuseTexture.SampleLevel(g_linearWrap, normal, 0.0);
 
   // roughnessLinear is initial roughness value set by artist, not rough^2 or rough^4
-  float2 reflectanceLUT = reflectanceTexture.Sample(g_linearWrap, float2(roughness, NoV));
-  float3 reflectance = reflectanceLUT.x * F0 + reflectanceLUT.y;
+  float2 reflectanceLUT = reflectanceTexture.SampleLevel(g_linearWrap, float2(roughness, NoV), 0);
+  float3 reflectance = reflectanceLUT.r * F0 + reflectanceLUT.g;
 
   float width;
   float height;
   float levels;
   specularTexture.GetDimensions(0, width, height, levels);
-  float specularReflection = reflectance * specularTexture.SampleLevel(g_linearWrap, viewDir, roughness * levels);
+  float specularReflection = reflectance * specularTexture.SampleLevel(g_linearWrap, -reflect(viewDir, normal), roughness * (levels - 1));
 
-  light += diffuseReflection + specularReflection;
+  light += diffuseReflection;
+  //light += specularReflection;
 
   return float4(light, 1.0);
 }

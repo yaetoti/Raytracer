@@ -24,7 +24,7 @@ namespace Flame {
 
     m_diffuseView = TextureManager::Get()->GetTexture(Engine::GetDirectory(L"Generated\\Textures\\IBL\\diffuse.dds"))->GetResourceView();
     m_specularView = TextureManager::Get()->GetTexture(Engine::GetDirectory(L"Generated\\Textures\\IBL\\specular.dds"))->GetResourceView();
-    m_reflectanceView = TextureManager::Get()->GetTexture(Engine::GetDirectory(L"Generated\\Textures\\IBL\\reflectance.dds")) -> GetResourceView();
+    m_reflectanceView = TextureManager::Get()->GetTexture(Engine::GetDirectory(L"Generated\\Textures\\IBL\\reflectance.dds"))->GetResourceView();
   }
 
   void OpaqueGroup::Cleanup() {

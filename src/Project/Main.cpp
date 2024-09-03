@@ -78,6 +78,40 @@ void HandleCommandArgs(std::vector<std::wstring> args) {
 int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR lpCmdLine, _In_ int) {
   Console::Get()->RedirectStdHandles();
 
+  // This file should be named Math.cpp
+
+  // Remember, no row_major
+  glm::vec3 rightMS(1, 0, 0);
+  glm::vec3 upMS(0, 1, 0);
+  glm::vec3 frontMS(0, 0, 1);
+
+  glm::mat3 transform = glm::eulerAngleY(glm::radians(32.77f));
+  glm::vec3 rightWS = transform * rightMS;
+  glm::vec3 upWS = transform * upMS;
+  glm::vec3 frontWS = transform * frontMS;
+
+  glm::mat3 tbnMS(
+    rightMS,
+    upMS,
+    frontMS
+  );
+
+  glm::mat3 tbnWS0(
+    rightWS,
+    upWS,
+    frontWS
+  );
+  glm::mat3 tbnWS1(
+    rightMS,
+    upMS,
+    frontMS
+  );
+  tbnWS1 = transform * tbnWS1;
+
+  std::cout << "TBN MS:\n" << tbnMS << '\n';
+  std::cout << "TBN 0-hypothesis:\n" << tbnWS0 << '\n';
+  std::cout << "TBN rotate hypothesis:\n" << tbnWS1 << '\n';
+
   HandleCommandArgs(ParseCommandArgs(lpCmdLine));
   Flame::Engine::Init();
 

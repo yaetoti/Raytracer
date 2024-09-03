@@ -45,4 +45,9 @@ private:
   float m_fpsTimer = 0.0f;
   float m_time = 0.0f;
   float m_deltaTime = 0.0f;
+
+  // TODO test
+  uint32_t m_planeTransformId;
+  uint32_t m_cubeTransformId;
+  float m_rotation = 0.0f;
 };

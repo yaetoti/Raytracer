@@ -123,7 +123,7 @@ namespace Flame {
         dc->OMSetRenderTargets(1, rtvArray[i].GetAddressOf(), nullptr);
         specularBuffer.data.normal = kCubemapFront[i];
         specularBuffer.data.viewMatInv = transforms[i];
-        specularBuffer.data.roughness = std::max(float(mipLevel) / float(mipLevels), 0.001f);
+        specularBuffer.data.roughness = std::max(float(mipLevel) / float(mipLevels - 1), 0.045f);
         specularBuffer.ApplyChanges();
         dc->Draw(3, 0);
       }

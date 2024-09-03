@@ -87,8 +87,8 @@ void Application::Init() {
       materialId = model->GetMeshes()[3]->AddMaterial({
         tm->GetTexture(L"Assets/Models/EastTower/dds/Statue_BaseColor.dds")->GetResourceView(),
         tm->GetTexture(L"Assets/Models/EastTower/dds/Statue_Normal.dds")->GetResourceView(),
+        tm->GetTexture(L"Assets/Models/EastTower/dds/Statue_Roughness.dds")->GetResourceView(),
         tm->GetTexture(L"Assets/Models/EastTower/dds/Statue_Metallic.dds")->GetResourceView(),
-        tm->GetTexture(L"Assets/Models/EastTower/dds/Statue_Roughness.dds")->GetResourceView()
       });
       auto& material = model->GetMeshes()[3]->GetMaterials()[materialId];
       material->AddInstance({ transformId });
@@ -96,22 +96,28 @@ void Application::Init() {
 
     // Plane
     {
+      uint32_t planeTransformId = ts->Insert({ Transform(glm::vec3(0, -6, 0)) });
+      m_planeTransformId = planeTransformId;
+
       group->AddInstance(
         mm->GetModel("Assets/Models/Floor/Floor.fbx"),
         {
           tm->GetTexture(L"Assets/Models/Floor/dds/Albedo.dds")->GetResourceView(),
           tm->GetTexture(L"Assets/Models/Floor/dds/Normal.dds")->GetResourceView(),
+          tm->GetTexture(L"Assets/Models/Floor/dds/Roughness.dds")->GetResourceView(),
           tm->GetTexture(L"Assets/Models/Floor/dds/Metallic.dds")->GetResourceView(),
-          tm->GetTexture(L"Assets/Models/Floor/dds/Roughness.dds")->GetResourceView()
         },
         {
-          ts->Insert({ Transform(glm::vec3(0, -6, 0)) })
+          planeTransformId
         }
       );
     }
 
     // Cube
     {
+      uint32_t cubeTransformId = ts->Insert({ Transform(glm::vec3(-3, 8, 3), glm::vec3(0.01f)) });
+      m_cubeTransformId = cubeTransformId;
+
       uint32_t modelId = group->AddModel(mm->GetModel("Assets/Models/Floor/PbrCube.fbx"));
       auto& model = group->GetModels()[modelId];
       uint32_t materialId;
@@ -120,18 +126,18 @@ void Application::Init() {
       materialId = model->GetMeshes()[0]->AddMaterial({
         tm->GetTexture(L"Assets/Models/Floor/dds/Albedo.dds")->GetResourceView(),
         tm->GetTexture(L"Assets/Models/Floor/dds/Normal.dds")->GetResourceView(),
+        tm->GetTexture(L"Assets/Models/Floor/dds/Roughness.dds")->GetResourceView(),
         tm->GetTexture(L"Assets/Models/Floor/dds/Metallic.dds")->GetResourceView(),
-        tm->GetTexture(L"Assets/Models/Floor/dds/Roughness.dds")->GetResourceView()
       });
       auto& material = model->GetMeshes()[0]->GetMaterials()[materialId];
       material->AddInstance({ ts->Insert({ Transform(glm::vec3(0, 6, 0), glm::vec3(0.01f)) }) });
-      material->AddInstance({ ts->Insert({ Transform(glm::vec3(-3, 8, 3), glm::vec3(0.01f)) }) });
+      material->AddInstance({ cubeTransformId });
 
       materialId1 = model->GetMeshes()[0]->AddMaterial({
         tm->GetTexture(L"Assets/Models/Floor/dds-bathroom/Albedo.dds")->GetResourceView(),
         tm->GetTexture(L"Assets/Models/Floor/dds-bathroom/Normal.dds")->GetResourceView(),
+        tm->GetTexture(L"Assets/Models/Floor/dds-bathroom/Roughness.dds")->GetResourceView(),
         tm->GetTexture(L"Assets/Models/Floor/dds-bathroom/Metallic.dds")->GetResourceView(),
-        tm->GetTexture(L"Assets/Models/Floor/dds-bathroom/Roughness.dds")->GetResourceView()
       });
       auto& material1 = model->GetMeshes()[0]->GetMaterials()[materialId1];
 
@@ -262,6 +268,18 @@ void Application::Update(float deltaTime) {
 
   if (m_input->IsKeyPressed(VK_OEM_MINUS)) {
     Flame::PostProcess::Get()->SetEvFactor(Flame::PostProcess::Get()->GetEvFactor() - evSpeed * deltaTime);
+  }
+
+  const float kRotationSpeed = 5.0f;
+  float rotationSpeed = kRotationSpeed;
+  if (m_input->IsKeyPressed(VK_SHIFT)) {
+    rotationSpeed *= 3;
+  }
+
+  if (m_input->IsKeyPressed('R')) {
+    m_rotation += rotationSpeed * deltaTime;
+    Flame::TransformSystem::Get()->At(m_planeTransformId)->transform.SetRotation(0, m_rotation, 0);
+    Flame::TransformSystem::Get()->At(m_cubeTransformId)->transform.SetRotation(m_rotation, 12.0f, m_rotation);
   }
 }
 
