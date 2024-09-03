@@ -37,7 +37,7 @@ float3x3 BasisFromDir(float3 dir) {
 
 VSOutput VSMain(uint vertexId : SV_VERTEXID) {
   VSOutput result;
-  float3x3 basis = BasisFromDir(g_normal.xyz);
+  float3x3 basis = transpose(BasisFromDir(g_normal.xyz));
 
   // TopLeft
   if (vertexId == 0) {
@@ -99,7 +99,7 @@ float4 PSMain(VSOutput input) : SV_TARGET {
   float3 light = 0;
   float probability = 1.0 / g_samples;
   float3 normal = normalize(input.cameraToPixelDir);
-  float3x3 basis = BasisFromDir(normal);
+  float3x3 basis = transpose(BasisFromDir(normal));
 
   uint width;
   uint height;

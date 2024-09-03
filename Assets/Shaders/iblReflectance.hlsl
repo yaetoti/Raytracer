@@ -2,7 +2,6 @@ static const float PI = 3.1415926535897;
 
 cbuffer IblBuffer : register(b0) {
   uint g_samples;
-  float3 g_padding0;
 };
 
 struct VSOutput {
@@ -70,7 +69,8 @@ float3 RandomGGX(float2 random, float rough4) {
 float Gmf(float rough4, float NoV, float NoL) {
   NoV *= NoV;
   NoL *= NoL;
-  return 2.0 / (sqrt(1 + rough4 * (1 - NoV) / NoV) * sqrt(1 + rough4 * (1 - NoL) / NoL));
+  // Formula in presentation says we should multiply, but hints say to add
+  return 2.0 / (sqrt(1 + rough4 * (1 - NoV) / NoV) + sqrt(1 + rough4 * (1 - NoL) / NoL));
 }
 
 float2 PSMain(VSOutput input) : SV_TARGET {
