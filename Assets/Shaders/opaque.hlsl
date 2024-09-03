@@ -10,9 +10,6 @@ TextureCube<float4> diffuseTexture : register(t5);
 TextureCube<float4> specularTexture : register(t6);
 Texture2D<float2> reflectanceTexture : register(t7);
 
-// TODO generate metallic
-// TODO change layout
-
 struct VSInput {
   // MeshSpace
   float3 position : POSITION;
@@ -140,7 +137,7 @@ float4 PSMain(VSOutput input) : SV_TARGET
   float3 light = 0.0;
   float3 F0 = lerp(0.04.xxx, albedo, metallic);
   float3 viewDir = normalize(g_cameraPosition.xyz - input.positionWorld.xyz);
-  float NoV = max(dot(normal, viewDir), 0.01);
+  float NoV = max(dot(normal, viewDir), 0.001);
 
   // Direct light
   for (uint i = 0; i < g_directLightsCount; ++i) {
@@ -208,14 +205,16 @@ float4 PSMain(VSOutput input) : SV_TARGET
   float2 reflectanceLUT = reflectanceTexture.SampleLevel(g_linearWrap, float2(roughness, NoV), 0);
   float3 reflectance = reflectanceLUT.r * F0 + reflectanceLUT.g;
 
+  // TODO set in constantbuffer or vertexshader
   float width;
   float height;
   float levels;
   specularTexture.GetDimensions(0, width, height, levels);
+  // v.reflectionDir - from hints. In the presentation it was stated that we need to pass the viewDir, however (that gives wrong results)
   float specularReflection = reflectance * specularTexture.SampleLevel(g_linearWrap, -reflect(viewDir, normal), roughness * (levels - 1));
 
   light += diffuseReflection;
-  //light += specularReflection;
+  light += specularReflection;
 
   return float4(light, 1.0);
 }

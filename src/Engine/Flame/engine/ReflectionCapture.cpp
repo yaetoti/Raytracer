@@ -58,8 +58,8 @@ namespace Flame {
 
     auto texture = CreateCubemap(textureSize, DXGI_FORMAT_R16G16B16A16_FLOAT, 1);
     auto rtvArray = CreateCubemapRtv(texture->GetResource(), DXGI_FORMAT_R16G16B16A16_FLOAT, 0);
-    auto transforms = GenerateTransformMatrices();
     diffuseBuffer.data.samples = samples;
+    diffuseBuffer.data.cubemapSize = textureSize;
 
     // Render onto faces
     D3D11_VIEWPORT viewport {
@@ -79,7 +79,6 @@ namespace Flame {
     for (uint32_t i = 0; i < 6; ++i) {
       dc->OMSetRenderTargets(1, rtvArray[i].GetAddressOf(), nullptr);
       diffuseBuffer.data.normal = kCubemapFront[i];
-      diffuseBuffer.data.viewMatInv = transforms[i];
       diffuseBuffer.ApplyChanges();
       dc->Draw(3, 0);
     }
@@ -95,8 +94,8 @@ namespace Flame {
     auto dc = DxContext::Get()->d3d11DeviceContext;
 
     auto texture = CreateCubemap(textureSize, DXGI_FORMAT_R16G16B16A16_FLOAT, 0);
-    auto transforms = GenerateTransformMatrices();
     specularBuffer.data.samples = samples;
+    specularBuffer.data.cubemapSize = textureSize;
     dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
     dc->VSSetConstantBuffers(0, 1, specularBuffer.GetAddressOf());
     dc->PSSetConstantBuffers(0, 1, specularBuffer.GetAddressOf());
@@ -119,11 +118,11 @@ namespace Flame {
       };
       dc->RSSetViewports(1, &viewport);
 
+      specularBuffer.data.roughness = std::max(float(mipLevel) / float(mipLevels - 1), 0.045f);
+
       for (uint32_t i = 0; i < 6; ++i) {
         dc->OMSetRenderTargets(1, rtvArray[i].GetAddressOf(), nullptr);
         specularBuffer.data.normal = kCubemapFront[i];
-        specularBuffer.data.viewMatInv = transforms[i];
-        specularBuffer.data.roughness = std::max(float(mipLevel) / float(mipLevels - 1), 0.045f);
         specularBuffer.ApplyChanges();
         dc->Draw(3, 0);
       }
@@ -264,18 +263,6 @@ namespace Flame {
     }
 
     return rtvs;
-  }
-
-  std::array<glm::mat4, 6> ReflectionCapture::GenerateTransformMatrices() {
-    std::array<glm::mat4, 6> matrices {};
-    for (uint32_t i = 0; i < 6; ++i) {
-      // It's inversed since glm matrices are column major
-      matrices[i] = glm::transpose(glm::mat4(
-        kCubemapRight[i], kCubemapUp[i], kCubemapFront[i], { 0, 0, 0, 1 }
-      ));
-    }
-
-    return matrices;
   }
 
   uint32_t ReflectionCapture::GetTextureSizeLevel(uint32_t size, uint32_t mipLevel) {

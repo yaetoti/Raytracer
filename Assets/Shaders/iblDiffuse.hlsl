@@ -5,10 +5,9 @@ static const float PI = 3.1415926535897;
 TextureCube<float4> skyTexture : register(t0);
 
 cbuffer IblBuffer : register(b0) {
-  float4x4 g_viewMatInv;
   float4 g_normal;
   uint g_samples;
-  float3 g_padding0;
+  uint g_cubemapSize;
 };
 
 struct VSOutput {
@@ -37,7 +36,7 @@ float3x3 BasisFromDir(float3 dir) {
 
 VSOutput VSMain(uint vertexId : SV_VERTEXID) {
   VSOutput result;
-  float3x3 basis = transpose(BasisFromDir(g_normal.xyz));
+  float3x3 basisInv = transpose(BasisFromDir(g_normal.xyz));
 
   // TopLeft
   if (vertexId == 0) {
@@ -45,7 +44,7 @@ VSOutput VSMain(uint vertexId : SV_VERTEXID) {
     //result.cameraToPixelDir = mul(float4(-1.0f, 3.0f, 1.0f, 0.0f), g_viewMatInv).xyz;
 	// Basis is also to the right in RandomGGX formula. That's because we rotate FROM basis to WorldSpace
 	// (Basis is ViewMat. We skipped projection because we are drawing in 2D)
-    result.cameraToPixelDir = mul(basis, float3(-1.0f, 3.0f, 1.0f));
+    result.cameraToPixelDir = mul(basisInv, float3(-1.0f, 3.0f, 1.0f));
     result.uv = float2(0, 2);
     return result;
   }
@@ -54,7 +53,7 @@ VSOutput VSMain(uint vertexId : SV_VERTEXID) {
   if (vertexId == 1) {
     result.position = float4(3.0, -1.0, 1.0, 1.0);
     //result.cameraToPixelDir = mul(float4(3.0, -1.0, 1.0, 0.0), g_viewMatInv).xyz;
-    result.cameraToPixelDir = mul(basis, float3(3.0, -1.0, 1.0));
+    result.cameraToPixelDir = mul(basisInv, float3(3.0, -1.0, 1.0));
     result.uv = float2(2, 0);
     return result;
   }
@@ -63,7 +62,7 @@ VSOutput VSMain(uint vertexId : SV_VERTEXID) {
   if (vertexId == 2) {
     result.position = float4(-1.0, -1.0, 1.0, 1.0);
     //result.cameraToPixelDir = mul(float4(-1.0, -1.0, 1.0, 0.0), g_viewMatInv).xyz;
-    result.cameraToPixelDir = mul(basis, float3(-1.0, -1.0, 1.0));
+    result.cameraToPixelDir = mul(basisInv, float3(-1.0, -1.0, 1.0));
     result.uv = float2(0, 0);
     return result;
   }
@@ -99,30 +98,18 @@ float4 PSMain(VSOutput input) : SV_TARGET {
   float3 light = 0;
   float probability = 1.0 / g_samples;
   float3 normal = normalize(input.cameraToPixelDir);
-  float3x3 basis = transpose(BasisFromDir(normal));
-
-  uint width;
-  uint height;
-  skyTexture.GetDimensions(width, height);
-  float cubemapSize = max(width, height);
+  float3x3 basisInv = transpose(BasisFromDir(normal));
 
   for (uint i = 0; i < g_samples; ++i) {
     float NoV;
-    float3 lightDir = mul(basis, RandomHemisphere(NoV, i, g_samples));
-
-    float3 irradiance = skyTexture.SampleLevel(g_linearWrap, lightDir, HemisphereMip(probability, cubemapSize));
-    float NoL = max(dot(g_normal, lightDir), 0.00);
+    float3 lightDir = normalize(mul(basisInv, RandomHemisphere(NoV, i, g_samples)));
+    float3 irradiance = skyTexture.SampleLevel(g_linearWrap, lightDir, HemisphereMip(probability, g_cubemapSize));
+    float NoL = max(dot(g_normal, lightDir), 0.0);
 
     light += ((irradiance * NoV) / PI) * (1 - Fresnel(NoV, 0.04));
   }
 
   light *= (2 * PI) / g_samples;
 
-  //float3 color = normalize(input.cameraToPixelDir) * 0.5 + 0.5;
-  //float3 color = g_normal * 0.5 + 0.5;
-  //return float4(color.r, color.g, color.b, 1.0);
-  //return float4(1.0, 0.0, 0.0, 1.0);
-
-  //return skyTexture.Sample(g_anisotropicWrap, input.cameraToPixelDir);
   return float4(light, 1.0);
 }

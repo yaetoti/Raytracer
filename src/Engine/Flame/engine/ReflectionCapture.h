@@ -16,23 +16,20 @@ namespace Flame {
     using ComPtr = Microsoft::WRL::ComPtr<T>;
 
     struct IblDiffuseData final {
-      glm::mat4 viewMatInv;
       glm::vec4 normal;
       uint32_t samples;
-      float padding0[3];
+      uint32_t cubemapSize;
     };
 
     struct IblSpecularData final {
-      glm::mat4 viewMatInv;
       glm::vec4 normal;
       float roughness;
       uint32_t samples;
-      float padding0[2];
+      uint32_t cubemapSize;
     };
 
     struct IblReflectanceData final {
       uint32_t samples;
-      float padding0[3];
     };
 
     void Init();
@@ -46,7 +43,6 @@ namespace Flame {
   private:
     static std::shared_ptr<Texture> CreateCubemap(uint32_t textureSize, DXGI_FORMAT format, uint32_t mipLevels);
     static std::array<ComPtr<ID3D11RenderTargetView>, 6> CreateCubemapRtv(ID3D11Resource* texture, DXGI_FORMAT format, uint32_t mipLevel);
-    static std::array<glm::mat4, 6> GenerateTransformMatrices();
     static uint32_t GetTextureSizeLevel(uint32_t size, uint32_t mipLevel);
 
   private:
@@ -69,22 +65,6 @@ namespace Flame {
       { 0, -1, 0, 0 },
       { 0, 0, 1, 0 },
       { 0, 0, -1, 0 },
-    };
-    inline static const glm::vec4 kCubemapRight[6] = {
-      { 0, 0, -1, 0 },
-      { 0, 0, 1, 0 },
-      { 1, 0, 0, 0 },
-      { 1, 0, 0, 0 },
-      { 1, 0, 0, 0 },
-      { -1, 0, 0, 0 },
-    };
-    inline static const glm::vec4 kCubemapUp[6] = {
-      { 0, 1, 0, 0 },
-      { 0, 1, 0, 0 },
-      { 0, 0, -1, 0 },
-      { 0, 0, 1, 0 },
-      { 0, 1, 0, 0 },
-      { 0, 1, 0, 0 },
     };
   };
 }

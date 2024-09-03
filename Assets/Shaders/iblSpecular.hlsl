@@ -5,11 +5,10 @@ static const float PI = 3.1415926535897;
 TextureCube<float4> skyTexture : register(t0);
 
 cbuffer IblBuffer : register(b0) {
-  float4x4 g_viewMatInv;
   float4 g_normal;
   float g_roughness;
   uint g_samples;
-  float2 g_padding0;
+  uint g_cubemapSize;
 };
 
 struct VSOutput {
@@ -38,13 +37,12 @@ float3x3 BasisFromDir(float3 dir) {
 
 VSOutput VSMain(uint vertexId : SV_VERTEXID) {
   VSOutput result;
-  float3x3 basis = BasisFromDir(g_normal.xyz);
+  float3x3 basisInv = transpose(BasisFromDir(g_normal.xyz));
 
   // TopLeft
   if (vertexId == 0) {
     result.position = float4(-1.0, 3.0, 1.0, 1.0);
-    //result.cameraToPixelDir = mul(float4(-1.0f, 3.0f, 1.0f, 0.0f), g_viewMatInv).xyz;
-    result.cameraToPixelDir = mul(basis, float3(-1.0f, 3.0f, 1.0f));
+    result.cameraToPixelDir = mul(basisInv, float3(-1.0f, 3.0f, 1.0f));
     result.uv = float2(0, 2);
     return result;
   }
@@ -52,8 +50,7 @@ VSOutput VSMain(uint vertexId : SV_VERTEXID) {
   // BottomRight
   if (vertexId == 1) {
     result.position = float4(3.0, -1.0, 1.0, 1.0);
-    //result.cameraToPixelDir = mul(float4(3.0, -1.0, 1.0, 0.0), g_viewMatInv).xyz;
-    result.cameraToPixelDir = mul(basis, float3(3.0, -1.0, 1.0));
+    result.cameraToPixelDir = mul(basisInv, float3(3.0, -1.0, 1.0));
     result.uv = float2(2, 0);
     return result;
   }
@@ -61,8 +58,7 @@ VSOutput VSMain(uint vertexId : SV_VERTEXID) {
   // BottomLeft
   if (vertexId == 2) {
     result.position = float4(-1.0, -1.0, 1.0, 1.0);
-    //result.cameraToPixelDir = mul(float4(-1.0, -1.0, 1.0, 0.0), g_viewMatInv).xyz;
-    result.cameraToPixelDir = mul(basis, float3(-1.0, -1.0, 1.0));
+    result.cameraToPixelDir = mul(basisInv, float3(-1.0, -1.0, 1.0));
     result.uv = float2(0, 0);
     return result;
   }
@@ -121,14 +117,6 @@ float3 RandomGGX(float2 random, float rough4) {
   return dir;
 }
 
-// GGX importance sampling, returns microsurface normal (half-vector)
-// rough4 is initial roughness value in power of 4
-float3 RandomGGX(out float NdotH, uint index, uint N, float rough4, float3x3 rotation) {
-  float3 H = RandomGGX(RandomHammersley(index, N), rough4);
-  NdotH = H.z;
-  return mul(H, rotation);
-}
-
 // GGX normal distribution,
 // Real-Time Rendering 4th Edition, page 340, equation 9.41
 float Ndf(float rough2, float NoH) {
@@ -137,48 +125,32 @@ float Ndf(float rough2, float NoH) {
   return rough2 / denom;
 }
 
-// Input = viewDir (to viewer)
+// Input = reflectedDir
 float4 PSMain(VSOutput input) : SV_TARGET {
   float3 light = 0;
   float probability = 1.0 / g_samples;
-  float3 viewDir = normalize(-input.cameraToPixelDir);
+  float3 viewDir = normalize(input.cameraToPixelDir);
   float3 normal = viewDir;
-  float3x3 basis = BasisFromDir(normal.xyz);
-
-  uint width;
-  uint height;
-  skyTexture.GetDimensions(width, height);
-  float cubemapSize = max(width, height);
+  float3x3 basisInv = transpose(BasisFromDir(g_normal.xyz));
 
   uint samples = 0;
   for (uint i = 0; i < g_samples; ++i) {
-    float NoH;
-    float3 halfVector = RandomGGX(NoH, i, g_samples, pow(g_roughness, 4), basis);
-    // Reflect saves vector's side direction, so we need '-' and it's actually pointing to light
+    float3 halfVector = normalize(mul(basisInv, RandomGGX(RandomHammersley(i, g_samples), pow(g_roughness, 4))));
+    // Without -. Formula from the presentation. - gives wrong result
     float3 lightDir = -reflect(viewDir, halfVector);
-    //float3 lightDir = -reflect(viewDir, g_normal);
 
-    float ndf = Ndf(g_roughness * g_roughness, NoH);
-    float sampleProbability = (4 / (2 * PI * ndf)) * probability;
-    float3 irradiance = skyTexture.SampleLevel(g_linearWrap, lightDir, HemisphereMip(sampleProbability, cubemapSize));
-
-    if (dot(normal.xyz, lightDir) >= 0.000001) {
+    if (dot(normal, lightDir) >= 0.000001) {
       ++samples;
-      light += (irradiance * ndf * 0.25) * ((4 * dot(normal, halfVector)) / (ndf * NoH));
+
+      float NoH = dot(normal, halfVector);
+      float ndf = Ndf(g_roughness * g_roughness, NoH);
+      float sampleProbability = (4 / (2 * PI * ndf)) * probability;
+      float3 irradiance = skyTexture.SampleLevel(g_linearWrap, lightDir, HemisphereMip(sampleProbability, g_cubemapSize));
+      light += (irradiance * ndf * 0.25) * ((4 * dot(viewDir, halfVector)) / (ndf * NoH));
     }
   }
 
   light /= samples;
 
-  //float3 color = normalize(input.cameraToPixelDir) * 0.5 + 0.5;
-  //float3 color = abs(normal) * 0.5 + 0.5;
-  //return float4(pow(color, 8), 1.0);
-  //return float4(1.0, 0.0, 0.0, 1.0);
-
   return float4(light, 1.0);
-  //float NoH;
-  //float3 halfVector = RandomGGX(NoH, 0, g_samples, pow(g_roughness, 4), basis);
-  //float ndf = Ndf(g_roughness * g_roughness, NoH);
-  //float sampleProbability = (4 / (2 * PI * ndf)) * probability;
-  //return skyTexture.Sample(g_linearWrap, -reflect(viewDir, halfVector), HemisphereMip(sampleProbability, cubemapSize));
 }
