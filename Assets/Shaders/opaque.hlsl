@@ -145,14 +145,14 @@ float4 PSMain(VSOutput input) : SV_TARGET
     float solidAngle = g_directLights[i].solidAngle;
     float3 halfReflect = normalize(lightDir + viewDir);
 
-    float NoH = max(dot(normal, halfReflect), 0.01);
-    float NoL = max(dot(normal, lightDir), 0.01);
-    float HoL = max(dot(halfReflect, lightDir), 0.01);
+    float NoH = max(dot(normal, halfReflect), 0.001);
+    float NoL = max(dot(normal, lightDir), 0.001);
+    float HoL = max(dot(halfReflect, lightDir), 0.001);
 
     float3 diffuse = ((solidAngle * albedo * (1 - metallic)) / PI) * (1 - Fresnel(NoL, F0)) * NoL;
     float3 specular = min(1, (solidAngle * Ndf(roughness, NoH)) / (4 * NoV)) * Gmf(roughness, NoV, NoL) * Fresnel(HoL, F0);
 
-    //light += g_directLights[i].radiance * (diffuse + specular);
+    light += g_directLights[i].radiance * (diffuse + specular);
   }
 
   // Point light
@@ -163,14 +163,14 @@ float4 PSMain(VSOutput input) : SV_TARGET
     float3 halfReflect = normalize(lightDir + viewDir);
     float solidAngle = SolidAngle(g_pointLights[i].radius, lightDistance);
     
-    float NoH = max(dot(normal, halfReflect), 0.01);
-    float NoL = max(dot(normal, lightDir), 0.01);
-    float HoL = max(dot(halfReflect, lightDir), 0.01);
+    float NoH = max(dot(normal, halfReflect), 0.001);
+    float NoL = max(dot(normal, lightDir), 0.001);
+    float HoL = max(dot(halfReflect, lightDir), 0.001);
 
     float3 diffuse = ((solidAngle * albedo * (1 - metallic)) / PI) * (1 - Fresnel(NoL, F0)) * NoL;
     float3 specular = min(1, (solidAngle * Ndf(roughness, NoH)) / (4 * NoV)) * Gmf(roughness, NoV, NoL) * Fresnel(HoL, F0);
 
-    //light += g_pointLights[i].radiance * (diffuse + specular);
+    light += g_pointLights[i].radiance * (diffuse + specular);
   }
 
   // Spot light
@@ -181,9 +181,9 @@ float4 PSMain(VSOutput input) : SV_TARGET
     float3 halfReflect = normalize(lightDir + viewDir);
     float solidAngle = SolidAngle(g_spotLights[i].radius, lightDistance);
     
-    float NoH = max(dot(normal, halfReflect), 0.01);
-    float NoL = max(dot(normal, lightDir), 0.01);
-    float HoL = max(dot(halfReflect, lightDir), 0.01);
+    float NoH = max(dot(normal, halfReflect), 0.001);
+    float NoL = max(dot(normal, lightDir), 0.001);
+    float HoL = max(dot(halfReflect, lightDir), 0.001);
 
     float theta = dot(lightDir, -g_spotLights[i].direction);
     float epsilon = g_spotLights[i].cutoffCosineInner - g_spotLights[i].cutoffCosineOuter;
@@ -195,7 +195,7 @@ float4 PSMain(VSOutput input) : SV_TARGET
     float3 diffuse = ((solidAngle * albedo * (1 - metallic)) / PI) * (1 - Fresnel(NoL, F0)) * NoL;
     float3 specular = min(1, (solidAngle * Ndf(roughness, NoH)) / (4 * NoV)) * Gmf(roughness, NoV, NoL) * Fresnel(HoL, F0);
 
-    //light += g_spotLights[i].radiance * textureColor * intensity * (diffuse/* + specular*/);
+    light += g_spotLights[i].radiance * textureColor * intensity * (diffuse/* + specular*/);
   }
 
   // Add IBL

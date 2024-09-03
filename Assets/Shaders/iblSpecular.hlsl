@@ -131,12 +131,11 @@ float4 PSMain(VSOutput input) : SV_TARGET {
   float probability = 1.0 / g_samples;
   float3 viewDir = normalize(input.cameraToPixelDir);
   float3 normal = viewDir;
-  float3x3 basisInv = transpose(BasisFromDir(g_normal.xyz));
+  float3x3 basisInv = transpose(BasisFromDir(normal.xyz));
 
   uint samples = 0;
   for (uint i = 0; i < g_samples; ++i) {
     float3 halfVector = normalize(mul(basisInv, RandomGGX(RandomHammersley(i, g_samples), pow(g_roughness, 4))));
-    // Without -. Formula from the presentation. - gives wrong result
     float3 lightDir = -reflect(viewDir, halfVector);
 
     if (dot(normal, lightDir) >= 0.000001) {
@@ -144,9 +143,8 @@ float4 PSMain(VSOutput input) : SV_TARGET {
 
       float NoH = dot(normal, halfVector);
       float ndf = Ndf(g_roughness * g_roughness, NoH);
-      float sampleProbability = (4 / (2 * PI * ndf)) * probability;
-      float3 irradiance = skyTexture.SampleLevel(g_linearWrap, lightDir, HemisphereMip(sampleProbability, g_cubemapSize));
-      light += (irradiance * ndf * 0.25) * ((4 * dot(viewDir, halfVector)) / (ndf * NoH));
+      float sampleProbability = (2 * probability) / (PI * ndf);
+      light += skyTexture.SampleLevel(g_linearWrap, lightDir, HemisphereMip(sampleProbability, g_cubemapSize));
     }
   }
 
