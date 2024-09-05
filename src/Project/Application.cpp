@@ -11,6 +11,8 @@
 #include <Flame/engine/MeshSystem.h>
 #include <cmath>
 #include <winuser.h>
+#include <backends/imgui_impl_dx11.h>
+#include <backends/imgui_impl_win32.h>
 
 Application::Application() {
   m_window = std::make_shared<Flame::Window>(L"Flame 🔥", 160, 90, 1);
@@ -44,6 +46,11 @@ void Application::Run() {
       TranslateMessage(&message);
       DispatchMessageW(&message);
     }
+
+    // Start the Dear ImGui frame
+    ImGui_ImplDX11_NewFrame();
+    ImGui_ImplWin32_NewFrame();
+    ImGui::NewFrame();
 
     Update(m_deltaTime);
     Render();
@@ -286,6 +293,10 @@ void Application::Update(float deltaTime) {
 
 void Application::Render() const {
   m_dxRenderer->Render(m_time, m_deltaTime);
+
+  ImGui::Render();
+  ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+
   m_window->PresentSwapchain();
 }
 

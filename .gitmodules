@@ -7,3 +7,6 @@
 [submodule "vendor/directxtex"]
 	path = vendor/directxtex
 	url = https://github.com/microsoft/DirectXTex.git
+[submodule "vendor/imgui"]
+	path = vendor/imgui
+	url = https://github.com/ocornut/imgui.git

@@ -4,6 +4,8 @@
 #include "events/MouseMoveWindowEvent.h"
 #include "events/ResizeWindowEvent.h"
 #include "events/MouseScrollWindowEvent.h"
+#include "imgui.h"
+#include "backends/imgui_impl_win32.h"
 
 #include <d3d11.h>
 #include <dxgiformat.h>
@@ -25,6 +27,7 @@ namespace Flame {
   }
 
   Window::~Window() {
+    ImGui_ImplWin32_Shutdown();
     DiscardResources();
   }
 
@@ -66,6 +69,9 @@ namespace Flame {
     if (m_hWnd == nullptr) {
       return false;
     }
+
+    // ImGUI
+    ImGui_ImplWin32_Init(m_hWnd);
 
     // D3D
 
@@ -537,6 +543,11 @@ namespace Flame {
   }
 
   void Window::HandleKeyMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
+    auto& io = ImGui::GetIO();
+    if (io.WantCaptureKeyboard) {
+      return;
+    }
+
     WORD vkCode = LOWORD(wParam);
     WORD keyFlags = HIWORD(lParam);
     BOOL wasPressed = (keyFlags & KF_REPEAT) == KF_REPEAT;
@@ -545,6 +556,11 @@ namespace Flame {
   }
 
   void Window::HandleMouseButtonMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
+    auto& io = ImGui::GetIO();
+    if (io.WantCaptureMouse) {
+      return;
+    }
+
     float xCursor = static_cast<float>(GET_X_LPARAM(lParam));
     float yCursor = static_cast<float>(GET_Y_LPARAM(lParam));
     switch (msg) {
@@ -582,6 +598,11 @@ namespace Flame {
   }
 
   void Window::HandleMouseMoveMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
+    auto& io = ImGui::GetIO();
+    if (io.WantCaptureMouse) {
+      return;
+    }
+
     // TODO Will I need the real coordinates?
     float xCursor = static_cast<float>(GET_X_LPARAM(lParam));
     float yCursor = static_cast<float>(GET_Y_LPARAM(lParam));
@@ -589,6 +610,11 @@ namespace Flame {
   }
 
   void Window::HandleMouseScrollMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
+    auto& io = ImGui::GetIO();
+    if (io.WantCaptureMouse) {
+      return;
+    }
+
     float xCursor = static_cast<float>(GET_X_LPARAM(lParam));
     float yCursor = static_cast<float>(GET_Y_LPARAM(lParam));
     float delta = static_cast<float>(GET_WHEEL_DELTA_WPARAM(wParam)) / WHEEL_DELTA;
@@ -596,6 +622,11 @@ namespace Flame {
   }
 
   LRESULT Window::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+    extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+    if (ImGui_ImplWin32_WndProcHandler(hWnd, msg, wParam, lParam)) {
+      return true;
+    }
+
     if (msg == WM_CREATE) {
       CREATESTRUCTW* data = reinterpret_cast<CREATESTRUCTW*>(lParam);
       SetWindowLongPtrW(hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(data->lpCreateParams));
@@ -611,7 +642,6 @@ namespace Flame {
     if (window != nullptr && window->HandleWindowMessage(msg, wParam, lParam)) {
       return 0;
     }
-
     return DefWindowProcW(hWnd, msg, wParam, lParam);
   }
 }

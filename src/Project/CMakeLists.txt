@@ -10,6 +10,7 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/vendor/assimp/include
   ${CMAKE_BINARY_DIR}/vendor/assimp/include
   ${CMAKE_SOURCE_DIR}/vendor/directxtex
+  ${CMAKE_SOURCE_DIR}/vendor/imgui
 )
 
 add_executable(${PROJECT_NAME} WIN32 ${SRC_FILES})

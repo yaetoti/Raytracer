@@ -9,6 +9,7 @@
 #include <assimp/scene.h>
 #include <d3d11.h>
 #include <d3dcompiler.h>
+#include <imgui.h>
 #include <glm/ext/matrix_transform.hpp>
 #include <iostream>
 #include <limits>
@@ -134,6 +135,15 @@ namespace Flame {
     auto targetSrvHdr = m_window->GetTargetSrvHdr();
     auto depthStencilView = m_window->GetDepthStencilView();
     auto depthStencilState = m_window->GetDepthStencilState();
+
+    ImGui::Begin("Controls", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+    ImGui::Checkbox("Enable diffuse", &m_diffuseEnabled);
+    ImGui::Checkbox("Enable specular", &m_specularEnabled);
+    ImGui::Checkbox("Enable IBL diffuse", &m_iblDiffuseEnabled);
+    ImGui::Checkbox("Enable IBL specular", &m_iblSpecularEnabled);
+    ImGui::Checkbox("Override roughness", &m_overwriteRoughness);
+    ImGui::SliderFloat("Roughness", &m_roughness, 0.0f, 1.0f);
+    ImGui::End();
 
     // Constant buffer magic
     UpdateConstantBuffer(time);
