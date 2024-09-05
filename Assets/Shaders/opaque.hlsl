@@ -152,6 +152,7 @@ float Falloff(float3 surfaceNormal, float3 sphereVec, float sphereDistance, floa
   return min((sphereRadius + height) / (2 * sphereRadius), 1);
 }
 
+// https://advances.realtimerendering.com/s2017/DecimaSiggraph2017.pdf
 // [ de Carpentier 2017, "Decima Engine: Advances in Lighting and AA" ]
 // sphereSin and sphereCos are sin and cos of the light source angular halfsize (2D angle, not solid angle).
 void SphereMaxNoH(float NoV, inout float NoL, inout float VoL, float sphereSin, float sphereCos, bool bNewtonIteration, out float NoH, out float VoH) {
@@ -202,8 +203,9 @@ void SphereMaxNoH(float NoV, inout float NoL, inout float VoL, float sphereSin, 
 
 float4 PSMain(VSOutput input) : SV_TARGET
 {
-  //float3 albedo = albedoTexture.Sample(g_linearWrap, input.uv).xyz;
-  float3 albedo = float3(1, 0, 0);
+  float3 albedo = albedoTexture.Sample(g_linearWrap, input.uv).xyz;
+  // TODO debug
+  //albedo = float3(1, 0, 0);
   float3 normal = normalTexture.Sample(g_linearWrap, input.uv).xyz;
   float metallic = metallicTexture.Sample(g_linearWrap, input.uv).x;
   float roughness = roughnessTexture.Sample(g_linearWrap, input.uv).x;
@@ -211,6 +213,8 @@ float4 PSMain(VSOutput input) : SV_TARGET
   //normal.y = -normal.y;
   normal = normal * 2.0 - 1.0;
   normal = normalize(mul(input.tbn, normal));
+  // TODO remove
+  input.normalWorld = normalize(input.normalWorld);
   //normal = -normal;
 
   if (g_isNormalVisMode) {
@@ -222,6 +226,7 @@ float4 PSMain(VSOutput input) : SV_TARGET
   float3 F0 = lerp(0.04.xxx, albedo, metallic);
   float3 viewDir = normalize(g_cameraPosition.xyz - input.positionWorld.xyz);
   float NoV = dot(normal, viewDir);
+  float GNoV = dot(input.normalWorld, viewDir);
 
   // Direct light
   for (uint i = 0; i < g_directLightsCount; ++i) {
@@ -229,23 +234,36 @@ float4 PSMain(VSOutput input) : SV_TARGET
     float solidAngle = g_directLights[i].solidAngle;
     float3 halfReflect = normalize(lightDir + viewDir);
 
-    float NoH = max(dot(normal, halfReflect), 0.001);
     float NoL = max(dot(normal, lightDir), 0.001);
+    float GNoL = dot(input.normalWorld, lightDir);
+    float NoH = max(dot(normal, halfReflect), 0.001);
     float HoL = max(dot(halfReflect, lightDir), 0.001);
 
-    float3 diffuse = ((solidAngle * albedo * (1 - metallic)) / PI) * (1 - Fresnel(NoL, F0)) * NoL;
-    float3 specular = min(1, (solidAngle * Ndf(roughness, NoH)) / (4 * NoV)) * Gmf(roughness, NoV, NoL) * Fresnel(HoL, F0);
+    float3 diffuse = 0.0.xxx;
+    float3 specular = 0.0.xxx;
 
-    //light += g_directLights[i].radiance * (diffuse + specular);
+    if (GNoL >= 0.0 && NoL >= 0.0) {
+      diffuse = ((solidAngle * albedo * (1 - metallic)) / PI) * (1 - Fresnel(NoL, F0)) * NoL;
+    }
+    if (NoV >= 0.0 && NoL >= 0.0) {
+      specular = min(1, (solidAngle * Ndf(roughness, NoH)) / (4 * NoV)) * Gmf(roughness, NoV, NoL) * Fresnel(HoL, F0);
+    }
+    light += g_directLights[i].radiance * (diffuse + specular);
   }
 
   // Point light
   for (uint i = 0; i < g_pointLightsCount; ++i) {
+    float3 diffuse = 0.0.xxx;
+    float3 specular = 0.0.xxx;
+
+    float radius = g_pointLights[i].radius;
     float3 lightVec = g_pointLights[i].position.xyz - input.positionWorld.xyz;
     float3 lightDir = normalize(lightVec);
     float lightDistance = length(lightVec);
-    float NoL = dot(normal, lightDir);
-    float solidAngle = SolidAngle(g_pointLights[i].radius, lightDistance);
+    float solidAngle = SolidAngle(radius, lightDistance);
+    if (lightDistance < radius) {
+      solidAngle = 2 * PI;
+    }
 
     // https://en.wikipedia.org/wiki/Solid_angle
     // Cos half 2D angle
@@ -254,31 +272,36 @@ float4 PSMain(VSOutput input) : SV_TARGET
     sphereCos = 2 * sphereCos * sphereCos - 1;
     float sphereSin = sqrt(1 - sphereCos * sphereCos);
 
-    //float3 ApproximateClosestSphereDir(out bool intersects, float3 reflectionDir, float sphereCos, float3 sphereRelPos, float3 sphereDir, float sphereDist, float sphereRadius)
-    //bool intersects;
-    //lightDir = ApproximateClosestSphereDir(intersects, -reflect(viewDir, normal), sphereCos, lightVec, lightDir, lightDistance, g_pointLights[i].radius);
-    //NoL = dot(normal, lightDir);
-    //if (intersects) {
-    //  continue;
-    //}
+    // Offset sphere center by radius so that we have NoL > 0 while sphere isn't completely below the horizon.
+    float3 diffuseLightVec = lightVec + input.normalWorld * g_pointLights[i].radius;
+    float3 diffuseLightDir = normalize(diffuseLightVec);
+    float diffuseNoL = dot(normal, diffuseLightDir);
+    float diffuseGNoL = dot(input.normalWorld, diffuseLightDir);
 
-    // If a sphere is lower that surface
-    ClampDirToHorizon(lightDir, NoL, normal, 0.0);
-
-    float3 diffuse = 0.0.xxx;
-    if (NoL >= 0.0) {
-      diffuse += ((solidAngle * albedo * (1 - metallic)) / PI) * (1 - Fresnel(NoL, F0)) * NoL;
+    // If we see the surface and the light is above the horizon
+    if (diffuseNoL >= 0.0 && diffuseGNoL >= 0) {
+      diffuse += ((solidAngle * albedo * (1 - metallic)) / PI) * (1 - Fresnel(diffuseNoL, F0)) * diffuseNoL;
     }
-    //void ClampDirToHorizon(inout float3 dir, inout float NoD, float3 normal, float minNoD)
 
+    // inout
+    float NoL = dot(normal, lightDir);
+    float GNoL = dot(input.normalWorld, lightDir);
     float VoL = dot(viewDir, lightDir);
+    // out
     float NoH = dot(normal, (viewDir + lightDir) / 2);
-    float VoH = dot(viewDir, (viewDir + lightDir) / 2);;
+    float VoH = dot(viewDir, (viewDir + lightDir) / 2);
 
-    float falloffMicro = Falloff(normal, lightVec, lightDistance, g_pointLights[i].radius);
-    float falloffMacro = Falloff(input.normalWorld, lightVec, lightDistance, g_pointLights[i].radius);
-    //NoL = max(NoL, falloffMicro * sphereSin);
+    /*
+    //float3 ApproximateClosestSphereDir(out bool intersects, float3 reflectionDir, float sphereCos, float3 sphereRelPos, float3 sphereDir, float sphereDist, float sphereRadius)
+    bool intersects;
+    lightDir = ApproximateClosestSphereDir(intersects, -reflect(viewDir, normal), sphereCos, lightVec, lightDir, lightDistance, g_pointLights[i].radius);
+    NoL = dot(normal, lightDir);
+    if (intersects) {
+      continue;
+    }
+    */
 
+    //void SphereMaxNoH(float NoV, inout float NoL, inout float VoL, float sphereSin, float sphereCos, bool bNewtonIteration, out float NoH, out float VoH)
     SphereMaxNoH(
       NoV,
       NoL,
@@ -290,45 +313,57 @@ float4 PSMain(VSOutput input) : SV_TARGET
       VoH
     );
 
+    // If lightDir is pointing below the horizon
+    ClampDirToHorizon(lightDir, NoL, normal, 0.0);
 
-    float3 specular = 0.0.xxx;
-
+    // From W.Merta
+    // NoL = max(NoL, falloffMicro * sphereSin);
 
     if (NoV >= 0.0 && NoL >= 0.0) {
-      specular += min(1, (solidAngle * Ndf(roughness * roughness, NoH)) / (4 * NoV)) * Gmf(roughness * roughness, NoV, NoL) * Fresnel(VoH, F0);
+      specular += min(1, (solidAngle * Ndf(roughness * roughness, NoH)) / (4 * NoV)) * Gmf(roughness * roughness, NoV, diffuseNoL) * Fresnel(VoH, F0);
     }
 
-    //light += g_pointLights[i].radiance * (diffuse + specular);
+    float falloffMicro = Falloff(normal, lightVec, lightDistance, radius);
+    float falloffMacro = Falloff(input.normalWorld, lightVec, lightDistance, radius);
+    // TODO remove
+    //falloffMicro = falloffMacro = 1;
+
+    // TODO merge
     light += g_pointLights[i].radiance * diffuse * falloffMicro * falloffMacro;
-    //light += g_pointLights[i].radiance * specular * falloffMicro * falloffMacro;
+    light += g_pointLights[i].radiance * specular * falloffMicro * falloffMacro;
   }
 
   // Spot light
   for (uint i = 0; i < g_spotLightsCount; ++i) {
+    float3 diffuse = 0.0.xxx;
+    float3 specular = 0.0.xxx;
+
+    float radius = g_spotLights[i].radius;
     float3 lightVec = g_spotLights[i].position.xyz - input.positionWorld.xyz;
     float3 lightDir = normalize(lightVec);
     float lightDistance = length(lightVec);
-    float solidAngle = SolidAngle(g_spotLights[i].radius, lightDistance);
+    float solidAngle = SolidAngle(radius, lightDistance);
+    if (lightDistance < radius) {
+      solidAngle = 2 * PI;
+    }
 
-    float NoL = dot(normal, lightDir);
-    float VoL = dot(viewDir, lightDir);
-    float NoH;
-    float VoH;
-
-    float sphereCos = 1 - 0.5 * solidAngle / PI;
+    // https://en.wikipedia.org/wiki/Solid_angle
+    // Cos half 2D angle
+    float sphereCos = (2 * PI - solidAngle) / (2 * PI);
+    // cos2a = 2 cos^2(a) - 1
+    sphereCos = 2 * sphereCos * sphereCos - 1;
     float sphereSin = sqrt(1 - sphereCos * sphereCos);
-    SphereMaxNoH(
-      NoV,
-      NoL,
-      VoL,
-      sphereSin,
-      sphereCos,
-      true,
-      NoH,
-      VoH
-    );
-    float falloff = Falloff(normal, lightVec, lightDistance, g_pointLights[i].radius);
-    falloff *= Falloff(input.normalWorld, lightVec, lightDistance, g_pointLights[i].radius);
+
+    // Offset sphere center by radius so that we have NoL > 0 while sphere isn't completely below the horizon.
+    float3 diffuseLightVec = lightVec + input.normalWorld * g_pointLights[i].radius;
+    float3 diffuseLightDir = normalize(diffuseLightVec);
+    float diffuseNoL = dot(normal, diffuseLightDir);
+    float diffuseGNoL = dot(input.normalWorld, diffuseLightDir);
+
+    // If we see the surface and the light is above the horizon
+    if (diffuseNoL >= 0.0 && diffuseGNoL >= 0) {
+      diffuse += ((solidAngle * albedo * (1 - metallic)) / PI) * (1 - Fresnel(diffuseNoL, F0)) * diffuseNoL;
+    }
 
     float theta = dot(lightDir, -g_spotLights[i].direction);
     float epsilon = g_spotLights[i].cutoffCosineInner - g_spotLights[i].cutoffCosineOuter;
@@ -337,11 +372,52 @@ float4 PSMain(VSOutput input) : SV_TARGET
     float2 textureUV = GetSpotLightUv(input.positionWorld, g_spotLights[i].lightViewMat, g_spotLights[i].cutoffCosineOuter);
     float4 textureColor = lightTexture.Sample(g_anisotropicWrap, textureUV);
 
-    float3 diffuse = ((solidAngle * albedo * (1 - metallic)) / PI) * (1 - Fresnel(NoL, F0)) * NoL;
-    float3 specular = min(1, (solidAngle * Ndf(roughness, NoH)) / (4 * NoV)) * Gmf(roughness, NoV, NoL) * Fresnel(VoH, F0);
+    // inout
+    float NoL = dot(normal, lightDir);
+    float GNoL = dot(input.normalWorld, lightDir);
+    float VoL = dot(viewDir, lightDir);
+    // out
+    float NoH = dot(normal, (viewDir + lightDir) / 2);
+    float VoH = dot(viewDir, (viewDir + lightDir) / 2);
 
-    //light += g_spotLights[i].radiance * textureColor * intensity * (diffuse/* + specular*/);
-    // TODO falloff
+    /*
+    //float3 ApproximateClosestSphereDir(out bool intersects, float3 reflectionDir, float sphereCos, float3 sphereRelPos, float3 sphereDir, float sphereDist, float sphereRadius)
+    bool intersects;
+    lightDir = ApproximateClosestSphereDir(intersects, -reflect(viewDir, normal), sphereCos, lightVec, lightDir, lightDistance, g_pointLights[i].radius);
+    NoL = dot(normal, lightDir);
+    if (intersects) {
+      continue;
+    }
+    */
+
+    //void SphereMaxNoH(float NoV, inout float NoL, inout float VoL, float sphereSin, float sphereCos, bool bNewtonIteration, out float NoH, out float VoH)
+    SphereMaxNoH(
+      NoV,
+      NoL,
+      VoL,
+      sphereSin,
+      sphereCos,
+      true,
+      NoH,
+      VoH
+    );
+
+    // If lightDir is pointing below the horizon
+    ClampDirToHorizon(lightDir, NoL, normal, 0.0);
+
+    // From W.Merta
+    // NoL = max(NoL, falloffMicro * sphereSin);
+
+    if (NoV >= 0.0 && NoL >= 0.0) {
+      specular += min(1, (solidAngle * Ndf(roughness * roughness, NoH)) / (4 * NoV)) * Gmf(roughness * roughness, NoV, diffuseNoL) * Fresnel(VoH, F0);
+    }
+
+    float falloffMicro = Falloff(normal, lightVec, lightDistance, radius);
+    float falloffMacro = Falloff(input.normalWorld, lightVec, lightDistance, radius);
+    // TODO remove
+    //falloffMicro = falloffMacro = 1;
+
+    light += g_spotLights[i].radiance * textureColor * intensity * falloffMicro * falloffMacro * (diffuse + specular);
   }
 
   // Add IBL
