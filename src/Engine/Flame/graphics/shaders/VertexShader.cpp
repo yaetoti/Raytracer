@@ -29,7 +29,7 @@ namespace Flame {
       D3D_COMPILE_STANDARD_FILE_INCLUDE,
       "VSMain",
       "vs_5_0",
-      D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_DEBUG,
+      D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION,
       0,
       m_blob.ReleaseAndGetAddressOf(),
       errorBlob.ReleaseAndGetAddressOf()
