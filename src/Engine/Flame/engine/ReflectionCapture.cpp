@@ -14,6 +14,18 @@ namespace Flame {
     specularBuffer.Init();
     reflectancePipeline.Init(L"Assets/Shaders/iblReflectance.hlsl", ShaderType::VERTEX_SHADER | ShaderType::PIXEL_SHADER);
     reflectanceBuffer.Init();
+
+    {
+      D3D11_SAMPLER_DESC desc {};
+      desc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+      desc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+      desc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+      desc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+      desc.MaxLOD = D3D11_FLOAT32_MAX;
+      desc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+      HRESULT result = DxContext::Get()->d3d11Device->CreateSamplerState(&desc, m_linearSampler.GetAddressOf());
+      assert(SUCCEEDED(result));
+    }
   }
 
   void ReflectionCapture::Cleanup() {
@@ -23,6 +35,7 @@ namespace Flame {
     specularBuffer.Reset();
     reflectancePipeline.Reset();
     reflectanceBuffer.Reset();
+    m_linearSampler.Reset();
   }
 
   void ReflectionCapture::GenerateAndSaveTextures() {
@@ -75,6 +88,7 @@ namespace Flame {
     dc->VSSetConstantBuffers(0, 1, diffuseBuffer.GetAddressOf());
     dc->PSSetConstantBuffers(0, 1, diffuseBuffer.GetAddressOf());
     dc->PSSetShaderResources(0, 1, &skyboxView);
+    dc->PSSetSamplers(0, 1, m_linearSampler.GetAddressOf());
     diffusePipeline.Bind();
     for (uint32_t i = 0; i < 6; ++i) {
       dc->OMSetRenderTargets(1, rtvArray[i].GetAddressOf(), nullptr);
@@ -100,6 +114,7 @@ namespace Flame {
     dc->VSSetConstantBuffers(0, 1, specularBuffer.GetAddressOf());
     dc->PSSetConstantBuffers(0, 1, specularBuffer.GetAddressOf());
     dc->PSSetShaderResources(0, 1, &skyboxView);
+    dc->PSSetSamplers(0, 1, m_linearSampler.GetAddressOf());
     specularPipeline.Bind();
 
     uint32_t mipLevels = static_cast<uint32_t>(std::ceilf(std::log2f(textureSize) + 1.0f));

@@ -1,5 +1,4 @@
-#include "samplers.hlsli"
-
+SamplerState g_linearWrap : register(s0);
 static const float PI = 3.1415926535897;
 
 TextureCube<float4> skyTexture : register(t0);

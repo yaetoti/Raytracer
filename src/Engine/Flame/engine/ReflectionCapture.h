@@ -58,6 +58,8 @@ namespace Flame {
     ShaderPipeline reflectancePipeline;
     ConstantBuffer<IblReflectanceData> reflectanceBuffer;
 
+    ComPtr<ID3D11SamplerState> m_linearSampler;
+
     inline static const glm::vec4 kCubemapFront[6] = {
       { 1, 0, 0, 0 },
       { -1, 0, 0, 0 },
