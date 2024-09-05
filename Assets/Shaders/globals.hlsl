@@ -59,6 +59,13 @@ cbuffer ConstantBuffer : register(CBUFFER_GENERAL)
   float4 g_cameraPosition;
   float g_time;
   bool g_isNormalVisMode;
+
+  bool g_diffuseEnabled;
+  bool g_specularEnabled;
+  bool g_iblDiffuseEnabled;
+  bool g_iblSpecularEnabled;
+  bool g_overwriteRoughness;
+  float g_roughness;
 };
 
 cbuffer LightBuffer : register(CBUFFER_LIGHT) {

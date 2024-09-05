@@ -210,6 +210,10 @@ float4 PSMain(VSOutput input) : SV_TARGET
   float metallic = metallicTexture.Sample(g_linearWrap, input.uv).x;
   float roughness = roughnessTexture.Sample(g_linearWrap, input.uv).x;
 
+  if (g_overwriteRoughness) {
+    roughness = g_roughness;
+  }
+
   //normal.y = -normal.y;
   normal = normal * 2.0 - 1.0;
   normal = normalize(mul(input.tbn, normal));
@@ -248,7 +252,13 @@ float4 PSMain(VSOutput input) : SV_TARGET
     if (NoV >= 0.0 && NoL >= 0.0) {
       specular = min(1, (solidAngle * Ndf(roughness, NoH)) / (4 * NoV)) * Gmf(roughness, NoV, NoL) * Fresnel(HoL, F0);
     }
-    light += g_directLights[i].radiance * (diffuse + specular);
+
+    if (g_diffuseEnabled) {
+      light += g_directLights[i].radiance * diffuse;
+    }
+    if (g_specularEnabled) {
+      light += g_directLights[i].radiance * specular;
+    }
   }
 
   // Point light
@@ -329,8 +339,12 @@ float4 PSMain(VSOutput input) : SV_TARGET
     //falloffMicro = falloffMacro = 1;
 
     // TODO merge
-    light += g_pointLights[i].radiance * diffuse * falloffMicro * falloffMacro;
-    light += g_pointLights[i].radiance * specular * falloffMicro * falloffMacro;
+    if (g_diffuseEnabled) {
+      light += g_pointLights[i].radiance * diffuse * falloffMicro * falloffMacro;
+    }
+    if (g_specularEnabled) {
+      light += g_pointLights[i].radiance * specular * falloffMicro * falloffMacro;
+    }
   }
 
   // Spot light
@@ -417,7 +431,12 @@ float4 PSMain(VSOutput input) : SV_TARGET
     // TODO remove
     //falloffMicro = falloffMacro = 1;
 
-    light += g_spotLights[i].radiance * textureColor * intensity * falloffMicro * falloffMacro * (diffuse + specular);
+    if (g_diffuseEnabled) {
+      light += g_spotLights[i].radiance * textureColor * intensity * falloffMicro * falloffMacro * diffuse;
+    }
+    if (g_specularEnabled) {
+      light += g_spotLights[i].radiance * textureColor * intensity * falloffMicro * falloffMacro * specular;
+    }
   }
 
   // Add IBL
@@ -439,8 +458,12 @@ float4 PSMain(VSOutput input) : SV_TARGET
   ClampDirToHorizon(reflectedDir, NoR, input.normalWorld, 0.0);
   float specularReflection = reflectance * specularTexture.SampleLevel(g_linearWrap, reflectedDir, roughness * (levels - 1));
 
-  light += diffuseReflection;
-  light += specularReflection;
+  if (g_iblDiffuseEnabled) {
+    light += diffuseReflection;
+  }
+  if (g_iblSpecularEnabled) {
+    light += specularReflection;
+  }
 
   return float4(light, 1.0);
 }

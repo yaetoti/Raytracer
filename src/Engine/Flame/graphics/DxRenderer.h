@@ -28,7 +28,14 @@ namespace Flame {
       float resolution[4];
       float cameraPosition[4];
       float time;
-      bool isNormalVisMode;
+      bool isNormalVisMode[4];
+
+      bool diffuseEnabled[4];
+      bool specularEnabled[4];
+      bool iblDiffuseEnabled[4];
+      bool iblSpecularEnabled[4];
+      bool overwriteRoughness[4];
+      float roughness;
     };
 
     explicit DxRenderer(std::shared_ptr<Window> window, std::shared_ptr<AlignedCamera> camera);
@@ -42,6 +49,19 @@ namespace Flame {
 
     void SetNormalVisMode(bool isNormalVisMode);
     bool GetNormalVisMode() const;
+
+    bool DiffuseEnabled() const;
+    void SetDiffuseEnabled(bool diffuseEnabled);
+    bool SpecularEnabled() const;
+    void SetSpecularEnabled(bool specularEnabled);
+    bool IblDiffuseEnabled() const;
+    void SetIblDiffuseEnabled(bool iblDiffuseEnabled);
+    bool IblSpecularEnabled() const;
+    void SetIblSpecularEnabled(bool iblSpecularEnabled);
+    bool OverwriteRoughness() const;
+    void SetOverwriteRoughness(bool overwriteRoughness);
+    float Roughness() const;
+    void SetRoughness(float roughness);
 
   private:
     void RenderSkybox();
@@ -68,6 +88,14 @@ namespace Flame {
 
     // Foreground Output TODO remove
     ShaderPipeline m_testPipeline;
+
+    // ImGUI
+    bool m_diffuseEnabled = true;
+    bool m_specularEnabled = true;
+    bool m_iblDiffuseEnabled = true;
+    bool m_iblSpecularEnabled = true;
+    bool m_overwriteRoughness = false;
+    float m_roughness = 0.0;
 
     static constexpr const wchar_t* kSkyboxPath = L"Assets/Textures/lake_beach.dds";
     //static constexpr const wchar_t* kSkyboxPath = L"Assets/Textures/night_street.dds";

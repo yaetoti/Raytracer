@@ -193,6 +193,54 @@ namespace Flame {
     return m_isNormalVisMode;
   }
 
+  bool DxRenderer::DiffuseEnabled() const {
+    return m_diffuseEnabled;
+  }
+
+  void DxRenderer::SetDiffuseEnabled(bool diffuseEnabled) {
+    m_diffuseEnabled = diffuseEnabled;
+  }
+
+  bool DxRenderer::SpecularEnabled() const {
+    return m_specularEnabled;
+  }
+
+  void DxRenderer::SetSpecularEnabled(bool specularEnabled) {
+    m_specularEnabled = specularEnabled;
+  }
+
+  bool DxRenderer::IblDiffuseEnabled() const {
+    return m_iblDiffuseEnabled;
+  }
+
+  void DxRenderer::SetIblDiffuseEnabled(bool iblDiffuseEnabled) {
+    m_iblDiffuseEnabled = iblDiffuseEnabled;
+  }
+
+  bool DxRenderer::IblSpecularEnabled() const {
+    return m_iblSpecularEnabled;
+  }
+
+  void DxRenderer::SetIblSpecularEnabled(bool iblSpecularEnabled) {
+    m_iblSpecularEnabled = iblSpecularEnabled;
+  }
+
+  bool DxRenderer::OverwriteRoughness() const {
+    return m_overwriteRoughness;
+  }
+
+  void DxRenderer::SetOverwriteRoughness(bool overwriteRoughness) {
+    m_overwriteRoughness = overwriteRoughness;
+  }
+
+  float DxRenderer::Roughness() const {
+    return m_roughness;
+  }
+
+  void DxRenderer::SetRoughness(float roughness) {
+    m_roughness = roughness;
+  }
+
   void DxRenderer::RenderSkybox() {
     auto dc = DxContext::Get()->d3d11DeviceContext.Get();
     m_skyboxPipeline.Bind();
@@ -236,7 +284,14 @@ namespace Flame {
     std::memcpy(m_constantBuffer.data.resolution, m_resolution.data(), m_resolution.size() * sizeof(float));
 
     m_constantBuffer.data.time = time;
-    m_constantBuffer.data.isNormalVisMode = m_isNormalVisMode;
+    *m_constantBuffer.data.isNormalVisMode = m_isNormalVisMode;
+
+    *m_constantBuffer.data.diffuseEnabled = m_diffuseEnabled;
+    *m_constantBuffer.data.specularEnabled = m_specularEnabled;
+    *m_constantBuffer.data.iblDiffuseEnabled = m_iblDiffuseEnabled;
+    *m_constantBuffer.data.iblSpecularEnabled = m_iblSpecularEnabled;
+    *m_constantBuffer.data.overwriteRoughness = m_overwriteRoughness;
+    m_constantBuffer.data.roughness = m_roughness;
 
     m_constantBuffer.ApplyChanges();
   }
