@@ -439,8 +439,8 @@ float4 PSMain(VSOutput input) : SV_TARGET
   ClampDirToHorizon(reflectedDir, NoR, input.normalWorld, 0.0);
   float specularReflection = reflectance * specularTexture.SampleLevel(g_linearWrap, reflectedDir, roughness * (levels - 1));
 
-  //light += diffuseReflection;
-  //light += specularReflection;
+  light += diffuseReflection;
+  light += specularReflection;
 
   return float4(light, 1.0);
 }
