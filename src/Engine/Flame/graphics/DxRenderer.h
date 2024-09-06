@@ -12,31 +12,14 @@
 
 #include "buffers/ConstantBuffer.h"
 #include "buffers/VertexBuffer.h"
+#include "buffers/data/PerFrame.h"
+#include "buffers/data/PerView.h"
 #include "Flame/camera/AlignedCamera.h"
 
 namespace Flame {
   struct DxRenderer final {
     template <typename T>
     using ComPtr = Microsoft::WRL::ComPtr<T>;
-
-    struct PerFrame final {
-      glm::mat4 viewMatrix;
-      glm::mat4 projectionMatrix;
-      float frustumTL[4];
-      float frustumBR[4];
-      float frustumBL[4];
-      float resolution[4];
-      float cameraPosition[4];
-      float time;
-      bool isNormalVisMode[4];
-
-      bool diffuseEnabled[4];
-      bool specularEnabled[4];
-      bool iblDiffuseEnabled[4];
-      bool iblSpecularEnabled[4];
-      bool overwriteRoughness[4];
-      float roughness;
-    };
 
     explicit DxRenderer(std::shared_ptr<Window> window, std::shared_ptr<AlignedCamera> camera);
     ~DxRenderer();
@@ -65,20 +48,23 @@ namespace Flame {
 
   private:
     void RenderSkybox();
-    void UpdateConstantBuffer(float time);
+    void UpdateFrameBuffer(float time);
+    void UpdateViewBuffer();
 
   private:
     std::shared_ptr<Window> m_window;
     std::shared_ptr<AlignedCamera> m_camera;
     ComPtr<ID3D11RasterizerState> m_rasterizerState;
-    ConstantBuffer<PerFrame> m_constantBuffer;
     InputSystem* m_input;
+
+    ConstantBuffer<PerFrame> m_frameCBuffer;
+    ConstantBuffer<PerView> m_viewCBuffer;
 
     ComPtr<ID3D11SamplerState> m_pointSampler;
     ComPtr<ID3D11SamplerState> m_linearSampler;
     ComPtr<ID3D11SamplerState> m_anisotropicSampler;
 
-    std::vector<float> m_resolution;
+    glm::vec4 m_resolution;
     bool m_isNormalVisMode = false;
 
     // Skybox

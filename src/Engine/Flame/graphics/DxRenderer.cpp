@@ -25,12 +25,13 @@
 #include "PostProcess.h"
 #include "glm/ext.hpp"
 
+#include "buffers/CBufferIndices.h"
+
 namespace Flame {
   DxRenderer::DxRenderer(std::shared_ptr<Window> window, std::shared_ptr<AlignedCamera> camera)
   : m_window(std::move(window))
   , m_camera(std::move(camera)) {
     m_input = &m_window->GetInputSystem();
-    m_resolution.resize(4);
 
     Resize(m_window->GetWidth(), m_window->GetHeight());
   }
@@ -43,7 +44,7 @@ namespace Flame {
     auto device = DxContext::Get()->d3d11Device;
     auto dc = DxContext::Get()->d3d11DeviceContext;
 
-    // Disable face culling
+    // RasterizerState
     D3D11_RASTERIZER_DESC rasterDesc;
     ZeroMemory(&rasterDesc, sizeof(D3D11_RASTERIZER_DESC));
     rasterDesc.FillMode = D3D11_FILL_SOLID;
@@ -56,17 +57,19 @@ namespace Flame {
     rasterDesc.ScissorEnable = FALSE;
     rasterDesc.MultisampleEnable = TRUE;
     rasterDesc.AntialiasedLineEnable = TRUE;
-
     HRESULT result = device->CreateRasterizerState(&rasterDesc, m_rasterizerState.GetAddressOf());
     assert(SUCCEEDED(result));
 
+    // Set RasterizerState
     dc->RSSetState(m_rasterizerState.Get());
 
-    // Create constant buffer
-    result = m_constantBuffer.Init();
+    // ConstantBuffers
+    result = m_frameCBuffer.Init();
+    assert(SUCCEEDED(result));
+    result = m_viewCBuffer.Init();
     assert(SUCCEEDED(result));
 
-    // Create samplers
+    // Samplers
     {
       D3D11_SAMPLER_DESC desc {};
       desc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
@@ -107,22 +110,24 @@ namespace Flame {
     dc->PSSetSamplers(1, 1, m_linearSampler.GetAddressOf());
     dc->PSSetSamplers(2, 1, m_anisotropicSampler.GetAddressOf());
 
-    // Init shaders
+    // Shaders
     m_skyboxPipeline.Init(kSkyShaderPath, ShaderType::VERTEX_SHADER | ShaderType::PIXEL_SHADER);
+    m_testPipeline.Init(L"Assets/Shaders/test.hlsl", ShaderType::VERTEX_SHADER | ShaderType::PIXEL_SHADER);
+
+    // IBL
     {
       auto texture = TextureManager::Get()->GetTexture(kSkyboxPath);
       m_skyTextureView = texture->GetResourceView();
       m_skyTexture = texture->GetResource();
     }
-
-    m_testPipeline.Init(L"Assets/Shaders/test.hlsl", ShaderType::VERTEX_SHADER | ShaderType::PIXEL_SHADER);
   }
 
   void DxRenderer::Cleanup() {
     m_pointSampler.Reset();
     m_linearSampler.Reset();
     m_anisotropicSampler.Reset();
-    m_constantBuffer.Reset();
+    m_frameCBuffer.Reset();
+    m_viewCBuffer.Reset();
   }
 
   void DxRenderer::Update(float deltaTime) {
@@ -136,6 +141,7 @@ namespace Flame {
     auto depthStencilView = m_window->GetDepthStencilView();
     auto depthStencilState = m_window->GetDepthStencilState();
 
+    // ImGUI settings
     ImGui::Begin("Controls", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
     ImGui::Checkbox("Enable diffuse", &m_diffuseEnabled);
     ImGui::Checkbox("Enable specular", &m_specularEnabled);
@@ -145,25 +151,23 @@ namespace Flame {
     ImGui::SliderFloat("Roughness", &m_roughness, 0.0f, 1.0f);
     ImGui::End();
 
-    // Constant buffer magic
-    UpdateConstantBuffer(time);
+    // Update ConstantBuffers
+    UpdateFrameBuffer(time);
+    // TODO pass position
+    UpdateViewBuffer();
 
-    // Set constant buffers
+    // Set ConstantBuffers
     LightSystem::Get()->CommitChanges();
-    ID3D11Buffer* buffers[] {
-      m_constantBuffer.Get(),
-      LightSystem::Get()->GetConstantBuffer()
-    };
+    ID3D11Buffer* buffers[3];
+    buffers[kFrameCBufferId] = m_frameCBuffer.Get();
+    buffers[kViewCBufferId] = m_viewCBuffer.Get();
+    buffers[kLightCBufferId] = LightSystem::Get()->GetConstantBuffer();
 
-    dc->VSSetConstantBuffers(0, ARRAYSIZE(buffers), buffers);
-    dc->PSSetConstantBuffers(0, ARRAYSIZE(buffers), buffers);
-    dc->GSSetConstantBuffers(0, ARRAYSIZE(buffers), buffers);
-    dc->HSSetConstantBuffers(0, ARRAYSIZE(buffers), buffers);
-    dc->DSSetConstantBuffers(0, ARRAYSIZE(buffers), buffers);
+    DxContext::Get()->SetPipelineConstantBuffers(0, buffers);
 
     // Set target
     D3D11_VIEWPORT viewport = m_window->GetViewport();
-    DxContext::Get()->d3d11DeviceContext->RSSetViewports(1, &viewport);
+    dc->RSSetViewports(1, &viewport);
 
     dc->OMSetRenderTargets(1, targetViewHdr.GetAddressOf(), depthStencilView.Get());
     dc->OMSetDepthStencilState(depthStencilState.Get(), 0);
@@ -180,9 +184,7 @@ namespace Flame {
     MeshSystem::Get()->Render(deltaTime);
     RenderSkybox();
 
-
     // Resolve HDR -> LDR
-    //dc->OMSetRenderTargets(1, PtrProxy<ID3D11RenderTargetView*>(nullptr).Ptr(), nullptr);
     PostProcess::Get()->Resolve(targetSrvHdr.Get(), targetView.Get());
   }
 
@@ -261,48 +263,35 @@ namespace Flame {
     dc->Draw(3, 0);
   }
 
-  void DxRenderer::UpdateConstantBuffer(float time) {
-    glm::mat4 view = m_camera->GetViewMatrix();
-    glm::mat4 projection = m_camera->GetProjectionMatrix();
+  void DxRenderer::UpdateFrameBuffer(float time) {
+    m_frameCBuffer.data.time = time;
+    *m_frameCBuffer.data.isNormalVisMode = m_isNormalVisMode;
 
-    m_constantBuffer.data.viewMatrix = view;
-    m_constantBuffer.data.projectionMatrix = projection;
+    *m_frameCBuffer.data.diffuseEnabled = m_diffuseEnabled;
+    *m_frameCBuffer.data.specularEnabled = m_specularEnabled;
+    *m_frameCBuffer.data.iblDiffuseEnabled = m_iblDiffuseEnabled;
+    *m_frameCBuffer.data.iblSpecularEnabled = m_iblSpecularEnabled;
+    *m_frameCBuffer.data.overwriteRoughness = m_overwriteRoughness;
+    m_frameCBuffer.data.roughness = m_roughness;
+
+    m_frameCBuffer.ApplyChanges();
+  }
+
+  void DxRenderer::UpdateViewBuffer() {
+    m_viewCBuffer.data.viewMatrix = m_camera->GetViewMatrix();
+    m_viewCBuffer.data.projectionMatrix = m_camera->GetProjectionMatrix();
 
     glm::vec3 toTl = glm::vec3(m_camera->ClipToWorld(glm::vec4(-1.0f, 3.0f, 0.0f, 1.0f))) - m_camera->GetPosition();
     glm::vec3 toBl = glm::vec3(m_camera->ClipToWorld(glm::vec4(-1.0f, -1.0f, 0.0f, 1.0f))) - m_camera->GetPosition();
     glm::vec3 toBr = glm::vec3(m_camera->ClipToWorld(glm::vec4(3.0f, -1.0f, 0.0f, 1.0f))) - m_camera->GetPosition();
-    m_constantBuffer.data.frustumTL[0] = toTl.x;
-    m_constantBuffer.data.frustumTL[1] = toTl.y;
-    m_constantBuffer.data.frustumTL[2] = toTl.z;
-    m_constantBuffer.data.frustumTL[3] = 1;
-
-    m_constantBuffer.data.frustumBL[0] = toBl.x;
-    m_constantBuffer.data.frustumBL[1] = toBl.y;
-    m_constantBuffer.data.frustumBL[2] = toBl.z;
-    m_constantBuffer.data.frustumBL[3] = 1;
-
-    m_constantBuffer.data.frustumBR[0] = toBr.x;
-    m_constantBuffer.data.frustumBR[1] = toBr.y;
-    m_constantBuffer.data.frustumBR[2] = toBr.z;
-    m_constantBuffer.data.frustumBR[3] = 1;
+    m_viewCBuffer.data.frustumTL = glm::vec4(toTl, 1.0);
+    m_viewCBuffer.data.frustumBL = glm::vec4(toBl, 1.0);
+    m_viewCBuffer.data.frustumBR = glm::vec4(toBr, 1.0);
 
     const glm::vec3& cameraPos = m_camera->GetPosition();
-    m_constantBuffer.data.cameraPosition[0] = cameraPos.x;
-    m_constantBuffer.data.cameraPosition[1] = cameraPos.y;
-    m_constantBuffer.data.cameraPosition[2] = cameraPos.z;
-    m_constantBuffer.data.cameraPosition[3] = 1;
-    std::memcpy(m_constantBuffer.data.resolution, m_resolution.data(), m_resolution.size() * sizeof(float));
+    m_viewCBuffer.data.cameraPosition = glm::vec4(cameraPos, 1.0);
+    m_viewCBuffer.data.resolution = m_resolution;
 
-    m_constantBuffer.data.time = time;
-    *m_constantBuffer.data.isNormalVisMode = m_isNormalVisMode;
-
-    *m_constantBuffer.data.diffuseEnabled = m_diffuseEnabled;
-    *m_constantBuffer.data.specularEnabled = m_specularEnabled;
-    *m_constantBuffer.data.iblDiffuseEnabled = m_iblDiffuseEnabled;
-    *m_constantBuffer.data.iblSpecularEnabled = m_iblSpecularEnabled;
-    *m_constantBuffer.data.overwriteRoughness = m_overwriteRoughness;
-    m_constantBuffer.data.roughness = m_roughness;
-
-    m_constantBuffer.ApplyChanges();
+    m_viewCBuffer.ApplyChanges();
   }
 }

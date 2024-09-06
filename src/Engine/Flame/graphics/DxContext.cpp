@@ -76,6 +76,14 @@ namespace Flame {
     d3d11Device.Reset();
   }
 
+  void DxContext::SetPipelineConstantBuffers(UINT StartSlot, std::span<ID3D11Buffer*> buffers) const {
+    d3d11DeviceContext->VSSetConstantBuffers(StartSlot, buffers.size(), buffers.data());
+    d3d11DeviceContext->PSSetConstantBuffers(StartSlot, buffers.size(), buffers.data());
+    d3d11DeviceContext->GSSetConstantBuffers(StartSlot, buffers.size(), buffers.data());
+    d3d11DeviceContext->HSSetConstantBuffers(StartSlot, buffers.size(), buffers.data());
+    d3d11DeviceContext->DSSetConstantBuffers(StartSlot, buffers.size(), buffers.data());
+  }
+
   DxContext* DxContext::Get() {
     if (!m_instance) {
       m_instance = new DxContext();

@@ -2,6 +2,7 @@
 #include "Flame/engine/TextureManager.h"
 #include <d3d11.h>
 #include <Flame/engine/Engine.h>
+#include <Flame/graphics/buffers/CBufferIndices.h>
 
 namespace Flame {
   void OpaqueGroup::Init() {
@@ -69,7 +70,7 @@ namespace Flame {
     // Set shaders and assembly
     m_pipeline.Bind();
     dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-    dc->VSSetConstantBuffers(2, 1, m_meshMatrixBuffer.GetAddressOf());
+    dc->VSSetConstantBuffers(kMeshCBufferId, 1, m_meshMatrixBuffer.GetAddressOf());
 
     // Set light texture
     dc->PSSetShaderResources(0, 1, TextureManager::Get()->GetTexture(kFlashlightTexturePath)->GetResourceViewAddress());

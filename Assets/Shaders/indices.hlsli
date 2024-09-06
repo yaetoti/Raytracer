@@ -1,0 +1,4 @@
+#define CBUFFER_FRAME b0
+#define CBUFFER_VIEW b1
+#define CBUFFER_LIGHT b2
+#define CBUFFER_MESH b3
