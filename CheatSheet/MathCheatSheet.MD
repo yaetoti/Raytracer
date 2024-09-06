@@ -322,28 +322,28 @@ $$
   1 & 0 & 0 & T_x\\
   0 & 1 & 0 & T_y\\
   0 & 0 & 1 & T_z\\
-  0 & 0 & 0 & 1\\
+  0 & 0 & 0 & 1
 \end{pmatrix}
 *
 \begin{pmatrix}
   P_x\\
   P_y\\
   P_z\\
-  1\\
+  1
 \end{pmatrix}
 =
 \begin{pmatrix}
   1 * P_x + T_x * 1\\
   1 * P_x + T_x * 1\\
   1 * P_x + T_x * 1\\
-  1 * 1\\
+  1 * 1
 \end{pmatrix}
 =
 \begin{pmatrix}
   P_x + T_x\\
   P_x + T_x\\
   P_x + T_x\\
-  1\\
+  1
 \end{pmatrix}
 $$
 
@@ -356,14 +356,14 @@ $$
   S_x & 0 & 0 & 0\\
   0 & S_y & 0 & 0\\
   0 & 0 & S_z & 0\\
-  0 & 0 & 0 & 1\\
+  0 & 0 & 0 & 1
 \end{pmatrix}
 *
 \begin{pmatrix}
   P_x\\
   P_y\\
   P_z\\
-  1\\
+  1
 \end{pmatrix}
 =
 \begin{pmatrix}
@@ -383,14 +383,14 @@ $$
   S_x & 0 & 0 & T_x\\
   0 & S_y & 0 & T_y\\
   0 & 0 & S_z & T_z\\
-  0 & 0 & 0 & 1\\
+  0 & 0 & 0 & 1
 \end{pmatrix}
 *
 \begin{pmatrix}
   P_x\\
   P_y\\
   P_z\\
-  1\\
+  1
 \end{pmatrix}
 =
 \begin{pmatrix}
@@ -454,7 +454,7 @@ How normalization works:
 $$
 0 / 10 = 0 (0\%)\\
 5 / 10 = 0.5 (50\%)\\
-10 / 10 = 1 (100\%)\\
+10 / 10 = 1 (100\%)
 $$
 
 For z coordinate let's assume:
@@ -462,7 +462,7 @@ For z coordinate let's assume:
 $$
 far = 1000\\
 near = 10\\
-P_z = 1000\\
+P_z = 1000
 $$
 
 Now we have
@@ -524,11 +524,11 @@ There is a trick to understand that. In the limits theory, there are infinitely 
 Then we can take **near** as **0** and **far** as **inf**
 
 $$
-T_z = \frac{-near}{far-near} \sim \frac{-0}{\infty - 0} \sim \frac{-0}{\infty} \sim -0\\
+T_z = \frac{-near}{far-near} \sim \frac{-0}{\infty - 0} \sim \frac{-0}{\infty} \sim -0
 $$
 
 $$
-T_z = \frac{-far-near}{far-near} \sim \frac{-\infty - 0}{\infty - 0} \sim \frac{-\infty}{\infty} \sim \frac{-R}{R} = -1\\
+T_z = \frac{-far-near}{far-near} \sim \frac{-\infty - 0}{\infty - 0} \sim \frac{-\infty}{\infty} \sim \frac{-R}{R} = -1
 $$
 
 ---
