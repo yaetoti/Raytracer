@@ -1,13 +1,25 @@
-Spaces:
+https://learnopengl.com/Getting-started/Coordinate-Systems
+
+Coordinate systems:
 
 - MeshSpace (often omitted): relative to a certain mesh in a model. E.g. mesh has it's own front vector, because it's rotated 45 degrees to the left, so it's front is 45 degs to the left from model's front. No need in it when all transforms are applied to meshes (In Blender: Shift + A -> Apply transforms. That recalculates mesh space triangle coords to model space. If mesh's origin it at (2, 0, 0) and it's vertex had coords (1, 2, 3), then in MS it will have coords (3, 2, 3))
 - ModelSpace (MS): relative to model's origin
 - WorldSpace (WS): relative to world's origin (0, 0, 0)
 - ViewSpace (VS): relative to camera's position and rotation. Vertex with coords (0, 0, 1) is 1 unit in front of the camera (Or 1 at the back. Depends on the chosen coordinate system (Using projection matrix))
+- ClipSpace (CS): Normalized Device Coordinates: usually [-1; 1] for x and y and [-1; 1] / [0; 1] or their reversed versions for z
+- ScreenSpace (SS): You transform to theese via Viewport. You can set near, far, etc inside D3D11_VIEWPORT_DESC
 
 Also
 
 - TangentSpace: relative to a triangle's surface
+
+---
+
+The usual transformation pipeline is:
+
+$$
+ModelSpace -> WorldSpace -> ViewSpace -> ClipSpace -> Normalised Device Coordinates -> Screen Space Coordinates
+$$
 
 ---
 
@@ -296,3 +308,249 @@ When generating IBL, we are not moving coordinates into the basis. We are drawin
 $$
   coordWS = inverse(basis) * coordWS
 $$
+
+---
+
+---
+
+Translation matrix takes the following form.
+
+All shown matrices are constructed for multiplication by a column vector (read right to left)
+
+$$
+\begin{pmatrix}
+  1 & 0 & 0 & T_x\\
+  0 & 1 & 0 & T_y\\
+  0 & 0 & 1 & T_z\\
+  0 & 0 & 0 & 1\\
+\end{pmatrix}
+*
+\begin{pmatrix}
+  P_x\\
+  P_y\\
+  P_z\\
+  1\\
+\end{pmatrix}
+=
+\begin{pmatrix}
+  1 * P_x + T_x * 1\\
+  1 * P_x + T_x * 1\\
+  1 * P_x + T_x * 1\\
+  1 * 1\\
+\end{pmatrix}
+=
+\begin{pmatrix}
+  P_x + T_x\\
+  P_x + T_x\\
+  P_x + T_x\\
+  1\\
+\end{pmatrix}
+$$
+
+---
+
+Scaling matrix takes the following form.
+
+$$
+\begin{pmatrix}
+  S_x & 0 & 0 & 0\\
+  0 & S_y & 0 & 0\\
+  0 & 0 & S_z & 0\\
+  0 & 0 & 0 & 1\\
+\end{pmatrix}
+*
+\begin{pmatrix}
+  P_x\\
+  P_y\\
+  P_z\\
+  1\\
+\end{pmatrix}
+=
+\begin{pmatrix}
+  S_x * P_x\\
+  S_y * P_y\\
+  S_z * P_z\\
+  1
+\end{pmatrix}
+$$
+
+---
+
+Combination of scale and translation:
+
+$$
+\begin{pmatrix}
+  S_x & 0 & 0 & T_x\\
+  0 & S_y & 0 & T_y\\
+  0 & 0 & S_z & T_z\\
+  0 & 0 & 0 & 1\\
+\end{pmatrix}
+*
+\begin{pmatrix}
+  P_x\\
+  P_y\\
+  P_z\\
+  1\\
+\end{pmatrix}
+=
+\begin{pmatrix}
+  S_x * P_x + T_x\\
+  S_y * P_y + T_y\\
+  S_z * P_z + T_z\\
+  1
+\end{pmatrix}
+$$
+
+---
+
+Combination of scaling and translation is all the magic behind perspective matrices. But let's take it one step at a time and take a look at the entire process of going from **ViewSpace** to **ClipSpace**.
+
+In modern Graphics APIs, it's you, who determine the ClipSpace boundaries, by creating a **Projection Matrix** and setting a **Viewport**.
+
+The Viewport is used to map coords from ClipSpace to ScreenSpace internally (but you can do it manually if you need the results).
+
+https://learn.microsoft.com/en-us/windows/win32/api/d3d11/ns-d3d11-d3d11_viewport
+
+```cpp
+struct D3D11_VIEWPORT {
+  float TopLeftX;
+  float TopLeftY;
+  float Width;
+  float Height;
+  float MinDepth;
+  float MaxDepth;
+}
+```
+
+- Width and Height are the obvious ones.
+
+- TopLeftX and TopLeftY can go from D3D11_VIEWPORT_BOUNDS_MIN D3D11_VIEWPORT_BOUNDS_MAX (-32768 to -32767). Width and Height must be >= 0 and TopLeftX + Width and TopLeftY + Height must be <= D3D11_VIEWPORT_BOUNDS_MAX.
+
+You can use theese to **flip screen coords** vertically, horizontally or diagonally
+
+You may have heard that OpenGL have (0, 0) in TopLeft corner and DirectX in BottomLeft. Well, now it's you who decide.
+
+- MinDepth and MaxDepth. Theese are used to interpret the result in **z-coordinate** (How far from camera)
+
+---
+
+Prespective matrix is just a Scale-Translation matrix. It's purpose it to map coordinates from ViewSpace to ClipSpace.
+
+Orthographic matrix (One of the variations):
+
+$$
+\begin{pmatrix}
+  \frac{2}{right - left} & 0 & 0 & \frac{-right-left}{right-left}\\
+  0 & \frac{2}{top - bottom} & 0 & \frac{-top-bottom}{top-bottom}\\
+  0 & 0 & \frac{2}{far - near} & \frac{-far-near}{far-near}\\
+  0 & 0 & 0 & 1
+\end{pmatrix}
+$$
+
+All we do is **normalizing ViewSpace coordinates** [-inf +inf] to [0, 1] and **mapping that range to** [-1, 1] (**or our desired coordinate system**)
+
+How normalization works:
+
+$$
+0 / 10 = 0 (0\%)\\
+5 / 10 = 0.5 (50\%)\\
+10 / 10 = 1 (100\%)\\
+$$
+
+For z coordinate let's assume:
+
+$$
+far = 1000\\
+near = 10\\
+P_z = 1000\\
+$$
+
+Now we have
+
+$$
+far - near = 990\\
+S_z = \frac{1}{far - near} = \frac{1}{990} = 0.001010\\
+2 * S_z * P_z = 2 * 0.001010 * 1000 = 2.02020
+$$
+
+Quite too much, we wanted 1. Also we have a fractional part. But let's look further
+
+$$
+T_z = \frac{-far-near}{far-near} = \frac{-1010}{990} = -1.0202\\
+P_z' = S_z * P_z + T_z = 2.02020 - 1.0202 = 1
+$$
+
+Exactly what we wanted. As you may noticed, we just
+
+- **Normalized coordinates** with regards to **min** and **max** range (to a range, similar to [0, 1])
+- Went from [0, 1] to [-1, 1] with a formula P' = 2 * P - 1
+
+2 in the fraction is just for that purpose
+
+$$
+\frac{2}{far - near}
+$$
+
+And here we got approx. -1 (+ offset for min range)
+
+$$
+\frac{-far-near}{far-near} = \frac{-1010}{990} = -1.0202
+$$
+
+We are not using exactly 2 for scale and -1 for translation because we need to account for the min range.
+
+---
+
+But why did we get 1? If you take **near** relatively small, then **far + near** and **far - near** will be really close and give approx. 1 after division
+
+You may also need to map to [0, 1]. The formula is P' = 1 * P + 0. **How to get 0?**
+
+$$
+T_z = \frac{-near}{far-near} = \frac{-10}{990} = -0.0101
+$$
+
+We just removed **far** from the numerator
+
+There is a trick to understand that. In the limits theory, there are infinitely small and infinitely big values.
+
+- If we divide any real number by an infinitely big value (**inf**), you get infinitely small walue (**0**) (R / inf ~ 0)
+- And vice versa R / 0 ~ inf
+- Regular sign rules work here too: **-** / **-** = **+**;
+- 0 + 0 ~ 0
+- inf + inf ~ inf
+- inf - 0 ~ inf
+- **Except for inf / inf**. We have real numbers in calculations, so **R / R ~ 1, R != 0**
+
+Then we can take **near** as **0** and **far** as **inf**
+
+$$
+T_z = \frac{-near}{far-near} \sim \frac{-0}{\infty - 0} \sim \frac{-0}{\infty} \sim -0\\
+$$
+
+$$
+T_z = \frac{-far-near}{far-near} \sim \frac{-\infty - 0}{\infty - 0} \sim \frac{-\infty}{\infty} \sim \frac{-R}{R} = -1\\
+$$
+
+---
+
+How to map to **reverse-z** [1, 0]?
+
+We start with [0, 1].
+
+We can't multiply 0 by anything, so to make it 1 we just add 1, so T_z = 1
+
+Now we need to find S_z
+
+$$
+S_z * 1 + T_z = 0\\
+S_z * 1 + 1 = 0\\
+-1 * 1 + 1 = 0\\
+S_z = -1
+$$
+
+---
+
+Now, if you find any projection matrix, you will be able to transform it to your needs. Let's take a look at some other possibilities:
+
+- Reverse camera Z axis by **placing minus in front of S_z**
+- Create a reversed z buffer by replacing **near** and **far** and mapping not to [0, 1], but to [1, 0], by changing scale and translation
