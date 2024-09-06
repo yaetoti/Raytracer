@@ -13,17 +13,12 @@ namespace Flame {
     return m_shader.Get();
   }
 
-  ID3D11InputLayout* VertexShader::GetInputLayout() const {
-    return m_inputLayout.Get();
-  }
-
   void VertexShader::Reset() {
-    m_inputLayout.Reset();
     m_shader.Reset();
     m_blob.Reset();
   }
 
-  void VertexShader::Init(const std::wstring& path, D3D11_INPUT_ELEMENT_DESC* inputDesc, uint32_t descSize) {
+  void VertexShader::Init(const std::wstring& path) {
     HRESULT result;
     ComPtr<ID3DBlob> errorBlob;
 
@@ -34,14 +29,14 @@ namespace Flame {
       D3D_COMPILE_STANDARD_FILE_INCLUDE,
       "VSMain",
       "vs_5_0",
-      D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_DEBUG,
+      D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION,
       0,
-      m_blob.GetAddressOf(),
-      errorBlob.GetAddressOf()
+      m_blob.ReleaseAndGetAddressOf(),
+      errorBlob.ReleaseAndGetAddressOf()
     );
-    assert(SUCCEEDED(result));
     if (FAILED(result)) {
       printf("%s\n", static_cast<LPCWSTR>(errorBlob->GetBufferPointer()));
+      assert(SUCCEEDED(result));
       return;
     }
 
@@ -50,24 +45,7 @@ namespace Flame {
       m_blob->GetBufferPointer(),
       m_blob->GetBufferSize(),
       nullptr,
-      m_shader.GetAddressOf()
-    );
-    assert(SUCCEEDED(result));
-    if (FAILED(result)) {
-      return;
-    }
-
-    // Input layout
-    if (!inputDesc) {
-      return;
-    }
-    
-    result = DxContext::Get()->d3d11Device->CreateInputLayout(
-      inputDesc,
-      descSize,
-      m_blob->GetBufferPointer(),
-      m_blob->GetBufferSize(),
-      m_inputLayout.GetAddressOf()
+      m_shader.ReleaseAndGetAddressOf()
     );
     assert(SUCCEEDED(result));
     if (FAILED(result)) {

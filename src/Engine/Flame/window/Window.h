@@ -31,6 +31,7 @@ namespace Flame {
     uint32_t GetWidth() const;
     uint32_t GetHeight() const;
     uint32_t GetResolutionDivisor() const;
+    D3D11_VIEWPORT GetViewport() const;
     Framebuffer& GetFramebuffer();
     InputSystem& GetInputSystem();
     EventDispatcher<WindowEvent>& GetDispatcher();

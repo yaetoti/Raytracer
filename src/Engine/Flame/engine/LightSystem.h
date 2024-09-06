@@ -92,6 +92,7 @@ namespace Flame {
       m_spotLights.clear();
       m_directLights.clear();
       m_pointLights.clear();
+      m_constantBuffer.Reset();
     }
 
     void CommitChanges() {

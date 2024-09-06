@@ -1,42 +1,32 @@
 #pragma once
 
-#include "Flame/graphics/shaders/PixelShader.h"
-#include "Flame/graphics/shaders/VertexShader.h"
-#include "Flame/graphics/DxContext.h"
+#include <Flame/engine/ShaderPipeline.h>
+#include "buffers/ConstantBuffer.h"
 
 namespace Flame {
   struct PostProcess final {
-    void Init() {
-      m_resolveVertexShader.Init(L"Assets/Shaders/resolve.hlsl", nullptr, 0);
-      m_resolvePixelShader.Init(L"Assets/Shaders/resolve.hlsl");
-    }
+    struct ResolveBuffer final {
+      float evFactor;
+    };
 
-    void Cleanup() {
-      m_resolveVertexShader.Reset();
-      m_resolvePixelShader.Reset();
-    }
+    void Init();
+    void Cleanup();
 
-    void Resolve(ID3D11ShaderResourceView* src, ID3D11RenderTargetView* dst) {
-      ID3D11DeviceContext* dc = DxContext::Get()->d3d11DeviceContext.Get();
-      dc->OMSetRenderTargets(1, &dst, nullptr);
-      dc->PSSetShaderResources(0, 1, &src);
-      dc->VSSetShader(m_resolveVertexShader.GetShader(), nullptr, 0);
-      dc->PSSetShader(m_resolvePixelShader.GetShader(), nullptr, 0);
-      dc->IASetInputLayout(nullptr);
-      dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-      dc->Draw(3, 0);
-    }
+    float GetEvFactor() const;
+    void SetEvFactor(float evFactor);
 
-    static PostProcess* Get() {
-      static PostProcess instance;
-      return &instance;
-    }
+    void Resolve(ID3D11ShaderResourceView* src, ID3D11RenderTargetView* dst) const;
+
+    static PostProcess* Get();
 
   private:
     PostProcess() = default;
 
   private:
-    VertexShader m_resolveVertexShader;
-    PixelShader m_resolvePixelShader;
+    ShaderPipeline m_pipeline;
+    ConstantBuffer<ResolveBuffer> m_buffer;
+    mutable bool m_bufferDirty = true;
+
+    inline static const wchar_t* kShaderPath = L"Assets/Shaders/resolve.hlsl";
   };
 }

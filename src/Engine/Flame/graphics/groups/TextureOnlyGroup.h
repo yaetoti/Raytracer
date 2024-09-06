@@ -6,6 +6,7 @@
 #include "Flame/graphics/shaders/PixelShader.h"
 #include "Flame/graphics/shaders/VertexShader.h"
 #include <d3d11.h>
+#include <Flame/engine/ShaderPipeline.h>
 
 namespace Flame {
   struct TextureOnlyInstanceData final {
@@ -39,8 +40,7 @@ namespace Flame {
     VertexBuffer<TextureOnlyInstanceData::ShaderData> m_instanceBuffer;
     bool m_instanceBufferDirty = true;
 
-    VertexShader m_vertexShader;
-    PixelShader m_pixelShader;
+    ShaderPipeline m_pipeline;
 
     inline static const wchar_t* kShaderPath = L"Assets/Shaders/texture_only.hlsl";
   };

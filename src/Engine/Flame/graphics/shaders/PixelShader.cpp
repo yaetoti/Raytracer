@@ -30,14 +30,14 @@ namespace Flame {
       D3D_COMPILE_STANDARD_FILE_INCLUDE,
       "PSMain",
       "ps_5_0",
-      D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_DEBUG,
+      D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION,
       0,
       m_blob.GetAddressOf(),
       errorBlob.GetAddressOf()
     );
-    assert(SUCCEEDED(result));
     if (FAILED(result)) {
       printf("%s\n", static_cast<LPCWSTR>(errorBlob->GetBufferPointer()));
+      assert(SUCCEEDED(result));
       return;
     }
 

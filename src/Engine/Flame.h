@@ -63,26 +63,3 @@
 #include "Flame/window/events/WindowEvent.h"
 #include "Flame/window/InputSystem.h"
 #include "Flame/window/Window.h"
-
-namespace Flame {
-  struct Engine final {
-    static void Init() {
-      DxContext::Get()->Init();
-      ModelManager::Get()->Init();
-      MeshSystem::Get()->Init();
-      LightSystem::Get()->Init();
-      PostProcess::Get()->Init();
-    }
-
-    static void Cleanup() {
-      PostProcess::Get()->Cleanup();
-      TextureManager::Get()->Cleanup();
-      LightSystem::Get()->Cleanup();
-      MeshSystem::Get()->Cleanup();
-      MeshSystem::Get()->Cleanup();
-      ModelManager::Get()->Cleanup();
-      TransformSystem::Get()->Cleanup();
-      DxContext::Get()->Cleanup();
-    }
-  };
-}

@@ -2,39 +2,27 @@
 
 namespace Flame {
   void HologramGroup::Init() {
-    // Load vertex shader
-    {
-      D3D11_INPUT_ELEMENT_DESC desc[] = {
-        { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "BITANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "MODEL", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 0, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
-        { "MODEL", 1, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
-        { "MODEL", 2, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
-        { "MODEL", 3, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
-        { "MAIN_COLOR", 0, DXGI_FORMAT_R32G32B32_FLOAT, 1, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
-        { "SECONDARY_COLOR", 0, DXGI_FORMAT_R32G32B32_FLOAT, 1, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
-      };
+    D3D11_INPUT_ELEMENT_DESC desc[] = {
+      { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+      { "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+      { "TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+      { "BITANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+      { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+      { "MODEL", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 0, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+      { "MODEL", 1, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+      { "MODEL", 2, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+      { "MODEL", 3, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+      { "MAIN_COLOR", 0, DXGI_FORMAT_R32G32B32_FLOAT, 1, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+      { "SECONDARY_COLOR", 0, DXGI_FORMAT_R32G32B32_FLOAT, 1, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+    };
 
-      m_vertexShader.Init(kShaderPath, desc, ARRAYSIZE(desc));
-    }
-
-    // Load other shaders
-    m_pixelShader.Init(kShaderPath);
-    m_geometryShader.Init(kShaderPath);
-    m_hullShader.Init(kShaderPath);
-    m_domainShader.Init(kShaderPath);
+    m_pipeline.Init(kShaderPath, ShaderType::ALL);
+    m_pipeline.CreateInputLayout(desc);
   }
 
   void HologramGroup::Cleanup() {
     m_instanceBufferDirty = true;
-    m_domainShader.Reset();
-    m_hullShader.Reset();
-    m_geometryShader.Reset();
-    m_pixelShader.Reset();
-    m_vertexShader.Reset();
+    m_pipeline.Reset();
     m_instanceBuffer.Reset();
     GetModels().clear();
   }
@@ -71,12 +59,7 @@ namespace Flame {
 
     ID3D11DeviceContext* dc = DxContext::Get()->d3d11DeviceContext.Get();
     // Set shaders and assembly
-    dc->VSSetShader(m_vertexShader.GetShader(), nullptr, 0);
-    dc->PSSetShader(m_pixelShader.GetShader(), nullptr, 0);
-    dc->GSSetShader(m_geometryShader.GetShader(), nullptr, 0);
-    dc->HSSetShader(m_hullShader.GetShader(), nullptr, 0);
-    dc->DSSetShader(m_domainShader.GetShader(), nullptr, 0);
-    dc->IASetInputLayout(m_vertexShader.GetInputLayout());
+    m_pipeline.Bind();
     dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_3_CONTROL_POINT_PATCHLIST);
 
     uint32_t numRenderedInstances = 0;
@@ -121,11 +104,5 @@ namespace Flame {
         }
       }
     }
-
-    dc->VSSetShader(nullptr, nullptr, 0);
-    dc->PSSetShader(nullptr, nullptr, 0);
-    dc->GSSetShader(nullptr, nullptr, 0);
-    dc->HSSetShader(nullptr, nullptr, 0);
-    dc->DSSetShader(nullptr, nullptr, 0);
   }
 }

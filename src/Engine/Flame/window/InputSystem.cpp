@@ -1,5 +1,7 @@
 #include "InputSystem.h"
 
+#include <imgui.h>
+
 namespace Flame {
   InputSystem::InputSystem()
   : m_keyMap { }
@@ -18,22 +20,22 @@ namespace Flame {
   }
 
   void InputSystem::HandleEvent(const WindowEvent& e) {
-      switch (e.type) {
-        case WindowEventType::KEY:
-          HandleKeyEvent(*dynamic_cast<const KeyWindowEvent*>(&e));
-          return;
-        case WindowEventType::MOUSE_BUTTON:
-          HandleMouseButtonEvent(*dynamic_cast<const MouseButtonWindowEvent*>(&e));
-          return;
-        case WindowEventType::MOUSE_MOVE:
-          HandleMouseMoveEvent(*dynamic_cast<const MouseMoveWindowEvent*>(&e));
-          return;
-        case WindowEventType::MOUSE_SCROLL:
-          HandleMouseScrollEvent(*dynamic_cast<const MouseScrollWindowEvent*>(&e));
-          return;
-        default: 
-          break;
-      }
+    switch (e.type) {
+      case WindowEventType::KEY:
+        HandleKeyEvent(*dynamic_cast<const KeyWindowEvent*>(&e));
+        return;
+      case WindowEventType::MOUSE_BUTTON:
+        HandleMouseButtonEvent(*dynamic_cast<const MouseButtonWindowEvent*>(&e));
+        return;
+      case WindowEventType::MOUSE_MOVE:
+        HandleMouseMoveEvent(*dynamic_cast<const MouseMoveWindowEvent*>(&e));
+        return;
+      case WindowEventType::MOUSE_SCROLL:
+        HandleMouseScrollEvent(*dynamic_cast<const MouseScrollWindowEvent*>(&e));
+        return;
+      default:
+        break;
+    }
   }
 
   bool InputSystem::IsKeyPressed(size_t key) const {

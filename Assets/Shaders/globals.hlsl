@@ -1,3 +1,5 @@
+#include "samplers.hlsli"
+
 /*----- Defines -----*/
 
 #define CBUFFER_GENERAL b0
@@ -56,8 +58,14 @@ cbuffer ConstantBuffer : register(CBUFFER_GENERAL)
   float4 g_resolution;
   float4 g_cameraPosition;
   float g_time;
-  float g_evFactor;
   bool g_isNormalVisMode;
+
+  bool g_diffuseEnabled;
+  bool g_specularEnabled;
+  bool g_iblDiffuseEnabled;
+  bool g_iblSpecularEnabled;
+  bool g_overwriteRoughness;
+  float g_roughness;
 };
 
 cbuffer LightBuffer : register(CBUFFER_LIGHT) {
@@ -74,11 +82,3 @@ cbuffer MeshBuffer : register(CBUFFER_MESH) {
   float4x4 g_meshToModel;
   float4x4 g_modelToMesh;
 };
-
-
-/*----- SampleStates -----*/
-
-
-SamplerState g_pointWrap : register(s0);
-SamplerState g_linearWrap : register(s1);
-SamplerState g_anisotropicWrap : register(s2);

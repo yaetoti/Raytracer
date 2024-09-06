@@ -34,9 +34,9 @@ namespace Flame {
       m_blob.GetAddressOf(),
       errorBlob.GetAddressOf()
     );
-    assert(SUCCEEDED(result));
     if (FAILED(result)) {
       printf("%s\n", static_cast<LPCWSTR>(errorBlob->GetBufferPointer()));
+      assert(SUCCEEDED(result));
       return;
     }
 

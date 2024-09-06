@@ -1,10 +1,16 @@
 #include "Texture.h"
 #include "Flame/graphics/DxContext.h"
-#include "Flame/utils/DDSTextureLoader11.h"
+#include <DDSTextureLoader/DDSTextureLoader11.h>
 #include <cassert>
 #include <winerror.h>
 
 namespace Flame {
+  Texture::Texture(ComPtr<ID3D11Resource> resource, ComPtr<ID3D11ShaderResourceView> resourceView):
+  m_resource(std::move(resource)),
+  m_resourceView(std::move(resourceView)) {
+
+  }
+
   bool Texture::InitFromFile(const wchar_t* path) {
     HRESULT result = DirectX::CreateDDSTextureFromFile(
       DxContext::Get()->d3d11Device.Get(),
@@ -13,7 +19,6 @@ namespace Flame {
       m_resourceView.GetAddressOf()
     );
     assert(SUCCEEDED(result));
-    // TODO Are resources always null if !SUCCEEDED? Possible leak
     return SUCCEEDED(result);
   }
 

@@ -46,20 +46,11 @@ namespace Flame {
     static MeshSystem* Get();
 
   private:
-    void RenderSkybox(float deltaTime);
-
-  private:
     Window* m_window;
 
     OpaqueGroup m_opaqueGroup;
     HologramGroup m_hologramGroup;
     TextureOnlyGroup m_textureOnlyGroup;
     EmissionOnlyGroup m_emissionOnlyGroup;
-    // Skybox
-    VertexShader m_skyVertexShader;
-    PixelShader m_skyPixelShader;
-    ID3D11ShaderResourceView* m_textureView;
-
-    static constexpr const wchar_t* kSkyboxPath = L"Assets/Textures/night_street.dds";
-  };  
+  };
 }

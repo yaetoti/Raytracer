@@ -4,6 +4,8 @@
 #include "events/MouseMoveWindowEvent.h"
 #include "events/ResizeWindowEvent.h"
 #include "events/MouseScrollWindowEvent.h"
+#include "imgui.h"
+#include "backends/imgui_impl_win32.h"
 
 #include <d3d11.h>
 #include <dxgiformat.h>
@@ -25,6 +27,7 @@ namespace Flame {
   }
 
   Window::~Window() {
+    ImGui_ImplWin32_Shutdown();
     DiscardResources();
   }
 
@@ -66,6 +69,9 @@ namespace Flame {
     if (m_hWnd == nullptr) {
       return false;
     }
+
+    // ImGUI
+    ImGui_ImplWin32_Init(m_hWnd);
 
     // D3D
 
@@ -161,8 +167,8 @@ namespace Flame {
     {
       D3D11_SHADER_RESOURCE_VIEW_DESC desc {
         .Format = DXGI_FORMAT_R16G16B16A16_FLOAT,
-        .ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D,
-        .Texture2D { 0, 1 }
+        .ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DMS,
+        .Texture2DMS { }
       };
 
       result = DxContext::Get()->d3d11Device->CreateShaderResourceView(
@@ -230,15 +236,6 @@ namespace Flame {
         return false;
       }
     }
-
-    D3D11_VIEWPORT viewport;
-    viewport.Width = static_cast<float>(m_width);
-    viewport.Height = static_cast<float>(m_height);
-    viewport.MinDepth = 0.0f;
-    viewport.MaxDepth = 1.0f;
-    viewport.TopLeftX = 0.0f;
-    viewport.TopLeftY = 0.0f;
-    DxContext::Get()->d3d11DeviceContext->RSSetViewports(1, &viewport);
 
     // \D3D
 
@@ -338,6 +335,17 @@ namespace Flame {
 
   uint32_t Window::GetResolutionDivisor() const {
     return m_resolutionDivisor;
+  }
+
+  D3D11_VIEWPORT Window::GetViewport() const {
+    return {
+      0.0f,
+      0.0f,
+      static_cast<float>(m_width),
+      static_cast<float>(m_height),
+      0.0f,
+      1.0f,
+    };
   }
 
 
@@ -441,8 +449,8 @@ namespace Flame {
     {
       D3D11_SHADER_RESOURCE_VIEW_DESC desc {
         .Format = DXGI_FORMAT_R16G16B16A16_FLOAT,
-        .ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D,
-        .Texture2D { 0, 1 }
+        .ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DMS,
+        .Texture2DMS { }
       };
 
       result = DxContext::Get()->d3d11Device->CreateShaderResourceView(
@@ -491,16 +499,6 @@ namespace Flame {
         return;
       }
     }
-
-    // Set viewport
-    D3D11_VIEWPORT viewport;
-    viewport.Width = static_cast<float>(m_width);
-    viewport.Height = static_cast<float>(m_height);
-    viewport.MinDepth = 0.0f;
-    viewport.MaxDepth = 1.0f;
-    viewport.TopLeftX = 0.0f;
-    viewport.TopLeftY = 0.0f;
-    DxContext::Get()->d3d11DeviceContext->RSSetViewports(1, &viewport);
   }
 
   void Window::InitHandlers() {
@@ -545,6 +543,11 @@ namespace Flame {
   }
 
   void Window::HandleKeyMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
+    auto& io = ImGui::GetIO();
+    if (io.WantCaptureKeyboard) {
+      return;
+    }
+
     WORD vkCode = LOWORD(wParam);
     WORD keyFlags = HIWORD(lParam);
     BOOL wasPressed = (keyFlags & KF_REPEAT) == KF_REPEAT;
@@ -553,6 +556,11 @@ namespace Flame {
   }
 
   void Window::HandleMouseButtonMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
+    auto& io = ImGui::GetIO();
+    if (io.WantCaptureMouse) {
+      return;
+    }
+
     float xCursor = static_cast<float>(GET_X_LPARAM(lParam));
     float yCursor = static_cast<float>(GET_Y_LPARAM(lParam));
     switch (msg) {
@@ -590,6 +598,11 @@ namespace Flame {
   }
 
   void Window::HandleMouseMoveMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
+    auto& io = ImGui::GetIO();
+    if (io.WantCaptureMouse) {
+      return;
+    }
+
     // TODO Will I need the real coordinates?
     float xCursor = static_cast<float>(GET_X_LPARAM(lParam));
     float yCursor = static_cast<float>(GET_Y_LPARAM(lParam));
@@ -597,6 +610,11 @@ namespace Flame {
   }
 
   void Window::HandleMouseScrollMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
+    auto& io = ImGui::GetIO();
+    if (io.WantCaptureMouse) {
+      return;
+    }
+
     float xCursor = static_cast<float>(GET_X_LPARAM(lParam));
     float yCursor = static_cast<float>(GET_Y_LPARAM(lParam));
     float delta = static_cast<float>(GET_WHEEL_DELTA_WPARAM(wParam)) / WHEEL_DELTA;
@@ -604,6 +622,11 @@ namespace Flame {
   }
 
   LRESULT Window::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+    extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+    if (ImGui_ImplWin32_WndProcHandler(hWnd, msg, wParam, lParam)) {
+      return true;
+    }
+
     if (msg == WM_CREATE) {
       CREATESTRUCTW* data = reinterpret_cast<CREATESTRUCTW*>(lParam);
       SetWindowLongPtrW(hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(data->lpCreateParams));
@@ -619,7 +642,6 @@ namespace Flame {
     if (window != nullptr && window->HandleWindowMessage(msg, wParam, lParam)) {
       return 0;
     }
-
     return DefWindowProcW(hWnd, msg, wParam, lParam);
   }
 }

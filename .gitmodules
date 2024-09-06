@@ -4,3 +4,9 @@
 [submodule "vendor/assimp"]
 	path = vendor/assimp
 	url = https://github.com/assimp/assimp.git
+[submodule "vendor/directxtex"]
+	path = vendor/directxtex
+	url = https://github.com/microsoft/DirectXTex.git
+[submodule "vendor/imgui"]
+	path = vendor/imgui
+	url = https://github.com/ocornut/imgui.git

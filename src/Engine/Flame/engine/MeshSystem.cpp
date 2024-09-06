@@ -25,11 +25,6 @@ namespace Flame {
     m_hologramGroup.Init();
     m_emissionOnlyGroup.Init();
     m_textureOnlyGroup.Init();
-
-    // Init skybox shaders
-    m_skyVertexShader.Init(L"Assets/Shaders/sky.hlsl", nullptr, 0);
-    m_skyPixelShader.Init(L"Assets/Shaders/sky.hlsl");
-    m_textureView = TextureManager::Get()->GetTexture(kSkyboxPath)->GetResourceView();
   }
 
   void MeshSystem::Cleanup() {
@@ -48,8 +43,6 @@ namespace Flame {
     m_hologramGroup.Render();
     m_emissionOnlyGroup.Render();
     m_textureOnlyGroup.Render();
-
-    RenderSkybox(deltaTime);
   }
 
   OpaqueGroup* MeshSystem::GetOpaqueGroup() {
@@ -110,15 +103,5 @@ namespace Flame {
   MeshSystem* MeshSystem::Get() {
     static MeshSystem instance;
     return &instance;
-  }
-
-  void MeshSystem::RenderSkybox(float deltaTime) {
-    auto dc = DxContext::Get()->d3d11DeviceContext.Get();
-    dc->VSSetShader(m_skyVertexShader.GetShader(), nullptr, 0);
-    dc->PSSetShader(m_skyPixelShader.GetShader(), nullptr, 0);
-    dc->IASetInputLayout(nullptr);
-    dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-    dc->PSSetShaderResources(0, 1, &m_textureView);
-    dc->Draw(3, 0);
   }
 }

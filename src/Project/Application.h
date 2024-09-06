@@ -20,6 +20,7 @@ struct Application final : Flame::EventListener<Flame::WindowEvent> {
 
 private:
   void Init();
+  void Cleanup();
   void Update(float deltaTime);
   void Render() const;
 
@@ -32,7 +33,6 @@ private:
   Flame::InputSystem* m_input;
 
   std::shared_ptr<Flame::AlignedCamera> m_camera;
-  std::shared_ptr<Flame::MeshSystem> m_meshSystem;
   std::unique_ptr<Flame::DxRenderer> m_dxRenderer;
 
   std::unique_ptr<Flame::IDragger> m_dragger;
@@ -45,4 +45,9 @@ private:
   float m_fpsTimer = 0.0f;
   float m_time = 0.0f;
   float m_deltaTime = 0.0f;
+
+  // TODO test
+  uint32_t m_planeTransformId;
+  uint32_t m_cubeTransformId;
+  float m_rotation = 0.0f;
 };

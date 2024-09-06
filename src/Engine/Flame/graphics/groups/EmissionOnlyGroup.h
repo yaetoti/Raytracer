@@ -1,6 +1,7 @@
 #pragma once
 #include <memory>
 #include <vector>
+#include <Flame/engine/ShaderPipeline.h>
 #include <glm/glm.hpp>
 
 #include "Flame/engine/TransformSystem.h"
@@ -45,8 +46,7 @@ namespace Flame {
     VertexBuffer<EmissionOnlyInstanceData::ShaderData> m_instanceBuffer;
     bool m_instanceBufferDirty = true;
 
-    VertexShader m_vertexShader;
-    PixelShader m_pixelShader;
+    ShaderPipeline m_pipeline;
 
     inline static const wchar_t* kShaderPath = L"Assets/Shaders/emission.hlsl";
   };
