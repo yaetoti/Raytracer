@@ -1,6 +1,5 @@
 ﻿#pragma once
 
-#include "MainScene.h"
 #include "Flame.h"
 #include "ConsoleLib.h"
 
