@@ -656,3 +656,5 @@ $$
 FUCK THIS SHIT
 
 https://habr.com/ru/articles/252771/
+
+https://developer.nvidia.com/blog/visualizing-depth-precision/

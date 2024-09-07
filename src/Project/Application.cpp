@@ -210,12 +210,6 @@ void Application::Init() {
     ));
   }
 
-  // TODO 2-step initialization is kinda bad because you can forget about that. Don't know what to to at the moment
-  ms->GetOpaqueGroup()->InitInstanceBuffer();
-  ms->GetHologramGroup()->InitInstanceBuffer();
-  ms->GetTextureOnlyGroup()->InitInstanceBuffer();
-  ms->GetEmissionOnlyGroup()->InitInstanceBuffer();
-
   // Init lights
   float sunRadius = 696340.0f;
   float sunDistance = 150000000.0f;

@@ -38,15 +38,16 @@ namespace Flame {
     void Init();
     void Cleanup();
 
-    void InitInstanceBuffer();
-    void UpdateInstanceBuffer();
     void Render();
 
   private:
-    VertexBuffer<EmissionOnlyInstanceData::ShaderData> m_instanceBuffer;
-    bool m_instanceBufferDirty = true;
+    void UpdateInstanceBufferData();
+    void UpdateInstanceBuffer();
 
+  private:
     ShaderPipeline m_pipeline;
+    VertexBuffer<EmissionOnlyInstanceData::ShaderData> m_instanceBuffer;
+    uint32_t m_instanceCount = 0;
 
     inline static const wchar_t* kShaderPath = L"Assets/Shaders/emission.hlsl";
   };

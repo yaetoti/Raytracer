@@ -19,8 +19,18 @@ namespace Flame {
       glm::mat4 modelMatrix;
     };
 
+    struct Depth2DShaderData final {
+      glm::mat4 modelMatrix;
+    };
+
     ShaderData GetShaderData() const {
       return ShaderData {
+        TransformSystem::Get()->At(transformId)->transform.GetMat()
+      };
+    }
+
+    Depth2DShaderData GetDepth2DShaderData() const {
+      return Depth2DShaderData {
         TransformSystem::Get()->At(transformId)->transform.GetMat()
       };
     }
@@ -45,15 +55,21 @@ namespace Flame {
     void Init();
     void Cleanup();
 
-    void InitInstanceBuffer();
-    void UpdateInstanceBuffer();
     void Render();
+    void RenderDepth2D();
+    void RenderDepthCubemaps(std::span<glm::vec3> positions);
+
+  private:
+    void UpdateInstanceBufferData();
+    void UpdateInstanceBuffer();
 
   private:
     ShaderPipeline m_pipeline;
+    ShaderPipeline m_depth2DPipeline;
     VertexBuffer<OpaqueInstanceData::ShaderData> m_instanceBuffer;
-    ConstantBuffer<OpaqueMeshData> m_meshMatrixBuffer;
-    bool m_instanceBufferDirty = true;
+    VertexBuffer<OpaqueInstanceData::Depth2DShaderData> m_depth2DInstanceBuffer;
+    uint32_t m_instanceCount = 0;
+    ConstantBuffer<OpaqueMeshData> m_meshBuffer;
 
     // IBL
     ID3D11ShaderResourceView* m_diffuseView = nullptr;
@@ -61,6 +77,7 @@ namespace Flame {
     ID3D11ShaderResourceView* m_reflectanceView = nullptr;
 
     inline static const wchar_t* kShaderPath = L"Assets/Shaders/opaque.hlsl";
+    inline static const wchar_t* kDepth2DShaderPath = L"Assets/Shaders/depth.hlsl";
     inline static const wchar_t* kFlashlightTexturePath = L"Assets/Textures/flashlight_1.dds";
   };
 }

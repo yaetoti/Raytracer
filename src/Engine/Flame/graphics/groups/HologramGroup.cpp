@@ -21,37 +21,39 @@ namespace Flame {
   }
 
   void HologramGroup::Cleanup() {
-    m_instanceBufferDirty = true;
     m_pipeline.Reset();
     m_instanceBuffer.Reset();
+    m_instanceCount = 0;
     GetModels().clear();
   }
 
-  void HologramGroup::InitInstanceBuffer() {
-    m_instanceBuffer.Reset();
-    HRESULT result = m_instanceBuffer.Init(GetInstanceCount(), D3D11_CPU_ACCESS_WRITE, D3D11_USAGE_DYNAMIC);
-    assert(SUCCEEDED(result));
-  }
-
-  void HologramGroup::UpdateInstanceBuffer() {
-    // Fill buffer
+  void HologramGroup::UpdateInstanceBufferData() {
     auto mapping = m_instanceBuffer.Map(D3D11_MAP_WRITE_DISCARD);
-    {
-      auto destPtr = static_cast<HologramInstanceData::ShaderData*>(mapping.pData);
-      uint32_t numCopied = 0;
+    auto destPtr = static_cast<HologramInstanceData::ShaderData*>(mapping.pData);
+    uint32_t numCopied = 0;
 
-      for (const auto & perModel : GetModels()) {
-        for (const auto & perMesh : perModel->GetMeshes()) {
-          for (const auto & perMaterial : perMesh->GetMaterials()) {
-            for (const auto & perInstance : perMaterial->GetInstances()) {
-              destPtr[numCopied++] = perInstance->GetData().GetShaderData();
-            }
+    for (const auto& perModel : GetModels()) {
+      for (const auto & perMesh : perModel->GetMeshes()) {
+        for (const auto & perMaterial : perMesh->GetMaterials()) {
+          for (const auto & perInstance : perMaterial->GetInstances()) {
+            destPtr[numCopied++] = perInstance->GetData().GetShaderData();
           }
         }
       }
     }
 
     m_instanceBuffer.Unmap();
+  }
+
+  void HologramGroup::UpdateInstanceBuffer() {
+    uint32_t instanceCount = GetInstanceCount();
+    if (m_instanceCount != instanceCount) {
+      m_instanceCount = instanceCount;
+      HRESULT result = m_instanceBuffer.Init(m_instanceCount, D3D11_CPU_ACCESS_WRITE, D3D11_USAGE_DYNAMIC);
+      assert(SUCCEEDED(result));
+    }
+
+    UpdateInstanceBufferData();
   }
 
   void HologramGroup::Render() {

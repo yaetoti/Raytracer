@@ -44,7 +44,7 @@ namespace Flame {
         0
       };
 
-      HRESULT result = DxContext::Get()->d3d11Device->CreateBuffer(&desc, nullptr, m_buffer.GetAddressOf());
+      HRESULT result = DxContext::Get()->d3d11Device->CreateBuffer(&desc, nullptr, m_buffer.ReleaseAndGetAddressOf());
       if (SUCCEEDED(result)) {
         m_size = count;
       }
