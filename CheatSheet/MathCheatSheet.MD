@@ -554,3 +554,105 @@ Now, if you find any projection matrix, you will be able to transform it to your
 
 - Reverse camera Z axis by **placing minus in front of S_z**
 - Create a reversed z buffer by replacing **near** and **far** and mapping not to [0, 1], but to [1, 0], by changing scale and translation
+
+---
+
+For perspective matrix
+
+$$
+S_x = ctgHalfFovY / aspect = \frac{1}{ctgHalfFovX * aspect}
+$$
+
+$$
+S_y = ctgHalfFovY = \frac{1}{ctgHalfFovX}
+$$
+
+$$
+ctgHalfFovY = \frac{adjacentCathetus}{oppositeCathetus} = \frac{depth}{\frac{height}{2}} = \frac{2 * depth}{height}
+$$
+
+$$
+aspect = \frac{width}{height}
+$$
+
+So, we have
+
+$$
+S_x = \frac{2 * depth}{height} * \frac{height}{width} = \frac{2 * depth}{width}
+$$
+
+$$
+S_y = \frac{2 * depth}{height}
+$$
+
+Let's transform this to a more familiar look
+
+$$
+S_x = \frac{2}{width} * depth
+$$
+
+$$
+S_y = \frac{2}{height} * depth
+$$
+
+Pretty simple so far. Now let's look at Z
+
+$$
+S_z = \frac{2.0 * near}{far - near} = 2 * 0.010101 = 0.020202
+$$
+
+2.0f * far * near / (far - near) = 20.202020
+
+2.0f * near / (far - near) * far = 0.020202 * 1000
+
+WTF
+
+$$
+\begin{pmatrix}
+  \frac{ctg(\frac{\theta}{2})}{aspect} & 0 & 0 & 0\\
+  0 & ctg(\frac{\theta}{2}) & 0 & 0\\
+  0 & 0 & \frac{2 * near}{far - near} & -1\\
+  0 & 0 & \frac{2 * near}{far - near} * far & 0
+\end{pmatrix}
+$$
+
+$$
+\begin{pmatrix}
+  \frac{ctg(\frac{\theta}{2})}{aspect} & 0 & 0 & 0\\
+  0 & ctg(\frac{\theta}{2}) & 0 & 0\\
+  0 & 0 & \frac{2 * near}{far - near} & -1\\
+  0 & 0 & \frac{2 * near}{far - near} * far & 0
+\end{pmatrix}
+*
+\begin{pmatrix}
+  P_x\\
+  P_y\\
+  P_z\\
+  1
+\end{pmatrix}
+=
+\begin{pmatrix}
+  S_x * P_x\\
+  S_y * P_y\\
+  S_z * P_z - 1\\
+  S_z * P_z
+\end{pmatrix}
+$$
+
+$$
+\begin{pmatrix}
+  \frac{S_x * P_x}{S_z * P_z}\\
+  \frac{S_y * P_y}{S_z * P_z}\\
+  \frac{S_z * P_z - 1}{S_z * P_z}
+\end{pmatrix}
+=
+\begin{pmatrix}
+  P_x'\\
+  P_y'\\
+  1 - \frac{1}{S_z * P_z}
+\end{pmatrix}
+$$
+
+FUCK THIS SHIT
+
+https://habr.com/ru/articles/252771/
