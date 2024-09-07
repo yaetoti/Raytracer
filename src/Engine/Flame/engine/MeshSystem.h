@@ -35,6 +35,8 @@ namespace Flame {
     void Cleanup();
     void Update(float deltaTime);
     void Render(float deltaTime);
+    void RenderDepth2D();
+    void RenderDepthCubemaps(std::span<glm::vec3> positions);
 
     // TODO HW10
     struct ViewBuffer final {
@@ -54,9 +56,6 @@ namespace Flame {
     // Create TextureCubeArray
 
     // TODO HW10 END
-
-    void RenderDepth2D();
-    void RenderDepthCubemaps(std::span<glm::vec3> positions);
 
     OpaqueGroup* GetOpaqueGroup();
     HologramGroup* GetHologramGroup();

@@ -45,6 +45,14 @@ namespace Flame {
     m_textureOnlyGroup.Render();
   }
 
+  void MeshSystem::RenderDepth2D() {
+    m_opaqueGroup.RenderDepth2D();
+  }
+
+  void MeshSystem::RenderDepthCubemaps(std::span<glm::vec3> positions) {
+
+  }
+
   OpaqueGroup* MeshSystem::GetOpaqueGroup() {
     return &m_opaqueGroup;
   }

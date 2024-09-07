@@ -383,6 +383,8 @@ void Application::UpdateCamera(float deltaTime) {
 void Application::UpdateGrabbing(float deltaTime) {
   if (m_input->IsMouseButtonPressed(Flame::MouseButton::RIGHT)) {
     auto[x, y] = m_input->GetCursorPos();
+    x = std::clamp<float>(x, 0.0f, m_window->GetWidth() - 1);
+    y = std::clamp<float>(y, 0.0f, m_window->GetHeight() - 1);
     Flame::Ray ray = m_camera->GetRay(static_cast<uint32_t>(x), static_cast<uint32_t>(y));
 
     if (!m_dragger) {

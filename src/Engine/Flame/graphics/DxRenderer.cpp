@@ -151,6 +151,12 @@ namespace Flame {
     ImGui::SliderFloat("Roughness", &m_roughness, 0.0f, 1.0f);
     ImGui::End();
 
+    // TODO HW10
+    // For DirectLights and SpotLights
+    MeshSystem::Get()->RenderDepth2D();
+    // For PointLights
+    MeshSystem::Get()->RenderDepthCubemaps({});
+
     // Update ConstantBuffers
     UpdateFrameBuffer(time);
     // TODO pass position

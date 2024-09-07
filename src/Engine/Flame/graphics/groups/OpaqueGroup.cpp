@@ -36,8 +36,8 @@ namespace Flame {
         { "MODEL", 3, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
       };
 
-      m_depth2DPipeline.Init(kDepth2DShaderPath, ShaderType::VERTEX_SHADER | ShaderType::PIXEL_SHADER);
-      m_depth2DPipeline.CreateInputLayout(desc);
+      m_pipelineDepth2D.Init(kDepth2DShaderPath, ShaderType::VERTEX_SHADER | ShaderType::PIXEL_SHADER);
+      m_pipelineDepth2D.CreateInputLayout(desc);
     }
 
     m_meshBuffer.Init();
@@ -50,10 +50,10 @@ namespace Flame {
   void OpaqueGroup::Cleanup() {
     // Shaders
     m_pipeline.Reset();
-    m_depth2DPipeline.Reset();
+    m_pipelineDepth2D.Reset();
     // Instance (vertex) buffers
     m_instanceBuffer.Reset();
-    m_depth2DInstanceBuffer.Reset();
+    m_instanceBufferDepth2D.Reset();
     m_instanceCount = 0;
 
     m_meshBuffer.Reset();
@@ -87,6 +87,35 @@ namespace Flame {
     }
 
     UpdateInstanceBufferData();
+  }
+
+  void OpaqueGroup::UpdateInstanceBufferDataDepth2D() {
+    auto mapping = m_instanceBufferDepth2D.Map(D3D11_MAP_WRITE_DISCARD);
+    auto destPtr = static_cast<OpaqueInstanceData::Depth2DShaderData*>(mapping.pData);
+    uint32_t numCopied = 0;
+
+    for (const auto& perModel : GetModels()) {
+      for (const auto & perMesh : perModel->GetMeshes()) {
+        for (const auto & perMaterial : perMesh->GetMaterials()) {
+          for (const auto & perInstance : perMaterial->GetInstances()) {
+            destPtr[numCopied++] = perInstance->GetData().GetDepth2DShaderData();
+          }
+        }
+      }
+    }
+
+    m_instanceBufferDepth2D.Unmap();
+  }
+
+  void OpaqueGroup::UpdateInstanceBufferDepth2D() {
+    uint32_t instanceCount = GetInstanceCount();
+    if (m_instanceCountDepth2D != instanceCount) {
+      m_instanceCountDepth2D = instanceCount;
+      HRESULT result = m_instanceBufferDepth2D.Init(m_instanceCountDepth2D, D3D11_CPU_ACCESS_WRITE, D3D11_USAGE_DYNAMIC);
+      assert(SUCCEEDED(result));
+    }
+
+    UpdateInstanceBufferDataDepth2D();
   }
 
   void OpaqueGroup::Render() {
@@ -160,8 +189,6 @@ namespace Flame {
           };
           dc->PSSetShaderResources(1, 4, srvs);
 
-          // Aaah, so that's why we have MeshRange... Finally
-          // TODO replace Model index offsetting with correct draw call parameters
           dc->DrawIndexedInstanced(range.indexNum, numInstances, range.indexOffset, range.vertexOffset, numRenderedInstances);
           numRenderedInstances += numInstances;
         }
@@ -170,14 +197,12 @@ namespace Flame {
   }
 
   void OpaqueGroup::RenderDepth2D() {
-    UpdateInstanceBuffer();
-
     ID3D11DeviceContext* dc = DxContext::Get()->d3d11DeviceContext.Get();
-    // Set shaders and assembly
-    // TODO replace shader
-    m_pipeline.Bind();
+
+    UpdateInstanceBufferDepth2D();
+
+    m_pipelineDepth2D.Bind();
     dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-    // TODO maybe different data
     dc->VSSetConstantBuffers(kMeshCBufferId, 1, m_meshBuffer.GetAddressOf());
 
     uint32_t numRenderedInstances = 0;
@@ -187,12 +212,12 @@ namespace Flame {
       // Set buffers
       ID3D11Buffer* buffers[] = {
         perModel->GetModel()->m_vertices.Get(),
-        m_instanceBuffer.Get()
+        m_instanceBufferDepth2D.Get()
       };
 
       UINT strides[] = {
         perModel->GetModel()->m_vertices.GetStride(),
-        m_instanceBuffer.GetStride(),
+        m_instanceBufferDepth2D.GetStride(),
       };
 
       UINT offsets[] = {
@@ -223,17 +248,6 @@ namespace Flame {
             continue;
           }
 
-          // Set material
-          ID3D11ShaderResourceView* srvs[] {
-            perMaterial->GetData().m_albedoView,
-            perMaterial->GetData().m_normalView,
-            perMaterial->GetData().m_metallicView,
-            perMaterial->GetData().m_roughnessView,
-          };
-          dc->PSSetShaderResources(1, 4, srvs);
-
-          // Aaah, so that's why we have MeshRange... Finally
-          // TODO replace Model index offsetting with correct draw call parameters
           dc->DrawIndexedInstanced(range.indexNum, numInstances, range.indexOffset, range.vertexOffset, numRenderedInstances);
           numRenderedInstances += numInstances;
         }

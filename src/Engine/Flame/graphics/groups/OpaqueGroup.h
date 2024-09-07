@@ -62,13 +62,16 @@ namespace Flame {
   private:
     void UpdateInstanceBufferData();
     void UpdateInstanceBuffer();
+    void UpdateInstanceBufferDataDepth2D();
+    void UpdateInstanceBufferDepth2D();
 
   private:
     ShaderPipeline m_pipeline;
-    ShaderPipeline m_depth2DPipeline;
+    ShaderPipeline m_pipelineDepth2D;
     VertexBuffer<OpaqueInstanceData::ShaderData> m_instanceBuffer;
-    VertexBuffer<OpaqueInstanceData::Depth2DShaderData> m_depth2DInstanceBuffer;
+    VertexBuffer<OpaqueInstanceData::Depth2DShaderData> m_instanceBufferDepth2D;
     uint32_t m_instanceCount = 0;
+    uint32_t m_instanceCountDepth2D = 0;
     ConstantBuffer<OpaqueMeshData> m_meshBuffer;
 
     // IBL
@@ -76,8 +79,8 @@ namespace Flame {
     ID3D11ShaderResourceView* m_specularView = nullptr;
     ID3D11ShaderResourceView* m_reflectanceView = nullptr;
 
-    inline static const wchar_t* kShaderPath = L"Assets/Shaders/opaque.hlsl";
-    inline static const wchar_t* kDepth2DShaderPath = L"Assets/Shaders/depth.hlsl";
+    inline static const wchar_t* kShaderPath = L"Assets/Shaders/Opaque.hlsl";
+    inline static const wchar_t* kDepth2DShaderPath = L"Assets/Shaders/Depth2D.hlsl";
     inline static const wchar_t* kFlashlightTexturePath = L"Assets/Textures/flashlight_1.dds";
   };
 }

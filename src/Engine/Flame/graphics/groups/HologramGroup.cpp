@@ -99,8 +99,6 @@ namespace Flame {
             continue;
           }
 
-          // Aaah, so that's why we have MeshRange... Finally
-          // TODO replace Model index offsetting with correct draw call parameters
           dc->DrawIndexedInstanced(range.indexNum, numInstances, range.indexOffset, range.vertexOffset, numRenderedInstances);
           numRenderedInstances += numInstances;
         }
