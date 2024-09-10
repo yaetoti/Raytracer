@@ -318,34 +318,30 @@ namespace Flame {
 
     // Preprocess lights
     for (std::shared_ptr<DirectLight>& light : LightSystem::Get()->GetDirectLights()) {
+      // We calculate projection from center, so we need to include front and back
       glm::vec3 lightDir = light->direction;
-      glm::mat4 viewMat = MathUtils::ViewFromDir(lightDir, center);
+      glm::mat4 lightView = MathUtils::ViewFromDir(lightDir, center);
 
       // Calculate frustum AABB in light's VS
-      glm::vec3 min(std::numeric_limits<float>::infinity());
-      glm::vec3 max(-std::numeric_limits<float>::infinity());
+      float zMin = std::numeric_limits<float>::infinity();
+      float zMax = -std::numeric_limits<float>::infinity();
       for (uint32_t i = 0; i < 8; ++i) {
-        glm::vec3 positionVS = glm::vec3(viewMat * frustumCornersWS[i]);
-        min = glm::min(min, positionVS);
-        max = glm::max(max, positionVS);
+        glm::vec3 positionVS = glm::vec3(lightView * frustumCornersWS[i]);
+        zMin = glm::min(zMin, positionVS.z);
+        zMax = glm::max(zMax, positionVS.z);
       }
 
-      // Get longest half-sides (Position at (0, 0, 0) in VS)
-      // TODO replace with absolute longest side to avoid flickering on rotation.
-      glm::vec3 halfSides = glm::max(glm::abs(min), glm::abs(max));
-      float xySide = glm::max(halfSides.x, halfSides.y);
-      // TODO add padding
+      // XY = frustum radius
+      float xyHalfSide = glm::length(glm::vec3(frustumCornersWS[7]) - m_camera->GetPosition());
+      float zHalfSide = 0.5f * (zMax - zMin);
 
-      //glm::vec3 lightPos = center - halfSides.z * lightDir;
-      //TransformSystem::Get()->At(0)->transform.SetPosition(center);
-      glm::mat4 lightView = MathUtils::ViewFromDir(lightDir, center);
       glm::mat4 lightProjection = MathUtils::Orthographic(
-        xySide,
-        -xySide,
-        xySide,
-        -xySide,
-        halfSides.z,
-        -halfSides.z
+        xyHalfSide,
+        -xyHalfSide,
+        xyHalfSide,
+        -xyHalfSide,
+        zHalfSide,
+        -(zHalfSide + kDirectShadowPadding)
       );
 
       // Update ViewCBuffer

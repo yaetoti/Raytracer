@@ -5,6 +5,7 @@
 #include "Flame/window/Window.h"
 
 #include <memory>
+#include <Flame/engine/LightSystem.h>
 #include <Flame/engine/ReflectionCapture.h>
 #include <Flame/engine/ShaderPipeline.h>
 #include <Flame/engine/Texture.h>
@@ -97,5 +98,6 @@ namespace Flame {
     //static constexpr const wchar_t* kSkyboxPath = L"Assets/Textures/night_street.dds";
     static constexpr const wchar_t* kSkyShaderPath = L"Assets/Shaders/sky.hlsl";
     static constexpr uint32_t kShadowMapResolution = 8192;
+    static constexpr float kDirectShadowPadding = 10.0f;
   };
 }

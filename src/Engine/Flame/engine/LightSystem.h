@@ -11,12 +11,10 @@
 
 namespace Flame {
   struct LightSystem final {
-  private:
     static constexpr uint32_t kDirectLightNum = 1;
     static constexpr uint32_t kPointLightNum = 8;
     static constexpr uint32_t kSpotLightNum = 1;
 
-  public:
     struct ShaderData final {
       DirectLight::ShaderData directLightData[kDirectLightNum];
       PointLight::ShaderData pointLightData[kPointLightNum];
