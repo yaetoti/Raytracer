@@ -19,7 +19,7 @@ Application::Application() {
   m_input = &m_window->GetInputSystem();
   m_camera = std::make_shared<Flame::AlignedCamera>(m_window->GetWidth(), m_window->GetHeight(), 60.0f, 0.01f, 100.0f);
   m_camera->SetPosition(glm::vec3(0, 0, 2));
-  m_dxRenderer = std::make_unique<Flame::DxRenderer>(m_window, m_camera);
+  m_dxRenderer = std::make_shared<Flame::DxRenderer>(m_window, m_camera);
   m_dragger = nullptr;
 }
 
@@ -62,6 +62,8 @@ void Application::Run() {
 }
 
 void Application::Init() {
+  Flame::MeshSystem::Get()->SetShadowMapProvider(m_dxRenderer);
+
   m_window->GetDispatcher().AddListener(this);
   m_window->CreateResources();
   m_window->Show(SW_SHOW);
@@ -214,6 +216,8 @@ void Application::Init() {
   float sunRadius = 696340.0f;
   float sunDistance = 150000000.0f;
   ls->AddDirectLight(std::make_shared<DirectLight>(
+    glm::mat4(1.0f),
+    glm::mat4(1.0f),
     glm::normalize(glm::vec3(0, -1, 1)),
     MathUtils::RadianceFromIrradiance(MathUtils::ColorFromHex(0x888888), sunRadius, sunDistance),
     MathUtils::SolidAngle(sunRadius, sunDistance)

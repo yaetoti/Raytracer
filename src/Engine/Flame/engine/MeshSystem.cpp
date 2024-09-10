@@ -28,6 +28,8 @@ namespace Flame {
   }
 
   void MeshSystem::Cleanup() {
+    m_shadowMapProvider.reset();
+
     m_opaqueGroup.Cleanup();
     m_hologramGroup.Cleanup();
     m_emissionOnlyGroup.Cleanup();
@@ -106,6 +108,11 @@ namespace Flame {
     }
 
     return wasHit;
+  }
+
+  void MeshSystem::SetShadowMapProvider(const std::shared_ptr<IShadowMapProvider>& provider) {
+    m_shadowMapProvider = provider;
+    m_opaqueGroup.SetShadowMapProvider(provider);
   }
 
   MeshSystem* MeshSystem::Get() {

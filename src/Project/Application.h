@@ -32,7 +32,7 @@ private:
   Flame::InputSystem* m_input;
 
   std::shared_ptr<Flame::AlignedCamera> m_camera;
-  std::unique_ptr<Flame::DxRenderer> m_dxRenderer;
+  std::shared_ptr<Flame::DxRenderer> m_dxRenderer;
 
   std::unique_ptr<Flame::IDragger> m_dragger;
 

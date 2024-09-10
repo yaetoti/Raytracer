@@ -5,6 +5,7 @@
 #include "Flame/window/Window.h"
 
 #include <memory>
+#include <Flame/engine/IShadowMapProvider.h>
 #include <Flame/engine/LightSystem.h>
 #include <Flame/engine/ReflectionCapture.h>
 #include <Flame/engine/ShaderPipeline.h>
@@ -18,7 +19,7 @@
 #include "Flame/camera/AlignedCamera.h"
 
 namespace Flame {
-  struct DxRenderer final {
+  struct DxRenderer final : IShadowMapProvider {
     template <typename T>
     using ComPtr = Microsoft::WRL::ComPtr<T>;
 
@@ -48,11 +49,17 @@ namespace Flame {
     void SetRoughness(float roughness);
 
   private:
+    // ShadowMaps
+    void UpdateMatricesDirect();
     void GenerateShadowMaps();
     void RenderShadowMapsDirect();
+
     void RenderSkybox();
     void UpdateFrameBuffer(float time);
     void UpdateViewBuffer();
+
+  public:
+    ID3D11ShaderResourceView* GetShadowMapSrvDirect() override;
 
   private:
     // Input
@@ -67,7 +74,8 @@ namespace Flame {
 
     // ShadowMaps
     ComPtr<ID3D11Texture2D> m_shadowMapArrayDirect;
-    ComPtr<ID3D11DepthStencilView> m_shadowMapDsvDirect;
+    ComPtr<ID3D11DepthStencilView> m_shadowMapDsvDirect[LightSystem::kDirectLightNum];
+    ComPtr<ID3D11ShaderResourceView> m_shadowMapSrvDirect;
     uint32_t m_directLightsCount = 0;
 
     // Samplers

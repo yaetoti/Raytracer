@@ -14,6 +14,8 @@ static const float PI = 3.14159265f;
 #define NUM_SPOT_LIGHTS 1
 
 struct DirectLight {
+  float4x4 viewMat;
+  float4x4 projectionMat;
   float4 direction;
   float3 radiance;
   float solidAngle;

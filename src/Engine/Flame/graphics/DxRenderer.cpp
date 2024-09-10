@@ -168,11 +168,14 @@ namespace Flame {
     buffers[kLightCBufferId] = LightSystem::Get()->GetConstantBuffer();
     DxContext::Get()->SetPipelineConstantBuffers(0, buffers);
 
-    // Update CBuffers
-    UpdateFrameBuffer(time);
+    // Update light matrices
+    UpdateMatricesDirect();
     LightSystem::Get()->CommitChanges();
 
-    // Render ShadowMaps
+    // Update Frame CBuffer
+    UpdateFrameBuffer(time);
+
+    // Render ShadowMaps.
     GenerateShadowMaps();
     RenderShadowMapsDirect();
 
@@ -267,47 +270,7 @@ namespace Flame {
     m_roughness = roughness;
   }
 
-  void DxRenderer::GenerateShadowMaps() {
-    HRESULT result;
-    uint32_t directLightsCount = LightSystem::Get()->GetDirectLights().size();
-
-    // DirectLights
-    if (m_directLightsCount != directLightsCount) {
-      m_directLightsCount = directLightsCount;
-
-      // TextureArray
-      D3D11_TEXTURE2D_DESC desc {
-        kShadowMapResolution,
-        kShadowMapResolution,
-        1,
-        LightSystem::Get()->GetDirectLights().size(),
-        DXGI_FORMAT_R24G8_TYPELESS,
-        { 1, 0 },
-        D3D11_USAGE_DEFAULT,
-        D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE,
-        0,
-        0
-      };
-      result = DxContext::Get()->d3d11Device->CreateTexture2D(&desc, nullptr, m_shadowMapArrayDirect.ReleaseAndGetAddressOf());
-      assert(SUCCEEDED(result));
-
-      // DSV
-      D3D11_DEPTH_STENCIL_VIEW_DESC depthDesc {};
-      depthDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-      depthDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DARRAY;
-      depthDesc.Texture2DArray.FirstArraySlice = 0;
-      depthDesc.Texture2DArray.ArraySize = m_directLightsCount;
-      depthDesc.Texture2DArray.MipSlice = 0;
-      DxContext::Get()->d3d11Device->CreateDepthStencilView(m_shadowMapArrayDirect.Get(), &depthDesc, m_shadowMapDsvDirect.ReleaseAndGetAddressOf());
-
-      // SRV
-      // TODO SRV
-    }
-  }
-
-  void DxRenderer::RenderShadowMapsDirect() {
-    ID3D11DeviceContext* dc = DxContext::Get()->d3d11DeviceContext.Get();
-
+  void DxRenderer::UpdateMatricesDirect() {
     // Get frustum corners and center in WS
     auto frustumCornersWS = m_camera->GetFrustumCornersWS();
     glm::vec3 center(0.0f);
@@ -317,7 +280,9 @@ namespace Flame {
     center /= 8;
 
     // Preprocess lights
-    for (std::shared_ptr<DirectLight>& light : LightSystem::Get()->GetDirectLights()) {
+    for (uint32_t i = 0; i < LightSystem::Get()->GetDirectLights().size(); ++i) {
+      std::shared_ptr<DirectLight>& light = LightSystem::Get()->GetDirectLights().at(i);
+
       // We calculate projection from center, so we need to include front and back
       glm::vec3 lightDir = light->direction;
       glm::mat4 lightView = MathUtils::ViewFromDir(lightDir, center);
@@ -344,9 +309,71 @@ namespace Flame {
         -(zHalfSide + kDirectShadowPadding)
       );
 
+      // Update data
+      light->viewMat = lightView;
+      light->projectionMat = lightProjection;
+    }
+  }
+
+  void DxRenderer::GenerateShadowMaps() {
+    HRESULT result;
+    uint32_t directLightsCount = LightSystem::Get()->GetDirectLights().size();
+
+    // DirectLights
+    if (m_directLightsCount != directLightsCount) {
+      m_directLightsCount = directLightsCount;
+
+      // TextureArray
+      D3D11_TEXTURE2D_DESC desc {
+        kShadowMapResolution,
+        kShadowMapResolution,
+        1,
+        LightSystem::Get()->GetDirectLights().size(),
+        DXGI_FORMAT_R24G8_TYPELESS,
+        { 1, 0 },
+        D3D11_USAGE_DEFAULT,
+        D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE,
+        0,
+        0
+      };
+      result = DxContext::Get()->d3d11Device->CreateTexture2D(&desc, nullptr, m_shadowMapArrayDirect.ReleaseAndGetAddressOf());
+      assert(SUCCEEDED(result));
+
+      // DSV
+      for (uint32_t i = 0; i < ARRAYSIZE(m_shadowMapDsvDirect); ++i) {
+        D3D11_DEPTH_STENCIL_VIEW_DESC depthDesc {};
+        depthDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+        depthDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DARRAY;
+        depthDesc.Texture2DArray.FirstArraySlice = i;
+        depthDesc.Texture2DArray.ArraySize = 1;
+        depthDesc.Texture2DArray.MipSlice = 0;
+
+        DxContext::Get()->d3d11Device->CreateDepthStencilView(m_shadowMapArrayDirect.Get(), &depthDesc, m_shadowMapDsvDirect[i].ReleaseAndGetAddressOf());
+      }
+
+      // SRV
+      D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc {};
+      srvDesc.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
+      srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DARRAY;
+      srvDesc.Texture2DArray.ArraySize = m_directLightsCount;
+      srvDesc.Texture2DArray.FirstArraySlice = 0;
+      srvDesc.Texture2DArray.MipLevels = 1;
+      srvDesc.Texture2DArray.MostDetailedMip = 0;
+
+      result = DxContext::Get()->d3d11Device->CreateShaderResourceView(m_shadowMapArrayDirect.Get(), &srvDesc, m_shadowMapSrvDirect.ReleaseAndGetAddressOf());
+      assert(SUCCEEDED(result));
+    }
+  }
+
+  void DxRenderer::RenderShadowMapsDirect() {
+    ID3D11DeviceContext* dc = DxContext::Get()->d3d11DeviceContext.Get();
+
+    for (uint32_t i = 0; i < LightSystem::Get()->GetDirectLights().size(); ++i) {
+      std::shared_ptr<DirectLight>& light = LightSystem::Get()->GetDirectLights().at(i);
+
       // Update ViewCBuffer
-      m_viewCBuffer.data.viewMatrix = lightView;
-      m_viewCBuffer.data.projectionMatrix = lightProjection;
+      m_viewCBuffer.data.viewMatrix = light->viewMat;
+      m_viewCBuffer.data.projectionMatrix = light->projectionMat;
       m_viewCBuffer.ApplyChanges();
 
       // Render ShadowMap
@@ -359,8 +386,8 @@ namespace Flame {
       viewport.MaxDepth = 1.0f;
 
       dc->RSSetViewports(1, &viewport);
-      dc->OMSetRenderTargets(1, PtrProxy<ID3D11RenderTargetView*>(nullptr).Ptr(), m_shadowMapDsvDirect.Get());
-      dc->ClearDepthStencilView(m_shadowMapDsvDirect.Get(), D3D11_CLEAR_DEPTH, 0.0f, 0);
+      dc->OMSetRenderTargets(1, PtrProxy<ID3D11RenderTargetView*>(nullptr).Ptr(), m_shadowMapDsvDirect[i].Get());
+      dc->ClearDepthStencilView(m_shadowMapDsvDirect[i].Get(), D3D11_CLEAR_DEPTH, 0.0f, 0);
 
       MeshSystem::Get()->RenderDepth2D();
     }
@@ -406,5 +433,9 @@ namespace Flame {
     m_viewCBuffer.data.resolution = m_resolution;
 
     m_viewCBuffer.ApplyChanges();
+  }
+
+  ID3D11ShaderResourceView* DxRenderer::GetShadowMapSrvDirect() {
+    return m_shadowMapSrvDirect.Get();
   }
 }

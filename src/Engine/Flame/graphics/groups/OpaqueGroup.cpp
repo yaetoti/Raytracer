@@ -48,6 +48,8 @@ namespace Flame {
   }
 
   void OpaqueGroup::Cleanup() {
+    m_shadowMapProvider.reset();
+
     // Shaders
     m_pipeline.Reset();
     m_pipelineDepth2D.Reset();
@@ -58,6 +60,10 @@ namespace Flame {
 
     m_meshBuffer.Reset();
     GetModels().clear();
+  }
+
+  void OpaqueGroup::SetShadowMapProvider(const std::shared_ptr<IShadowMapProvider>& provider) {
+    m_shadowMapProvider = provider;
   }
 
   void OpaqueGroup::UpdateInstanceBufferData() {
@@ -130,12 +136,14 @@ namespace Flame {
     // Set light texture
     dc->PSSetShaderResources(0, 1, TextureManager::Get()->GetTexture(kFlashlightTexturePath)->GetResourceViewAddress());
     // Set IBL textures
+    assert(m_shadowMapProvider != nullptr);
     ID3D11ShaderResourceView* iblTextures[] = {
       m_diffuseView,
       m_specularView,
-      m_reflectanceView
+      m_reflectanceView,
+      m_shadowMapProvider->GetShadowMapSrvDirect()
     };
-    dc->PSSetShaderResources(5, 3, iblTextures);
+    dc->PSSetShaderResources(5, 4, iblTextures);
 
     uint32_t numRenderedInstances = 0;
     for (const auto & perModel : GetModels()) {

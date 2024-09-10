@@ -10,7 +10,7 @@ TextureCube<float4> diffuseTexture : register(t5);
 TextureCube<float4> specularTexture : register(t6);
 Texture2D<float2> reflectanceTexture : register(t7);
 
-// Texture2DArray<float4> shadowMapDirect;
+Texture2DArray<float> shadowMapDirect : register(t8);
 // TextureCubeArray<float4> shadowMapPoint;
 // Texture2DArray<float4> shadowMapSpot;
 

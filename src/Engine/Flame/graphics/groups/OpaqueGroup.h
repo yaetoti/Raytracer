@@ -2,6 +2,7 @@
 #include <d3d11.h>
 #include <memory>
 #include <vector>
+#include <Flame/engine/IShadowMapProvider.h>
 #include <Flame/engine/ShaderPipeline.h>
 #include <glm/glm.hpp>
 
@@ -59,6 +60,8 @@ namespace Flame {
     void RenderDepth2D();
     void RenderDepthCubemaps(std::span<glm::vec3> positions);
 
+    void SetShadowMapProvider(const std::shared_ptr<IShadowMapProvider>& provider);
+
   private:
     void UpdateInstanceBufferData();
     void UpdateInstanceBuffer();
@@ -78,6 +81,9 @@ namespace Flame {
     ID3D11ShaderResourceView* m_diffuseView = nullptr;
     ID3D11ShaderResourceView* m_specularView = nullptr;
     ID3D11ShaderResourceView* m_reflectanceView = nullptr;
+
+    // DI
+    std::shared_ptr<IShadowMapProvider> m_shadowMapProvider;
 
     inline static const wchar_t* kShaderPath = L"Assets/Shaders/Opaque.hlsl";
     inline static const wchar_t* kDepth2DShaderPath = L"Assets/Shaders/Depth2D.hlsl";
