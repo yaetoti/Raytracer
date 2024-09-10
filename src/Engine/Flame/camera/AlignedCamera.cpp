@@ -49,8 +49,7 @@ namespace Flame {
 
   glm::vec3 AlignedCamera::GetFrontUnit() const {
     InvalidateMatrices();
-    // Inversion is related to the OpenGL world coordinate system (camera looks at -Z)
-    return -glm::vec3(GetRotationMat()[2]);
+    return glm::vec3(GetRotationMat()[2]);
   }
 
   glm::vec3 AlignedCamera::GetRightUnit() const {
@@ -96,6 +95,26 @@ namespace Flame {
   glm::vec3 AlignedCamera::GetToFrustumBrNear() const {
     InvalidateMatrices();
     return m_toCornerBr;
+  }
+
+  std::array<glm::vec4, 8> AlignedCamera::GetFrustumCornersWS() const {
+    InvalidateMatrices();
+    glm::mat4 transformInv = m_iView * m_iProjection;
+
+    std::array<glm::vec4, 8> result;
+    result[0] = transformInv * glm::vec4(-1.0f, 1.0f, 1.0f, 1.0f);
+    result[1] = transformInv * glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+    result[2] = transformInv * glm::vec4(1.0f, -1.0f, 1.0f, 1.0f);
+    result[3] = transformInv * glm::vec4(-1.0f, -1.0f, 1.0f, 1.0f);
+    result[4] = transformInv * glm::vec4(-1.0f, 1.0f, 0.0f, 1.0f);
+    result[5] = transformInv * glm::vec4(1.0f, 1.0f, 0.0f, 1.0f);
+    result[6] = transformInv * glm::vec4(1.0f, -1.0f, 0.0f, 1.0f);
+    result[7] = transformInv * glm::vec4(-1.0f, -1.0f, 0.0f, 1.0f);
+    for (uint32_t i = 0; i < 8; ++i) {
+      result[i] /= result[i].w;
+    }
+
+    return result;
   }
 
   glm::vec4 AlignedCamera::ClipToWorld(glm::vec4 position) const {

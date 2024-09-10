@@ -79,6 +79,27 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR lpCmdLine, _
   Console::Get()->RedirectStdHandles();
 
   // This file should be named Math.cpp
+  glm::mat4 viewMat = Flame::MathUtils::ViewFromDir(glm::vec3(1, 0, 0), glm::vec3(0, 0, -2));
+  std::cout << "WTF MAT: " << viewMat << '\n';
+  //viewMat = glm::transpose(viewMat);
+
+  glm::vec4 posWS = glm::vec4(0, 0, 1, 1);
+  glm::vec4 posVS = posWS * viewMat;
+  glm::vec4 posVSinv = viewMat * posWS;
+  std::cout << "PosWS: " << posWS << '\n';
+  std::cout << "PosVS: " << posVS << '\n';
+  std::cout << "PosVSinv: " << posVSinv << '\n';
+
+
+  glm::mat4 projection = Flame::MathUtils::Orthographic(400, -400, 300, -300, 1000, 0.01);
+  glm::mat4 projectionInv = glm::inverse(projection);
+  glm::vec4 pointVS = glm::vec4(-400, -300, 500, 1);
+  glm::vec4 pointCS = projection * pointVS;
+  glm::vec4 pointVS1 = projectionInv * pointCS;
+
+  std::cout << "PointVS: " << pointVS << '\n';
+  std::cout << "PointCS: " << pointCS << '\n';
+  std::cout << "pointVS1: " << pointVS1 << '\n';
 
   // Remember, no row_major
   glm::vec3 rightMS(1, 0, 0);

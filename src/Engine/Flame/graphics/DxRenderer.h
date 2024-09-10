@@ -47,19 +47,29 @@ namespace Flame {
     void SetRoughness(float roughness);
 
   private:
+    void GenerateShadowMaps();
+    void RenderShadowMapsDirect();
     void RenderSkybox();
     void UpdateFrameBuffer(float time);
     void UpdateViewBuffer();
 
   private:
+    // Input
     std::shared_ptr<Window> m_window;
     std::shared_ptr<AlignedCamera> m_camera;
     ComPtr<ID3D11RasterizerState> m_rasterizerState;
     InputSystem* m_input;
 
+    // CBuffers
     ConstantBuffer<PerFrame> m_frameCBuffer;
     ConstantBuffer<PerView> m_viewCBuffer;
 
+    // ShadowMaps
+    ComPtr<ID3D11Texture2D> m_shadowMapArrayDirect;
+    ComPtr<ID3D11DepthStencilView> m_shadowMapDsvDirect;
+    uint32_t m_directLightsCount = 0;
+
+    // Samplers
     ComPtr<ID3D11SamplerState> m_pointSampler;
     ComPtr<ID3D11SamplerState> m_linearSampler;
     ComPtr<ID3D11SamplerState> m_anisotropicSampler;
@@ -86,5 +96,6 @@ namespace Flame {
     static constexpr const wchar_t* kSkyboxPath = L"Assets/Textures/lake_beach.dds";
     //static constexpr const wchar_t* kSkyboxPath = L"Assets/Textures/night_street.dds";
     static constexpr const wchar_t* kSkyShaderPath = L"Assets/Shaders/sky.hlsl";
+    static constexpr uint32_t kShadowMapResolution = 8192;
   };
 }

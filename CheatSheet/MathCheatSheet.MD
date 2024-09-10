@@ -70,10 +70,10 @@ $$
 
 $$
 \begin{pmatrix}
-  R_x & R_y & R_z & 0\\
-  U_x & U_y & U_z & 0\\
-  F_x & F_y & F_z & 0\\
-  P_x & P_y & P_z & 1
+  R_x & R_y & R_z & -R \cdot P\\
+  U_x & U_y & U_z & -U \cdot P\\
+  F_x & F_y & F_z & -F \cdot P\\
+  0 & 0 & 0 & 1
 \end{pmatrix}
 $$
 

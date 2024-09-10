@@ -123,6 +123,7 @@ namespace Flame {
   }
 
   void DxRenderer::Cleanup() {
+    m_directLightsCount = 0;
     m_pointSampler.Reset();
     m_linearSampler.Reset();
     m_anisotropicSampler.Reset();
@@ -151,27 +152,34 @@ namespace Flame {
     ImGui::SliderFloat("Roughness", &m_roughness, 0.0f, 1.0f);
     ImGui::End();
 
-    // TODO HW10
-    // For DirectLights and SpotLights
-    MeshSystem::Get()->RenderDepth2D();
-    // For PointLights
-    MeshSystem::Get()->RenderDepthCubemaps({});
+    {
+      static bool firstRun = true;
+      if (!firstRun) {
+        return;
+      }
 
-    // Update ConstantBuffers
-    UpdateFrameBuffer(time);
-    // TODO pass position
-    UpdateViewBuffer();
+      //firstRun = false;
+    }
 
-    // Set ConstantBuffers
-    LightSystem::Get()->CommitChanges();
+    // Set common CBuffers
     ID3D11Buffer* buffers[3];
     buffers[kFrameCBufferId] = m_frameCBuffer.Get();
     buffers[kViewCBufferId] = m_viewCBuffer.Get();
     buffers[kLightCBufferId] = LightSystem::Get()->GetConstantBuffer();
-
     DxContext::Get()->SetPipelineConstantBuffers(0, buffers);
 
-    // Set target
+    // Update CBuffers
+    UpdateFrameBuffer(time);
+    LightSystem::Get()->CommitChanges();
+
+    // Render ShadowMaps
+    GenerateShadowMaps();
+    RenderShadowMapsDirect();
+
+    // Update Camera View
+    UpdateViewBuffer();
+
+    // Render scene
     D3D11_VIEWPORT viewport = m_window->GetViewport();
     dc->RSSetViewports(1, &viewport);
 
@@ -257,6 +265,109 @@ namespace Flame {
 
   void DxRenderer::SetRoughness(float roughness) {
     m_roughness = roughness;
+  }
+
+  void DxRenderer::GenerateShadowMaps() {
+    HRESULT result;
+    uint32_t directLightsCount = LightSystem::Get()->GetDirectLights().size();
+
+    // DirectLights
+    if (m_directLightsCount != directLightsCount) {
+      m_directLightsCount = directLightsCount;
+
+      // TextureArray
+      D3D11_TEXTURE2D_DESC desc {
+        kShadowMapResolution,
+        kShadowMapResolution,
+        1,
+        LightSystem::Get()->GetDirectLights().size(),
+        DXGI_FORMAT_R24G8_TYPELESS,
+        { 1, 0 },
+        D3D11_USAGE_DEFAULT,
+        D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE,
+        0,
+        0
+      };
+      result = DxContext::Get()->d3d11Device->CreateTexture2D(&desc, nullptr, m_shadowMapArrayDirect.ReleaseAndGetAddressOf());
+      assert(SUCCEEDED(result));
+
+      // DSV
+      D3D11_DEPTH_STENCIL_VIEW_DESC depthDesc {};
+      depthDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+      depthDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DARRAY;
+      depthDesc.Texture2DArray.FirstArraySlice = 0;
+      depthDesc.Texture2DArray.ArraySize = m_directLightsCount;
+      depthDesc.Texture2DArray.MipSlice = 0;
+      DxContext::Get()->d3d11Device->CreateDepthStencilView(m_shadowMapArrayDirect.Get(), &depthDesc, m_shadowMapDsvDirect.ReleaseAndGetAddressOf());
+
+      // SRV
+      // TODO SRV
+    }
+  }
+
+  void DxRenderer::RenderShadowMapsDirect() {
+    ID3D11DeviceContext* dc = DxContext::Get()->d3d11DeviceContext.Get();
+
+    // Get frustum corners and center in WS
+    auto frustumCornersWS = m_camera->GetFrustumCornersWS();
+    glm::vec3 center(0.0f);
+    for (uint32_t i = 0; i < 8; ++i) {
+      center += glm::vec3(frustumCornersWS[i]);
+    }
+    center /= 8;
+
+    // Preprocess lights
+    for (std::shared_ptr<DirectLight>& light : LightSystem::Get()->GetDirectLights()) {
+      glm::vec3 lightDir = light->direction;
+      glm::mat4 viewMat = MathUtils::ViewFromDir(lightDir, center);
+
+      // Calculate frustum AABB in light's VS
+      glm::vec3 min(std::numeric_limits<float>::infinity());
+      glm::vec3 max(-std::numeric_limits<float>::infinity());
+      for (uint32_t i = 0; i < 8; ++i) {
+        glm::vec3 positionVS = glm::vec3(viewMat * frustumCornersWS[i]);
+        min = glm::min(min, positionVS);
+        max = glm::max(max, positionVS);
+      }
+
+      // Get longest half-sides (Position at (0, 0, 0) in VS)
+      // TODO replace with absolute longest side to avoid flickering on rotation.
+      glm::vec3 halfSides = glm::max(glm::abs(min), glm::abs(max));
+      float xySide = glm::max(halfSides.x, halfSides.y);
+      // TODO add padding
+
+      //glm::vec3 lightPos = center - halfSides.z * lightDir;
+      //TransformSystem::Get()->At(0)->transform.SetPosition(center);
+      glm::mat4 lightView = MathUtils::ViewFromDir(lightDir, center);
+      glm::mat4 lightProjection = MathUtils::Orthographic(
+        xySide,
+        -xySide,
+        xySide,
+        -xySide,
+        halfSides.z,
+        -halfSides.z
+      );
+
+      // Update ViewCBuffer
+      m_viewCBuffer.data.viewMatrix = lightView;
+      m_viewCBuffer.data.projectionMatrix = lightProjection;
+      m_viewCBuffer.ApplyChanges();
+
+      // Render ShadowMap
+      D3D11_VIEWPORT viewport {};
+      viewport.Width = kShadowMapResolution;
+      viewport.Height = kShadowMapResolution;
+      viewport.TopLeftX = 0.0f;
+      viewport.TopLeftY = 0.0f;
+      viewport.MinDepth = 0.0f;
+      viewport.MaxDepth = 1.0f;
+
+      dc->RSSetViewports(1, &viewport);
+      dc->OMSetRenderTargets(1, PtrProxy<ID3D11RenderTargetView*>(nullptr).Ptr(), m_shadowMapDsvDirect.Get());
+      dc->ClearDepthStencilView(m_shadowMapDsvDirect.Get(), D3D11_CLEAR_DEPTH, 0.0f, 0);
+
+      MeshSystem::Get()->RenderDepth2D();
+    }
   }
 
   void DxRenderer::RenderSkybox() {

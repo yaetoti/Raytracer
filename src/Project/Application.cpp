@@ -17,7 +17,7 @@
 Application::Application() {
   m_window = std::make_shared<Flame::Window>(L"Flame 🔥", 160, 90, 1);
   m_input = &m_window->GetInputSystem();
-  m_camera = std::make_shared<Flame::AlignedCamera>(m_window->GetWidth(), m_window->GetHeight(), 60.0f, 0.01f, 1000.0f);
+  m_camera = std::make_shared<Flame::AlignedCamera>(m_window->GetWidth(), m_window->GetHeight(), 60.0f, 0.01f, 100.0f);
   m_camera->SetPosition(glm::vec3(0, 0, 2));
   m_dxRenderer = std::make_unique<Flame::DxRenderer>(m_window, m_camera);
   m_dragger = nullptr;
@@ -85,7 +85,7 @@ void Application::Init() {
 
     // Statue
     {
-      uint32_t transformId = ts->Insert({ Transform(glm::vec3(-2, -2, 0)) });
+      uint32_t transformId = ts->Insert({ Transform(glm::vec3(-2, -2, 4)) });
 
       uint32_t modelId = group->AddModel(mm->GetModel("Assets/Models/EastTower/EastTower.fbx"));
       auto& model = group->GetModels()[modelId];
@@ -356,7 +356,7 @@ void Application::UpdateCamera(float deltaTime) {
 
   // Rotation
   if (m_input->IsMouseButtonPressed(Flame::MouseButton::LEFT)) {
-    static float rotationSpeedDeg = -180.0f;
+    static float rotationSpeedDeg = 180.0f;
     constexpr float sensitivity = 1.0f;
     auto[x, y] = m_input->GetCursorPos();
     float width = m_window->GetWidth();

@@ -12,9 +12,9 @@
 namespace Flame {
   struct LightSystem final {
   private:
-    inline static constexpr uint32_t kDirectLightNum = 1;
-    inline static constexpr uint32_t kPointLightNum = 8;
-    inline static constexpr uint32_t kSpotLightNum = 1;
+    static constexpr uint32_t kDirectLightNum = 1;
+    static constexpr uint32_t kPointLightNum = 8;
+    static constexpr uint32_t kSpotLightNum = 1;
 
   public:
     struct ShaderData final {
@@ -27,87 +27,27 @@ namespace Flame {
       float padding0;
     };
 
-    uint32_t AddDirectLight(std::shared_ptr<DirectLight> light) {
-      return m_directLights.emplace(std::move(light));
-    }
+    void Init();
+    void Cleanup();
 
-    uint32_t AddPointLight(std::shared_ptr<PointLight> light) {
-      return m_pointLights.emplace(std::move(light));
-    }
+    uint32_t AddDirectLight(std::shared_ptr<DirectLight> light);
+    uint32_t AddPointLight(std::shared_ptr<PointLight> light);
+    uint32_t AddSpotLight(std::shared_ptr<SpotLight> light);
+    void RemoveDirectLight(uint32_t id);
+    void RemovePointLight(uint32_t id);
+    void RemoveSpotLight(uint32_t id);
+    std::shared_ptr<DirectLight> GetDirectLight(uint32_t id);
+    std::shared_ptr<PointLight> GetPointLight(uint32_t id);
+    std::shared_ptr<SpotLight> GetSpotLight(uint32_t id);
+    SolidVector<std::shared_ptr<DirectLight>>& GetDirectLights();
+    SolidVector<std::shared_ptr<PointLight>>& GetPointLights();
+    SolidVector<std::shared_ptr<SpotLight>>& GetSpotLights();
 
-    uint32_t AddSpotLight(std::shared_ptr<SpotLight> light) {
-      return m_spotLights.emplace(std::move(light));
-    }
+    ShaderData ToShaderData() const;
+    void CommitChanges();
+    ID3D11Buffer* GetConstantBuffer() const;
 
-    void RemoveDirectLight(uint32_t id) {
-      m_directLights.erase(id);
-    }
-
-    void RemovePointLight(uint32_t id) {
-      m_pointLights.erase(id);
-    }
-
-    void RemoveSpotLight(uint32_t id) {
-      m_spotLights.erase(id);
-    }
-
-    std::shared_ptr<DirectLight> GetDirectLight(uint32_t id) {
-      return m_directLights[id];
-    }
-
-    std::shared_ptr<PointLight> GetPointLight(uint32_t id) {
-      return m_pointLights[id];
-    }
-
-    std::shared_ptr<SpotLight> GetSpotLight(uint32_t id) {
-      return m_spotLights[id];
-    }
-
-    ShaderData ToShaderData() const {
-      ShaderData data;
-      data.directLightCount = std::min(m_directLights.size(), kDirectLightNum);
-      data.pointLightCount = std::min(m_pointLights.size(), kPointLightNum);
-      data.spotLightCount = std::min(m_spotLights.size(), kSpotLightNum);
-
-      for (uint32_t i = 0; i < data.directLightCount; ++i) {
-        data.directLightData[i] = m_directLights[i]->ToShaderData();
-      }
-
-      for (uint32_t i = 0; i < data.pointLightCount; ++i) {
-        data.pointLightData[i] = m_pointLights[i]->ToShaderData();
-      }
-
-      for (uint32_t i = 0; i < data.spotLightCount; ++i) {
-        data.spotLightData[i] = m_spotLights[i]->ToShaderData();
-      }
-
-      return data;
-    }
-
-    void Init() {
-      m_constantBuffer.Init();
-    }
-
-    void Cleanup() {
-      m_spotLights.clear();
-      m_directLights.clear();
-      m_pointLights.clear();
-      m_constantBuffer.Reset();
-    }
-
-    void CommitChanges() {
-      m_constantBuffer.data = ToShaderData();
-      m_constantBuffer.ApplyChanges();
-    }
-
-    ID3D11Buffer* GetConstantBuffer() const {
-      return m_constantBuffer.Get();
-    }
-
-    static LightSystem* Get() {
-      static LightSystem instance;
-      return &instance;
-    }
+    static LightSystem* Get();
 
   private:
     LightSystem() = default;

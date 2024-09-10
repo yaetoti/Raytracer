@@ -21,6 +21,6 @@ VSOutput VSMain(VSInput input) {
   return result;
 }
 
-void PSMain(VSOutput input) {
-  discard;
+float4 PSMain(VSOutput input) : SV_TARGET {
+  return float4(1, 0, 0, 1);
 }

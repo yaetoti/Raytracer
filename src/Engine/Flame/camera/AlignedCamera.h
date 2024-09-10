@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <glm/glm.hpp>
 #include <glm/detail/type_quat.hpp>
 
@@ -35,6 +36,11 @@ namespace Flame {
     glm::vec3 GetToFrustumTlNear() const;
     glm::vec3 GetToFrustumBlNear() const;
     glm::vec3 GetToFrustumBrNear() const;
+
+    /**
+     * @return Array of frustum points in the following order: Near-Far, TL-RT-BR-BL
+     */
+    std::array<glm::vec4, 8> GetFrustumCornersWS() const;
 
     glm::vec4 ClipToWorld(glm::vec4 position) const;
 

@@ -106,6 +106,39 @@ namespace Flame {
       }
     }
 
+    static void BasisFromDir(glm::vec3 front, glm::vec3& right, glm::vec3& up) {
+      // Frisvad with z == -1 problem avoidance
+      float k = 1.0 / glm::max(1.0 + front.z, 0.00001);
+      float a =  front.y * k;
+      float b =  front.y * a;
+      float c = -front.x * a;
+      right = glm::vec3(front.z + b, c, -front.x);
+      up = glm::vec3(c, 1.0 - b, -front.y);
+    }
+
+    static glm::mat3 ViewFromDir(glm::vec3 front) {
+      glm::vec3 right;
+      glm::vec3 up;
+      BasisFromDir(front, right, up);
+      return glm::mat3(
+        right.x, up.x, front.x,
+        right.y, up.y, front.y,
+        right.z, up.z, front.z
+      );
+    }
+
+    static glm::mat4 ViewFromDir(glm::vec3 front, glm::vec3 position) {
+      glm::vec3 right;
+      glm::vec3 up;
+      BasisFromDir(front, right, up);
+      return glm::mat4(
+        right.x, up.x, front.x, 0,
+        right.y, up.y, front.y, 0,
+        right.z, up.z, front.z, 0,
+        -dot(position, right), -dot(position, up), -dot(position, front), 1.0f
+      );
+    }
+
     // GLM temporary replacement
     static glm::mat4 Perspective(float fov, float aspect, float near, float far) {
       float ctgHalfFov = glm::cot(fov * 0.5f);
@@ -130,11 +163,25 @@ namespace Flame {
       //);
 
       // => Z Reversed LHS
+      // Your camera worked wrong in HW2 had a reversed z scale and offset here, stupid moron
       return glm::mat4(
         ctgHalfFov / aspect, 0.0f, 0.0f, 0.0f,
         0.0f, ctgHalfFov, 0.0f, 0.0f,
-        0.0f, 0.0f, 2.0f * near / (far - near), -1.0f,
+        0.0f, 0.0f, -2.0f * near / (far - near), 1.0f,
         0.0f, 0.0f, 2.0f * far * near / (far - near), 0.0f
+      );
+    }
+
+    static glm::mat4 Orthographic(float right, float left, float top, float bottom, float far, float near) {
+      // See yaetoti___ CheatSheet for reference ;)
+      // X [-1; 1]: 2 * P - 1
+      // Y [-1; 1]: 2 * P - 1
+      // Z [1; 0]: -1 * P + 1
+      return glm::mat4(
+        2.0f / (right - left), 0.0f, 0.0f, 0.0f,
+        0.0f, 2.0f / (top - bottom), 0.0f, 0.0f,
+        0.0f, 0.0f, -1.0f / (far - near), 0.0f,
+        (-right - left) / (right - left), (-top - bottom) / (top - bottom), (far + near) / (far - near), 1.0f
       );
     }
 

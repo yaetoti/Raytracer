@@ -10,6 +10,10 @@ TextureCube<float4> diffuseTexture : register(t5);
 TextureCube<float4> specularTexture : register(t6);
 Texture2D<float2> reflectanceTexture : register(t7);
 
+// Texture2DArray<float4> shadowMapDirect;
+// TextureCubeArray<float4> shadowMapPoint;
+// Texture2DArray<float4> shadowMapSpot;
+
 struct VSInput {
   // MeshSpace
   float3 position : POSITION;
@@ -82,8 +86,8 @@ float2 GetSpotLightUv(float4 pointWS, float4x4 lightMat, float lightAngleCos) {
   float4x4 perspective = float4x4(
     ctgAbs, 0, 0, 0,
     0, ctgAbs, 0, 0,
-    0, 0, -(farPlane + nearPlane) / (farPlane - nearPlane), -2.0f * farPlane * nearPlane / (farPlane - nearPlane),
-    0, 0, -1.0, 0.0f
+    0, 0, (-2.0 * nearPlane) / (farPlane - nearPlane), 2.0f * farPlane * nearPlane / (farPlane - nearPlane),
+    0, 0, 1.0, 0.0f
   );
   
   float4 pointCS = mul(perspective, pointVS);

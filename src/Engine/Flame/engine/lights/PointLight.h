@@ -6,8 +6,8 @@
 namespace Flame {
   struct PointLight final {
     struct ShaderData final {
-      float position[4];
-      float radiance[3];
+      glm::vec4 position;
+      glm::vec3 radiance;
       float radius;
     };
 
@@ -16,8 +16,8 @@ namespace Flame {
       auto m = TransformSystem::Get()->At(parentTransformId)->transform.GetMat();
 
       return ShaderData {
-        { position.x + m[3][0], position.y + m[3][1], position.z + m[3][2], 1.0f },
-        { radiance.x, radiance.y, radiance.z },
+        glm::vec4(position.x + m[3][0], position.y + m[3][1], position.z + m[3][2], 1.0f),
+        radiance,
         radius,
       };
     }
