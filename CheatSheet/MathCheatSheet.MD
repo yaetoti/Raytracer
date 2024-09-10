@@ -306,7 +306,7 @@ Rotation matrix is a model matrix. We can think of its construction as S * R * T
 When generating IBL, we are not moving coordinates into the basis. We are drawing in the basis (in CS), abstracting ourselves from cube faces, so we need to get coordinates from basis
 
 $$
-  coordWS = inverse(basis) * coordWS
+  coordWS = inverse(basis) * coordCS
 $$
 
 ---
