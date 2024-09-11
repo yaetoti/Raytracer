@@ -11,7 +11,7 @@
 
 namespace Flame {
   struct LightSystem final {
-    static constexpr uint32_t kDirectLightNum = 1;
+    static constexpr uint32_t kDirectLightNum = 2;
     static constexpr uint32_t kPointLightNum = 8;
     static constexpr uint32_t kSpotLightNum = 1;
 

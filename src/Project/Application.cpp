@@ -222,6 +222,13 @@ void Application::Init() {
     MathUtils::RadianceFromIrradiance(MathUtils::ColorFromHex(0x888888), sunRadius, sunDistance),
     MathUtils::SolidAngle(sunRadius, sunDistance)
   ));
+  ls->AddDirectLight(std::make_shared<DirectLight>(
+    glm::mat4(1.0f),
+    glm::mat4(1.0f),
+    glm::normalize(glm::vec3(1, -1, -1)),
+    MathUtils::RadianceFromIrradiance(MathUtils::ColorFromHex(0xFF8888), sunRadius, sunDistance),
+    MathUtils::SolidAngle(sunRadius, sunDistance)
+  ));
 
   float flashlightRadius = 0.01f;
   m_flashlightId = ls->AddSpotLight(std::make_shared<SpotLight>(

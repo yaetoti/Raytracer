@@ -173,7 +173,7 @@ namespace Flame {
     }
 
     static glm::mat4 Orthographic(float right, float left, float top, float bottom, float far, float near) {
-      // See yaetoti___ CheatSheet for reference ;)
+      // See yaetoti___ CheatSheet for reference ;) (don't do it, actually)
       // X [-1; 1]: 2 * P - 1
       // Y [-1; 1]: 2 * P - 1
       // Z [1; 0]: -1 * P + 1

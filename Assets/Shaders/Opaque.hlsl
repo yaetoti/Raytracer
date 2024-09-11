@@ -259,9 +259,10 @@ float4 PSMain(VSOutput input) : SV_TARGET
 
     float4 positionPS = mul(g_directLights[i].projectionMat, mul(g_directLights[i].viewMat, input.positionWorld));
     positionPS /= positionPS.w;
-    float2 shadowUv = positionPS.xy * 0.5 + 0.5.xx;
+    float2 shadowUv = positionPS.xy * float2(0.5, -0.5) + 0.5.xx;
     float depth = shadowMapDirect.Sample(g_pointWrap, float3(shadowUv, i));
-    float shadow = positionPS.z > depth ? 0.0 : 1.0;
+    // reversed z
+    float shadow = positionPS.z < depth ? 0.0 : 1.0;
     // TODO fix shadows
 
 

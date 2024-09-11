@@ -9,7 +9,7 @@ static const float PI = 3.14159265f;
 /*----- Lights -----*/
 
 
-#define NUM_DIRECT_LIGHTS 1
+#define NUM_DIRECT_LIGHTS 2
 #define NUM_POINT_LIGHTS 8
 #define NUM_SPOT_LIGHTS 1
 
