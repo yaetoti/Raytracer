@@ -279,13 +279,19 @@ namespace Flame {
     }
     center /= 8;
 
+    float texelSize = 1.0f / kShadowMapResolution;
+    float xyHalfSide = glm::length(glm::vec3(frustumCornersWS[7]) - m_camera->GetPosition());
+    float texelSizeWorld = 2 * xyHalfSide * texelSize;
+    // Moving in discrete stemp
+    center = glm::mod(m_camera->GetPosition(), glm::vec3(texelSizeWorld)) * texelSizeWorld;
+
     // Preprocess lights
     for (uint32_t lightId = 0; lightId < LightSystem::Get()->GetDirectLights().size(); ++lightId) {
       std::shared_ptr<DirectLight>& light = LightSystem::Get()->GetDirectLights().at(lightId);
 
       // We calculate projection from center, so we need to include front and back
       glm::vec3 lightDir = light->direction;
-      glm::mat4 lightView = MathUtils::ViewFromDir(lightDir, m_camera->GetPosition());
+      glm::mat4 lightView = MathUtils::ViewFromDir(lightDir, center);
 
       // Calculate frustum AABB in light's VS
       float zMin = std::numeric_limits<float>::infinity();
@@ -297,16 +303,24 @@ namespace Flame {
       }
 
       // XY = frustum radius
-      float xyHalfSide = glm::length(glm::vec3(frustumCornersWS[7]) - m_camera->GetPosition());
+
       float zHalfSide = 0.5f * std::abs(zMax - zMin);
 
+      // glm::mat4 lightProjection = MathUtils::Orthographic(
+      //   xyHalfSide,
+      //   -xyHalfSide,
+      //   xyHalfSide,
+      //   -xyHalfSide,
+      //   zHalfSide,
+      //   -(zHalfSide + kDirectShadowPadding)
+      // );
       glm::mat4 lightProjection = MathUtils::Orthographic(
         xyHalfSide,
         -xyHalfSide,
         xyHalfSide,
         -xyHalfSide,
-        zHalfSide,
-        -(zHalfSide + kDirectShadowPadding)
+        xyHalfSide,
+        -xyHalfSide
       );
 
       // Update data

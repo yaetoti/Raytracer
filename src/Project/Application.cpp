@@ -15,9 +15,9 @@
 #include <backends/imgui_impl_win32.h>
 
 Application::Application() {
-  m_window = std::make_shared<Flame::Window>(L"Flame 🔥", 160, 90, 1);
+  m_window = std::make_shared<Flame::Window>(L"Flame 🔥", 800, 600, 1);
   m_input = &m_window->GetInputSystem();
-  m_camera = std::make_shared<Flame::AlignedCamera>(m_window->GetWidth(), m_window->GetHeight(), 60.0f, 0.01f, 100.0f);
+  m_camera = std::make_shared<Flame::AlignedCamera>(m_window->GetWidth(), m_window->GetHeight(), 60.0f, 0.01f, 10.0f);
   m_camera->SetPosition(glm::vec3(0, 0, 2));
   m_dxRenderer = std::make_shared<Flame::DxRenderer>(m_window, m_camera);
   m_dragger = nullptr;
@@ -193,9 +193,10 @@ void Application::Init() {
   {
     auto* group = ms->GetEmissionOnlyGroup();
 
-    //float radius = 0.1f;
-    float radius = 10.0f;
-    glm::vec3 radiance = MathUtils::RadianceFromIrradiance(MathUtils::ColorFromHex(0xf194ff), radius, 100.0f);
+    float radius = 0.1f;
+    glm::vec3 radiance = MathUtils::RadianceFromIrradiance(MathUtils::ColorFromHex(0xf194ff), radius, 1.0f);
+    //float radius = 10.0f;
+    //glm::vec3 radiance = MathUtils::RadianceFromIrradiance(MathUtils::ColorFromHex(0xf194ff), radius, 100.0f);
     auto transformId = ts->Insert({ Transform(glm::vec3(8.0f, 0.0f, 0.0f), glm::vec3(radius)) });
 
     group->AddInstance(
