@@ -177,11 +177,31 @@ namespace Flame {
       // X [-1; 1]: 2 * P - 1
       // Y [-1; 1]: 2 * P - 1
       // Z [1; 0]: -1 * P + 1
+
+      // Z 500 -500 case:
+      // 500 = 0
+      // -500 = 1
+
+      // Z 1000 10 case:
+      // 1000 = 0
+      // 10 = 1
+
+      // Map -> [0; 1]
+      // 500 - -500 = 1000
+      // 1000 - 10 = 990
+      // (X - near) / (far - near)
+
+      // Map [0; 1] -> [1; 0]: -1 * P + 1
+      // (-X + near) / (far - near) + (far - near) / (far - near) = (-X + far) / (far - near)
+      // Decomposing a fraction into scale and translation
+      // -X / (far - near) - scale
+      // far / (far - near) - translation
+
       return glm::mat4(
         2.0f / (right - left), 0.0f, 0.0f, 0.0f,
         0.0f, 2.0f / (top - bottom), 0.0f, 0.0f,
         0.0f, 0.0f, -1.0f / (far - near), 0.0f,
-        (-right - left) / (right - left), (-top - bottom) / (top - bottom), (far + near) / (far - near), 1.0f
+        (-right - left) / (right - left), (-top - bottom) / (top - bottom), far / (far - near), 1.0f
       );
     }
 

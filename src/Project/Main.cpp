@@ -90,7 +90,7 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR lpCmdLine, _
 
 
   {
-    glm::mat4 viewMat = Flame::MathUtils::ViewFromDir(glm::vec3(1, 0, 0), glm::vec3(0, 0, -2));
+    glm::mat4 viewMat = Flame::MathUtils::ViewFromDir(glm::vec3(0, 1, 0), glm::vec3(0, 0, -2));
     std::cout << "WTF MAT: " << viewMat << '\n';
     //viewMat = glm::transpose(viewMat);
 
@@ -104,9 +104,9 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR lpCmdLine, _
 
 
   {
-    glm::mat4 projection = Flame::MathUtils::Orthographic(400, -400, 300, -300, 1000, 0.01);
+    glm::mat4 projection = Flame::MathUtils::Orthographic(400, -400, 300, -300, 500, -500);
     glm::mat4 projectionInv = glm::inverse(projection);
-    glm::vec4 pointVS = glm::vec4(-400, -300, 500, 1);
+    glm::vec4 pointVS = glm::vec4(-400, -300, 0, 1);
     glm::vec4 pointCS = projection * pointVS;
     glm::vec4 pointVS1 = projectionInv * pointCS;
 

@@ -257,11 +257,19 @@ float4 PSMain(VSOutput input) : SV_TARGET
       specular = min(1, (solidAngle * Ndf(roughness, NoH)) / (4 * NoV)) * Gmf(roughness, NoV, NoL) * Fresnel(HoL, F0);
     }
 
+    float4 positionPS = mul(g_directLights[i].projectionMat, mul(g_directLights[i].viewMat, input.positionWorld));
+    positionPS /= positionPS.w;
+    float2 shadowUv = positionPS.xy * 0.5 + 0.5.xx;
+    float depth = shadowMapDirect.Sample(g_pointWrap, float3(shadowUv, i));
+    float shadow = positionPS.z > depth ? 0.0 : 1.0;
+    // TODO fix shadows
+
+
     if (g_diffuseEnabled) {
-      light += g_directLights[i].radiance * diffuse;
+      light += g_directLights[i].radiance * diffuse * shadow;
     }
     if (g_specularEnabled) {
-      light += g_directLights[i].radiance * specular;
+      light += g_directLights[i].radiance * specular * shadow;
     }
   }
 
