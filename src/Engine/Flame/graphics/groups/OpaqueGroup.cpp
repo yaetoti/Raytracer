@@ -141,9 +141,10 @@ namespace Flame {
       m_diffuseView,
       m_specularView,
       m_reflectanceView,
-      m_shadowMapProvider->GetShadowMapSrvDirect()
+      m_shadowMapProvider->GetShadowMapSrvDirect(),
+      m_shadowMapProvider->GetShadowMapSrvSpot()
     };
-    dc->PSSetShaderResources(5, 4, iblTextures);
+    dc->PSSetShaderResources(5, ARRAYSIZE(iblTextures), iblTextures);
 
     uint32_t numRenderedInstances = 0;
     for (const auto & perModel : GetModels()) {

@@ -50,9 +50,13 @@ namespace Flame {
 
   private:
     // ShadowMaps
+    void GenerateShadowMapsDirect();
     void UpdateMatricesDirect();
-    void GenerateShadowMaps();
     void RenderShadowMapsDirect();
+
+    void GenerateShadowMapsSpot();
+    void UpdateMatricesSpot();
+    void RenderShadowMapsSpot();
 
     void RenderSkybox();
     void UpdateFrameBuffer(float time);
@@ -60,6 +64,7 @@ namespace Flame {
 
   public:
     ID3D11ShaderResourceView* GetShadowMapSrvDirect() override;
+    ID3D11ShaderResourceView* GetShadowMapSrvSpot() override;
 
   private:
     // Input
@@ -77,6 +82,11 @@ namespace Flame {
     ComPtr<ID3D11DepthStencilView> m_shadowMapDsvDirect[LightSystem::kDirectLightNum];
     ComPtr<ID3D11ShaderResourceView> m_shadowMapSrvDirect;
     uint32_t m_directLightsCount = 0;
+
+    ComPtr<ID3D11Texture2D> m_shadowMapArraySpot;
+    ComPtr<ID3D11DepthStencilView> m_shadowMapDsvSpot[LightSystem::kSpotLightNum];
+    ComPtr<ID3D11ShaderResourceView> m_shadowMapSrvSpot;
+    uint32_t m_spotLightsCount = 0;
 
     // Samplers
     ComPtr<ID3D11SamplerState> m_pointSampler;

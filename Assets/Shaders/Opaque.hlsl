@@ -11,6 +11,7 @@ TextureCube<float4> specularTexture : register(t6);
 Texture2D<float2> reflectanceTexture : register(t7);
 
 Texture2DArray<float> shadowMapDirect : register(t8);
+Texture2DArray<float> shadowMapSpot : register(t9);
 // TextureCubeArray<float4> shadowMapPoint;
 // Texture2DArray<float4> shadowMapSpot;
 
@@ -420,7 +421,7 @@ float4 PSMain(VSOutput input) : SV_TARGET
     float epsilon = g_spotLights[i].cutoffCosineInner - g_spotLights[i].cutoffCosineOuter;
     float intensity = saturate((theta - g_spotLights[i].cutoffCosineOuter) / epsilon);
 
-    float2 textureUV = GetSpotLightUv(input.positionWorld, g_spotLights[i].lightViewMat, g_spotLights[i].cutoffCosineOuter);
+    float2 textureUV = GetSpotLightUv(input.positionWorld, g_spotLights[i].viewMat, g_spotLights[i].cutoffCosineOuter);
     float4 textureColor = lightTexture.Sample(g_anisotropicWrap, textureUV);
 
     // inout
@@ -468,11 +469,33 @@ float4 PSMain(VSOutput input) : SV_TARGET
     // TODO remove
     //falloffMicro = falloffMacro = 1;
 
+    // Shadows
+    float4 positionVS = mul(g_spotLights[i].viewMat, input.positionWorld);
+    float angleSin = sqrt(1 - g_spotLights[i].cutoffCosineOuter * g_spotLights[i].cutoffCosineOuter);
+    float angleTan = angleSin / g_spotLights[i].cutoffCosineOuter;
+    float halfSide = angleTan * positionVS.z;
+
+    const float mapSize = 8192;
+    float texelSize = 1.0 / mapSize;
+    float texelSizeWorld = 2 * halfSide * texelSize;
+    float3 offset = texelSizeWorld * sqrt(2) * 0.5 * (input.normalWorld - 0.5 * lightDir * GNoL);
+
+    float4 positionBiased = input.positionWorld + float4(offset, 0.0);
+    float4 positionPS = mul(g_spotLights[i].projectionMat, mul(g_spotLights[i].viewMat, positionBiased));
+    positionPS /= positionPS.w;
+
+    float visibility = 0.0;
+    float2 shadowUv = positionPS.xy * float2(0.5, -0.5) + 0.5.xx;
+    float depth = shadowMapSpot.Sample(g_pointWrap, float3(shadowUv, i));
+    // reversed z
+    visibility = positionPS.z < depth ? 1.0 : 0.0;
+    visibility = 1 - smoothstep(0.33, 1.0, visibility);
+
     if (g_diffuseEnabled) {
-      light += g_spotLights[i].radiance * textureColor * intensity * falloffMicro * falloffMacro * diffuse;
+      light += g_spotLights[i].radiance * textureColor * intensity * falloffMicro * falloffMacro * diffuse * visibility;
     }
     if (g_specularEnabled) {
-      light += g_spotLights[i].radiance * textureColor * intensity * falloffMicro * falloffMacro * specular;
+      light += g_spotLights[i].radiance * textureColor * intensity * falloffMicro * falloffMacro * specular * visibility;
     }
   }
 

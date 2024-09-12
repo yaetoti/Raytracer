@@ -9,6 +9,7 @@ namespace Flame {
     virtual ~IShadowMapProvider() = default;
 
     virtual ID3D11ShaderResourceView* GetShadowMapSrvDirect() = 0;
+    virtual ID3D11ShaderResourceView* GetShadowMapSrvSpot() = 0;
 
   protected:
     IShadowMapProvider() = default;

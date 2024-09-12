@@ -28,6 +28,8 @@ struct PointLight {
 };
 
 struct SpotLight {
+  float4x4 viewMat;
+  float4x4 projectionMat;
   float4 position;
   float4 direction;
   float3 radiance;
@@ -37,9 +39,6 @@ struct SpotLight {
   float cutoffCosineOuter;
 
   float2 padding0;
-
-  // For flashlight
-  float4x4 lightViewMat; // WStoVS
 };
 
 

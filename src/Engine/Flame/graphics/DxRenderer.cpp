@@ -124,6 +124,8 @@ namespace Flame {
 
   void DxRenderer::Cleanup() {
     m_directLightsCount = 0;
+    m_spotLightsCount = 0;
+
     m_pointSampler.Reset();
     m_linearSampler.Reset();
     m_anisotropicSampler.Reset();
@@ -173,11 +175,14 @@ namespace Flame {
 
     // Update light matrices
     UpdateMatricesDirect();
+    UpdateMatricesSpot();
     LightSystem::Get()->CommitChanges();
 
     // Render ShadowMaps.
-    GenerateShadowMaps();
+    GenerateShadowMapsDirect();
+    GenerateShadowMapsSpot();
     RenderShadowMapsDirect();
+    RenderShadowMapsSpot();
 
     // Update Camera View
     UpdateViewBuffer();
@@ -270,6 +275,56 @@ namespace Flame {
     m_roughness = roughness;
   }
 
+  void DxRenderer::GenerateShadowMapsDirect() {
+    HRESULT result;
+    uint32_t directLightsCount = LightSystem::Get()->GetDirectLights().size();
+
+    // DirectLights
+    if (m_directLightsCount != directLightsCount) {
+      m_directLightsCount = directLightsCount;
+
+      // TextureArray
+      D3D11_TEXTURE2D_DESC desc {
+        kShadowMapResolution,
+        kShadowMapResolution,
+        1,
+        m_directLightsCount,
+        DXGI_FORMAT_R24G8_TYPELESS,
+        { 1, 0 },
+        D3D11_USAGE_DEFAULT,
+        D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE,
+        0,
+        0
+      };
+      result = DxContext::Get()->d3d11Device->CreateTexture2D(&desc, nullptr, m_shadowMapArrayDirect.ReleaseAndGetAddressOf());
+      assert(SUCCEEDED(result));
+
+      // DSV
+      for (uint32_t i = 0; i < ARRAYSIZE(m_shadowMapDsvDirect); ++i) {
+        D3D11_DEPTH_STENCIL_VIEW_DESC depthDesc {};
+        depthDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+        depthDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DARRAY;
+        depthDesc.Texture2DArray.FirstArraySlice = i;
+        depthDesc.Texture2DArray.ArraySize = 1;
+        depthDesc.Texture2DArray.MipSlice = 0;
+
+        DxContext::Get()->d3d11Device->CreateDepthStencilView(m_shadowMapArrayDirect.Get(), &depthDesc, m_shadowMapDsvDirect[i].ReleaseAndGetAddressOf());
+      }
+
+      // SRV
+      D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc {};
+      srvDesc.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
+      srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DARRAY;
+      srvDesc.Texture2DArray.ArraySize = m_directLightsCount;
+      srvDesc.Texture2DArray.FirstArraySlice = 0;
+      srvDesc.Texture2DArray.MipLevels = 1;
+      srvDesc.Texture2DArray.MostDetailedMip = 0;
+
+      result = DxContext::Get()->d3d11Device->CreateShaderResourceView(m_shadowMapArrayDirect.Get(), &srvDesc, m_shadowMapSrvDirect.ReleaseAndGetAddressOf());
+      assert(SUCCEEDED(result));
+    }
+  }
+
   void DxRenderer::UpdateMatricesDirect() {
     // Get frustum corners and center in WS
     auto frustumCornersWS = m_camera->GetFrustumCornersWS();
@@ -329,56 +384,6 @@ namespace Flame {
     }
   }
 
-  void DxRenderer::GenerateShadowMaps() {
-    HRESULT result;
-    uint32_t directLightsCount = LightSystem::Get()->GetDirectLights().size();
-
-    // DirectLights
-    if (m_directLightsCount != directLightsCount) {
-      m_directLightsCount = directLightsCount;
-
-      // TextureArray
-      D3D11_TEXTURE2D_DESC desc {
-        kShadowMapResolution,
-        kShadowMapResolution,
-        1,
-        LightSystem::Get()->GetDirectLights().size(),
-        DXGI_FORMAT_R24G8_TYPELESS,
-        { 1, 0 },
-        D3D11_USAGE_DEFAULT,
-        D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE,
-        0,
-        0
-      };
-      result = DxContext::Get()->d3d11Device->CreateTexture2D(&desc, nullptr, m_shadowMapArrayDirect.ReleaseAndGetAddressOf());
-      assert(SUCCEEDED(result));
-
-      // DSV
-      for (uint32_t i = 0; i < ARRAYSIZE(m_shadowMapDsvDirect); ++i) {
-        D3D11_DEPTH_STENCIL_VIEW_DESC depthDesc {};
-        depthDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-        depthDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DARRAY;
-        depthDesc.Texture2DArray.FirstArraySlice = i;
-        depthDesc.Texture2DArray.ArraySize = 1;
-        depthDesc.Texture2DArray.MipSlice = 0;
-
-        DxContext::Get()->d3d11Device->CreateDepthStencilView(m_shadowMapArrayDirect.Get(), &depthDesc, m_shadowMapDsvDirect[i].ReleaseAndGetAddressOf());
-      }
-
-      // SRV
-      D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc {};
-      srvDesc.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
-      srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DARRAY;
-      srvDesc.Texture2DArray.ArraySize = m_directLightsCount;
-      srvDesc.Texture2DArray.FirstArraySlice = 0;
-      srvDesc.Texture2DArray.MipLevels = 1;
-      srvDesc.Texture2DArray.MostDetailedMip = 0;
-
-      result = DxContext::Get()->d3d11Device->CreateShaderResourceView(m_shadowMapArrayDirect.Get(), &srvDesc, m_shadowMapSrvDirect.ReleaseAndGetAddressOf());
-      assert(SUCCEEDED(result));
-    }
-  }
-
   void DxRenderer::RenderShadowMapsDirect() {
     ID3D11DeviceContext* dc = DxContext::Get()->d3d11DeviceContext.Get();
 
@@ -402,6 +407,117 @@ namespace Flame {
       dc->RSSetViewports(1, &viewport);
       dc->OMSetRenderTargets(1, PtrProxy<ID3D11RenderTargetView*>(nullptr).Ptr(), m_shadowMapDsvDirect[i].Get());
       dc->ClearDepthStencilView(m_shadowMapDsvDirect[i].Get(), D3D11_CLEAR_DEPTH, 0.0f, 0);
+
+      MeshSystem::Get()->RenderDepth2D();
+    }
+  }
+
+  void DxRenderer::GenerateShadowMapsSpot() {
+    HRESULT result;
+    uint32_t spotLightsCount = LightSystem::Get()->GetSpotLights().size();
+
+    // TODO remove true
+    if (m_spotLightsCount != spotLightsCount || true) {
+      m_spotLightsCount = spotLightsCount;
+
+      // TextureArray
+      D3D11_TEXTURE2D_DESC desc {
+        kShadowMapResolution,
+        kShadowMapResolution,
+        1,
+        m_spotLightsCount,
+        DXGI_FORMAT_R24G8_TYPELESS,
+        { 1, 0 },
+        D3D11_USAGE_DEFAULT,
+        D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE,
+        0,
+        0
+      };
+      result = DxContext::Get()->d3d11Device->CreateTexture2D(&desc, nullptr, m_shadowMapArraySpot.ReleaseAndGetAddressOf());
+      assert(SUCCEEDED(result));
+
+      // DSV
+      for (uint32_t i = 0; i < ARRAYSIZE(m_shadowMapDsvSpot); ++i) {
+        D3D11_DEPTH_STENCIL_VIEW_DESC depthDesc {};
+        depthDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+        depthDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DARRAY;
+        depthDesc.Texture2DArray.FirstArraySlice = i;
+        depthDesc.Texture2DArray.ArraySize = 1;
+        depthDesc.Texture2DArray.MipSlice = 0;
+
+        DxContext::Get()->d3d11Device->CreateDepthStencilView(m_shadowMapArraySpot.Get(), &depthDesc, m_shadowMapDsvSpot[i].ReleaseAndGetAddressOf());
+      }
+
+      // SRV
+      D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc {};
+      srvDesc.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
+      srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DARRAY;
+      srvDesc.Texture2DArray.ArraySize = m_spotLightsCount;
+      srvDesc.Texture2DArray.FirstArraySlice = 0;
+      srvDesc.Texture2DArray.MipLevels = 1;
+      srvDesc.Texture2DArray.MostDetailedMip = 0;
+
+      result = DxContext::Get()->d3d11Device->CreateShaderResourceView(m_shadowMapArraySpot.Get(), &srvDesc, m_shadowMapSrvSpot.ReleaseAndGetAddressOf());
+      assert(SUCCEEDED(result));
+    }
+  }
+
+  void DxRenderer::UpdateMatricesSpot() {
+    // Matrices: no need for view, we set it in application before calling render View
+    // Perspective: need fov, aspect == 1, near == 0.01, far = frustum's maxZ
+
+    auto frustumCornersWS = m_camera->GetFrustumCornersWS();
+
+    // Preprocess lights
+    for (uint32_t lightId = 0; lightId < LightSystem::Get()->GetSpotLights().size(); ++lightId) {
+      auto& light = LightSystem::Get()->GetSpotLights().at(lightId);
+
+      // Calculate frustum AABB in light's VS
+      float zMax = -std::numeric_limits<float>::infinity();
+      glm::mat4 viewMat = light->GetViewMatrix();
+      for (uint32_t i = 0; i < 8; ++i) {
+        glm::vec3 positionVS = glm::vec3(viewMat * frustumCornersWS[i]);
+        zMax = glm::max(zMax, positionVS.z);
+      }
+
+      constexpr float zMin = 0.01f;
+      float zHalfSide = 0.5f * std::abs(zMax - zMin);
+
+      glm::mat4 lightProjection = MathUtils::Perspective(
+        2 * glm::acos(light->cutoffCosineOuter),
+        1.0f,
+        zMin,
+        std::max(zMax, zMin + 100.0f)
+      );
+
+      // Update data
+      light->projectionMat = lightProjection;
+    }
+  }
+
+  void DxRenderer::RenderShadowMapsSpot() {
+    ID3D11DeviceContext* dc = DxContext::Get()->d3d11DeviceContext.Get();
+
+    for (uint32_t i = 0; i < LightSystem::Get()->GetSpotLights().size(); ++i) {
+      auto& light = LightSystem::Get()->GetSpotLights().at(i);
+
+      // Update ViewCBuffer
+      m_viewCBuffer.data.viewMatrix = light->GetViewMatrix();
+      m_viewCBuffer.data.projectionMatrix = light->projectionMat;
+      m_viewCBuffer.ApplyChanges();
+
+      // Render ShadowMap
+      D3D11_VIEWPORT viewport {};
+      viewport.Width = kShadowMapResolution;
+      viewport.Height = kShadowMapResolution;
+      viewport.TopLeftX = 0.0f;
+      viewport.TopLeftY = 0.0f;
+      viewport.MinDepth = 0.0f;
+      viewport.MaxDepth = 1.0f;
+
+      dc->RSSetViewports(1, &viewport);
+      dc->OMSetRenderTargets(1, PtrProxy<ID3D11RenderTargetView*>(nullptr).Ptr(), m_shadowMapDsvSpot[i].Get());
+      dc->ClearDepthStencilView(m_shadowMapDsvSpot[i].Get(), D3D11_CLEAR_DEPTH, 0.0f, 0);
 
       MeshSystem::Get()->RenderDepth2D();
     }
@@ -451,5 +567,9 @@ namespace Flame {
 
   ID3D11ShaderResourceView* DxRenderer::GetShadowMapSrvDirect() {
     return m_shadowMapSrvDirect.Get();
+  }
+
+  ID3D11ShaderResourceView* DxRenderer::GetShadowMapSrvSpot() {
+    return m_shadowMapSrvSpot.Get();
   }
 }

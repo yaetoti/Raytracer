@@ -17,7 +17,7 @@
 Application::Application() {
   m_window = std::make_shared<Flame::Window>(L"Flame 🔥", 800, 600, 1);
   m_input = &m_window->GetInputSystem();
-  m_camera = std::make_shared<Flame::AlignedCamera>(m_window->GetWidth(), m_window->GetHeight(), 60.0f, 0.01f, 10.0f);
+  m_camera = std::make_shared<Flame::AlignedCamera>(m_window->GetWidth(), m_window->GetHeight(), 60.0f, 0.01f, 20.0f);
   m_camera->SetPosition(glm::vec3(0, 0, 2));
   m_dxRenderer = std::make_shared<Flame::DxRenderer>(m_window, m_camera);
   m_dragger = nullptr;
@@ -233,6 +233,7 @@ void Application::Init() {
 
   float flashlightRadius = 0.01f;
   m_flashlightId = ls->AddSpotLight(std::make_shared<SpotLight>(
+    glm::mat4(1.0f),
     glm::vec3(0.0f),
     glm::vec3(0.0f, 0.0f, 1.0f),
     glm::vec3(0.0f, 1.0f, 0.0f),
