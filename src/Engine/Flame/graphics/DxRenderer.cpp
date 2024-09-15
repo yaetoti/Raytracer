@@ -179,10 +179,13 @@ namespace Flame {
     LightSystem::Get()->CommitChanges();
 
     // Render ShadowMaps.
-    GenerateShadowMapsDirect();
-    GenerateShadowMapsSpot();
+    InitShadowMapsDirect();
+    InitShadowMapsSpot();
+    InitShadowMapsPoint();
+
     RenderShadowMapsDirect();
     RenderShadowMapsSpot();
+    RenderShadowMapsPoint();
 
     // Update Camera View
     UpdateViewBuffer();
@@ -275,7 +278,7 @@ namespace Flame {
     m_roughness = roughness;
   }
 
-  void DxRenderer::GenerateShadowMapsDirect() {
+  void DxRenderer::InitShadowMapsDirect() {
     HRESULT result;
     uint32_t directLightsCount = LightSystem::Get()->GetDirectLights().size();
 
@@ -412,12 +415,11 @@ namespace Flame {
     }
   }
 
-  void DxRenderer::GenerateShadowMapsSpot() {
+  void DxRenderer::InitShadowMapsSpot() {
     HRESULT result;
     uint32_t spotLightsCount = LightSystem::Get()->GetSpotLights().size();
 
-    // TODO remove true
-    if (m_spotLightsCount != spotLightsCount || true) {
+    if (m_spotLightsCount != spotLightsCount) {
       m_spotLightsCount = spotLightsCount;
 
       // TextureArray
@@ -523,6 +525,82 @@ namespace Flame {
     }
   }
 
+  void DxRenderer::InitShadowMapsPoint() {
+    auto device = DxContext::Get()->d3d11Device.Get();
+    HRESULT result;
+
+    uint32_t pointLightsCount = LightSystem::Get()->GetPointLights().size();
+    if (m_pointLightsCount == pointLightsCount) {
+      return;
+    }
+
+    m_pointLightsCount = pointLightsCount;
+
+    // Texture
+    D3D11_TEXTURE2D_DESC textureDesc {};
+    textureDesc.Width = kShadowMapResolution;
+    textureDesc.Height = kShadowMapResolution;
+    textureDesc.MipLevels = 1;
+    textureDesc.ArraySize = pointLightsCount * 6;
+    textureDesc.Format = DXGI_FORMAT_R24G8_TYPELESS;
+    textureDesc.SampleDesc = { 1, 0 };
+    textureDesc.Usage = D3D11_USAGE_DEFAULT;
+    textureDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
+    textureDesc.CPUAccessFlags = 0;
+    textureDesc.MiscFlags = D3D11_RESOURCE_MISC_TEXTURECUBE;
+    result = device->CreateTexture2D(&textureDesc, nullptr, m_shadowMapArrayPoint.ReleaseAndGetAddressOf());
+    assert(SUCCEEDED(result));
+
+    // DSV
+    D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
+    dsvDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+    dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DARRAY;
+    dsvDesc.Texture2DArray.ArraySize = textureDesc.ArraySize;
+    dsvDesc.Texture2DArray.MipSlice = 0;
+    dsvDesc.Texture2DArray.FirstArraySlice = 0;
+    result = device->CreateDepthStencilView(m_shadowMapArrayPoint.Get(), &dsvDesc, m_shadowMapDsvPoint.ReleaseAndGetAddressOf());
+    assert(SUCCEEDED(result));
+
+    // SRV
+    D3D11_SHADER_RESOURCE_VIEW_DESC srvDecs = {};
+    srvDecs.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
+    srvDecs.ViewDimension = D3D11_SRV_DIMENSION_TEXTURECUBEARRAY;
+    srvDecs.TextureCubeArray.MipLevels = 1;
+    srvDecs.TextureCubeArray.MostDetailedMip = 0;
+    srvDecs.TextureCubeArray.First2DArrayFace = 0;
+    srvDecs.TextureCubeArray.NumCubes = m_pointLightsCount;
+    result = device->CreateShaderResourceView(m_shadowMapArrayPoint.Get(), &srvDecs, m_shadowMapSrvPoint.ReleaseAndGetAddressOf());
+    assert(SUCCEEDED(result));
+  }
+
+  void DxRenderer::RenderShadowMapsPoint() {
+    auto dc = DxContext::Get()->d3d11DeviceContext.Get();
+
+    std::vector<glm::vec3> positions(m_pointLightsCount);
+    for (uint32_t i = 0; i < m_pointLightsCount; ++i) {
+      positions[i] = LightSystem::Get()->GetPointLights()[i]->GetPositionWS();
+    }
+
+    // TODO Ideally it should be equal to light illuminance range, but currently there is only one matrix per all lights
+    float far = 1000.0f;
+    m_viewCBuffer.data.projectionMatrix = MathUtils::Perspective(glm::pi<float>() * 0.5f, 1.0f, 0.01f, far);
+    m_viewCBuffer.ApplyChanges();
+
+    D3D11_VIEWPORT viewport;
+    viewport.Width = kShadowMapResolution;
+    viewport.Height = kShadowMapResolution;
+    viewport.TopLeftX = 0.0f;
+    viewport.TopLeftY = 0.0f;
+    viewport.MinDepth = 0.0f;
+    viewport.MaxDepth = 1.0f;
+
+    dc->RSSetViewports(1, &viewport);
+    dc->OMSetRenderTargets(1, PtrProxy<ID3D11RenderTargetView*>(nullptr).Ptr(), m_shadowMapDsvPoint.Get());
+    dc->ClearDepthStencilView(m_shadowMapDsvPoint.Get(), D3D11_CLEAR_DEPTH, 0.0f, 0);
+
+    MeshSystem::Get()->RenderDepthCubemaps(positions);
+  }
+
   void DxRenderer::RenderSkybox() {
     auto dc = DxContext::Get()->d3d11DeviceContext.Get();
     m_skyboxPipeline.Bind();
@@ -571,5 +649,9 @@ namespace Flame {
 
   ID3D11ShaderResourceView* DxRenderer::GetShadowMapSrvSpot() {
     return m_shadowMapSrvSpot.Get();
+  }
+
+  ID3D11ShaderResourceView* DxRenderer::GetShadowMapSrvPoint() {
+    return m_shadowMapSrvPoint.Get();
   }
 }

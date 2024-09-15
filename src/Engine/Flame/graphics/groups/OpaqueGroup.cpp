@@ -36,11 +36,15 @@ namespace Flame {
         { "MODEL", 3, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
       };
 
-      m_pipelineDepth2D.Init(kDepth2DShaderPath, ShaderType::VERTEX_SHADER | ShaderType::PIXEL_SHADER);
+      m_pipelineDepth2D.Init(kDepth2DShaderPath, ShaderType::VERTEX_SHADER);
       m_pipelineDepth2D.CreateInputLayout(desc);
+
+      m_pipelineDepthCubemap.Init(kDepthCubemapShaderPath, ShaderType::VERTEX_SHADER | ShaderType::GEOMETRY_SHADER);
+      m_pipelineDepthCubemap.CreateInputLayout(desc);
     }
 
     m_meshBuffer.Init();
+    m_cubemapDepthBuffer.Init();
 
     m_diffuseView = TextureManager::Get()->GetTexture(Engine::GetDirectory(L"Generated\\Textures\\IBL\\diffuse.dds"))->GetResourceView();
     m_specularView = TextureManager::Get()->GetTexture(Engine::GetDirectory(L"Generated\\Textures\\IBL\\specular.dds"))->GetResourceView();
@@ -53,12 +57,14 @@ namespace Flame {
     // Shaders
     m_pipeline.Reset();
     m_pipelineDepth2D.Reset();
+    m_pipelineDepthCubemap.Reset();
     // Instance (vertex) buffers
     m_instanceBuffer.Reset();
-    m_instanceBufferDepth2D.Reset();
+    m_instanceBufferDepth.Reset();
     m_instanceCount = 0;
 
     m_meshBuffer.Reset();
+    m_cubemapDepthBuffer.Reset();
     GetModels().clear();
   }
 
@@ -95,33 +101,33 @@ namespace Flame {
     UpdateInstanceBufferData();
   }
 
-  void OpaqueGroup::UpdateInstanceBufferDataDepth2D() {
-    auto mapping = m_instanceBufferDepth2D.Map(D3D11_MAP_WRITE_DISCARD);
-    auto destPtr = static_cast<OpaqueInstanceData::Depth2DShaderData*>(mapping.pData);
+  void OpaqueGroup::UpdateInstanceBufferDataDepth() {
+    auto mapping = m_instanceBufferDepth.Map(D3D11_MAP_WRITE_DISCARD);
+    auto destPtr = static_cast<OpaqueInstanceData::DepthShaderData*>(mapping.pData);
     uint32_t numCopied = 0;
 
     for (const auto& perModel : GetModels()) {
       for (const auto & perMesh : perModel->GetMeshes()) {
         for (const auto & perMaterial : perMesh->GetMaterials()) {
           for (const auto & perInstance : perMaterial->GetInstances()) {
-            destPtr[numCopied++] = perInstance->GetData().GetDepth2DShaderData();
+            destPtr[numCopied++] = perInstance->GetData().GetDepthShaderData();
           }
         }
       }
     }
 
-    m_instanceBufferDepth2D.Unmap();
+    m_instanceBufferDepth.Unmap();
   }
 
-  void OpaqueGroup::UpdateInstanceBufferDepth2D() {
+  void OpaqueGroup::UpdateInstanceBufferDepth() {
     uint32_t instanceCount = GetInstanceCount();
-    if (m_instanceCountDepth2D != instanceCount) {
-      m_instanceCountDepth2D = instanceCount;
-      HRESULT result = m_instanceBufferDepth2D.Init(m_instanceCountDepth2D, D3D11_CPU_ACCESS_WRITE, D3D11_USAGE_DYNAMIC);
+    if (m_instanceCountDepth != instanceCount) {
+      m_instanceCountDepth = instanceCount;
+      HRESULT result = m_instanceBufferDepth.Init(m_instanceCountDepth, D3D11_CPU_ACCESS_WRITE, D3D11_USAGE_DYNAMIC);
       assert(SUCCEEDED(result));
     }
 
-    UpdateInstanceBufferDataDepth2D();
+    UpdateInstanceBufferDataDepth();
   }
 
   void OpaqueGroup::Render() {
@@ -142,7 +148,8 @@ namespace Flame {
       m_specularView,
       m_reflectanceView,
       m_shadowMapProvider->GetShadowMapSrvDirect(),
-      m_shadowMapProvider->GetShadowMapSrvSpot()
+      m_shadowMapProvider->GetShadowMapSrvSpot(),
+      m_shadowMapProvider->GetShadowMapSrvPoint(),
     };
     dc->PSSetShaderResources(5, ARRAYSIZE(iblTextures), iblTextures);
 
@@ -203,12 +210,15 @@ namespace Flame {
         }
       }
     }
+
+    ID3D11ShaderResourceView* srvs[15] = {};
+    dc->PSSetShaderResources(0, ARRAYSIZE(srvs), srvs);
   }
 
   void OpaqueGroup::RenderDepth2D() {
     ID3D11DeviceContext* dc = DxContext::Get()->d3d11DeviceContext.Get();
 
-    UpdateInstanceBufferDepth2D();
+    UpdateInstanceBufferDepth();
 
     m_pipelineDepth2D.Bind();
     dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -221,12 +231,12 @@ namespace Flame {
       // Set buffers
       ID3D11Buffer* buffers[] = {
         perModel->GetModel()->m_vertices.Get(),
-        m_instanceBufferDepth2D.Get()
+        m_instanceBufferDepth.Get()
       };
 
       UINT strides[] = {
         perModel->GetModel()->m_vertices.GetStride(),
-        m_instanceBufferDepth2D.GetStride(),
+        m_instanceBufferDepth.GetStride(),
       };
 
       UINT offsets[] = {
@@ -258,6 +268,73 @@ namespace Flame {
           }
 
           dc->DrawIndexedInstanced(range.indexNum, numInstances, range.indexOffset, range.vertexOffset, numRenderedInstances);
+          numRenderedInstances += numInstances;
+        }
+      }
+    }
+  }
+
+  void OpaqueGroup::RenderDepthCubemaps(std::span<glm::vec3> positions) {
+    ID3D11DeviceContext* dc = DxContext::Get()->d3d11DeviceContext.Get();
+
+    UpdateInstanceBufferDepth();
+
+    m_pipelineDepthCubemap.Bind();
+    dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    dc->VSSetConstantBuffers(kMeshCBufferId, 1, m_meshBuffer.GetAddressOf());
+    dc->GSSetConstantBuffers(kDepthCubemapCBufferId, 1, m_cubemapDepthBuffer.GetAddressOf());
+
+    uint32_t numRenderedInstances = 0;
+    for (const auto & perModel : GetModels()) {
+      const auto& model = perModel->GetModel();
+
+      // Set buffers
+      ID3D11Buffer* buffers[] = {
+        perModel->GetModel()->m_vertices.Get(),
+        m_instanceBufferDepth.Get()
+      };
+
+      UINT strides[] = {
+        perModel->GetModel()->m_vertices.GetStride(),
+        m_instanceBufferDepth.GetStride(),
+      };
+
+      UINT offsets[] = {
+        0,
+        0,
+      };
+
+      dc->IASetVertexBuffers(0, 2, buffers, strides, offsets);
+      dc->IASetIndexBuffer(perModel->GetModel()->m_indices.Get(), DXGI_FORMAT_R32_UINT, 0);
+
+      const auto& perMeshArray = perModel->GetMeshes();
+      for (uint32_t meshId = 0; meshId < perMeshArray.size(); ++meshId) {
+        const auto& perMesh = perMeshArray[meshId];
+        // Upload mesh matrices
+
+        // TODO: Didn't encountered such situation but looks like it may happen
+        assert(model->m_meshes[meshId].transforms.size() == 1);
+        assert(model->m_meshes[meshId].transformsInv.size() == 1);
+        m_meshBuffer.data.meshToModel = model->m_meshes[meshId].transforms[0];
+        m_meshBuffer.data.modelToMesh = model->m_meshes[meshId].transformsInv[0];
+        m_meshBuffer.ApplyChanges();
+
+        for (const auto & perMaterial : perMesh->GetMaterials()) {
+          const auto& instances = perMaterial->GetInstances();
+          const auto& range = model->m_ranges[meshId];
+          uint32_t numInstances = instances.size();
+          if (numInstances == 0) {
+            continue;
+          }
+
+          for (uint32_t cubemapId = 0; cubemapId < positions.size(); ++cubemapId) {
+            m_cubemapDepthBuffer.data.position = positions[cubemapId];
+            m_cubemapDepthBuffer.data.cubemapIndex = cubemapId;
+            m_cubemapDepthBuffer.ApplyChanges();
+
+            dc->DrawIndexedInstanced(range.indexNum, numInstances, range.indexOffset, range.vertexOffset, numRenderedInstances);
+          }
+
           numRenderedInstances += numInstances;
         }
       }

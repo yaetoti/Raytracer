@@ -4,6 +4,7 @@
 #include <vector>
 #include <Flame/engine/IShadowMapProvider.h>
 #include <Flame/engine/ShaderPipeline.h>
+#include <Flame/graphics/buffers/data/DepthCubemapData.h>
 #include <glm/glm.hpp>
 
 #include "Flame/engine/TransformSystem.h"
@@ -20,7 +21,7 @@ namespace Flame {
       glm::mat4 modelMatrix;
     };
 
-    struct Depth2DShaderData final {
+    struct DepthShaderData final {
       glm::mat4 modelMatrix;
     };
 
@@ -30,8 +31,8 @@ namespace Flame {
       };
     }
 
-    Depth2DShaderData GetDepth2DShaderData() const {
-      return Depth2DShaderData {
+    DepthShaderData GetDepthShaderData() const {
+      return DepthShaderData {
         TransformSystem::Get()->At(transformId)->transform.GetMat()
       };
     }
@@ -65,17 +66,20 @@ namespace Flame {
   private:
     void UpdateInstanceBufferData();
     void UpdateInstanceBuffer();
-    void UpdateInstanceBufferDataDepth2D();
-    void UpdateInstanceBufferDepth2D();
+    void UpdateInstanceBufferDataDepth();
+    void UpdateInstanceBufferDepth();
 
   private:
     ShaderPipeline m_pipeline;
     ShaderPipeline m_pipelineDepth2D;
+    ShaderPipeline m_pipelineDepthCubemap;
     VertexBuffer<OpaqueInstanceData::ShaderData> m_instanceBuffer;
-    VertexBuffer<OpaqueInstanceData::Depth2DShaderData> m_instanceBufferDepth2D;
+    VertexBuffer<OpaqueInstanceData::DepthShaderData> m_instanceBufferDepth;
     uint32_t m_instanceCount = 0;
-    uint32_t m_instanceCountDepth2D = 0;
+    uint32_t m_instanceCountDepth = 0;
     ConstantBuffer<OpaqueMeshData> m_meshBuffer;
+    // TODO make some global structure to use in different groups
+    ConstantBuffer<DepthCubemapData> m_cubemapDepthBuffer;
 
     // IBL
     ID3D11ShaderResourceView* m_diffuseView = nullptr;
@@ -87,6 +91,7 @@ namespace Flame {
 
     inline static const wchar_t* kShaderPath = L"Assets/Shaders/Opaque.hlsl";
     inline static const wchar_t* kDepth2DShaderPath = L"Assets/Shaders/Depth2D.hlsl";
+    inline static const wchar_t* kDepthCubemapShaderPath = L"Assets/Shaders/DepthCubemap.hlsl";
     inline static const wchar_t* kFlashlightTexturePath = L"Assets/Textures/flashlight_1.dds";
   };
 }

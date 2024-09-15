@@ -1,4 +1,5 @@
 #include "globals.hlsl"
+#include "CubemapUtils.hlsli"
 
 Texture2D<float4> lightTexture : register(t0);
 Texture2D<float4> albedoTexture : register(t1);
@@ -12,8 +13,7 @@ Texture2D<float2> reflectanceTexture : register(t7);
 
 Texture2DArray<float> shadowMapDirect : register(t8);
 Texture2DArray<float> shadowMapSpot : register(t9);
-// TextureCubeArray<float4> shadowMapPoint;
-// Texture2DArray<float4> shadowMapSpot;
+TextureCubeArray<float> shadowMapPoint : register(t10);
 
 struct VSInput {
   // MeshSpace
@@ -280,7 +280,7 @@ float4 PSMain(VSOutput input) : SV_TARGET
     float visibility = 0.0;
     for (uint sampleId = 0; sampleId < offsetCount; ++sampleId) {
       float2 shadowUv = positionPS.xy * float2(0.5, -0.5) + 0.5.xx + texelSize * offsets[sampleId];
-      float depth = shadowMapDirect.Sample(g_pointWrap, float3(shadowUv, i));
+      float depth = shadowMapDirect.Sample(g_linearWrap, float3(shadowUv, i));
       // reversed z
       visibility += positionPS.z < depth ? 1.0 : 0.0;
     }
@@ -376,12 +376,41 @@ float4 PSMain(VSOutput input) : SV_TARGET
     // TODO remove
     //falloffMicro = falloffMacro = 1;
 
+    // Shadows
+    float nearPlane = 0.01;
+    float farPlane = 1000.0;
+    float4x4 lightView = GetViewMatrix(FaceFromDir(-lightDir), g_pointLights[i].position.xyz);
+    float4x4 lightProj = float4x4(
+      1, 0, 0, 0,
+      0, 1, 0, 0,
+      0, 0, (-2 * nearPlane) / (farPlane - nearPlane), 2 * farPlane * nearPlane / (farPlane - nearPlane),
+      0, 0, 1.0, 0.0f
+    );
+
+    float4 positionVS = mul(lightView, input.positionWorld);
+    float halfSide = positionVS.z;
+
+    const float mapSize = 8192;
+    float texelSize = 1.0 / mapSize;
+    float texelSizeWorld = 2 * halfSide * texelSize;
+    float3 offset = texelSizeWorld * sqrt(2) * 0.5 * (input.normalWorld - 0.9 * lightDir * GNoL);
+
+    float4 positionBiased = input.positionWorld + float4(offset, 0.0);
+    float4 positionPS = mul(lightProj, mul(lightView, positionBiased));
+    positionPS /= positionPS.w;
+
+    float visibility = 0.0;
+    float depth = shadowMapPoint.Sample(g_linearWrap, float4(-lightDir, i));
+    // reversed z
+    visibility = positionPS.z <= depth ? 1.0 : 0.0;
+    visibility = 1 - smoothstep(0.33, 1.0, visibility);
+
     // TODO merge
     if (g_diffuseEnabled) {
-      light += g_pointLights[i].radiance * diffuse * falloffMicro * falloffMacro;
+      light += g_pointLights[i].radiance * diffuse * falloffMicro * falloffMacro * visibility;
     }
     if (g_specularEnabled) {
-      light += g_pointLights[i].radiance * specular * falloffMicro * falloffMacro;
+      light += g_pointLights[i].radiance * specular * falloffMicro * falloffMacro * visibility;
     }
   }
 
@@ -486,7 +515,7 @@ float4 PSMain(VSOutput input) : SV_TARGET
 
     float visibility = 0.0;
     float2 shadowUv = positionPS.xy * float2(0.5, -0.5) + 0.5.xx;
-    float depth = shadowMapSpot.Sample(g_pointWrap, float3(shadowUv, i));
+    float depth = shadowMapSpot.Sample(g_linearWrap, float3(shadowUv, i));
     // reversed z
     visibility = positionPS.z < depth ? 1.0 : 0.0;
     visibility = 1 - smoothstep(0.33, 1.0, visibility);

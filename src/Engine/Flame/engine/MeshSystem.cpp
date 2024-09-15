@@ -52,7 +52,7 @@ namespace Flame {
   }
 
   void MeshSystem::RenderDepthCubemaps(std::span<glm::vec3> positions) {
-
+    m_opaqueGroup.RenderDepthCubemaps(positions);
   }
 
   OpaqueGroup* MeshSystem::GetOpaqueGroup() {

@@ -20,7 +20,3 @@ VSOutput VSMain(VSInput input) {
   result.positionProj = mul(g_projectionMatrix, mul(g_viewMatrix, mul(input.modelMatrix, mul(g_meshToModel, float4(input.position, 1.0)))));
   return result;
 }
-
-float4 PSMain(VSOutput input) : SV_TARGET {
-  return float4(1, 1, 1, 1);
-}

@@ -40,25 +40,6 @@ namespace Flame {
     void RenderDepth2D();
     void RenderDepthCubemaps(std::span<glm::vec3> positions);
 
-    // TODO HW10
-    struct ViewBuffer final {
-
-    };
-
-    // TODO bind this buffer before RenderDepth2D, where you call it
-    // Bind RenderTarget at the same place
-    ConstantBuffer<ViewBuffer> m_viewBuffer;
-
-    Microsoft::WRL::ComPtr<ID3D11Texture2D> m_lightDepthBuffer;
-    Microsoft::WRL::ComPtr<ID3D11Texture2D> m_lightDepthCubeBuffer;
-
-    // TODO Create SRV
-    // TODO Create RTV
-
-    // Create TextureCubeArray
-
-    // TODO HW10 END
-
     OpaqueGroup* GetOpaqueGroup();
     HologramGroup* GetHologramGroup();
     TextureOnlyGroup* GetTextureOnlyGroup();
