@@ -194,7 +194,7 @@ void Application::Init() {
     auto* group = ms->GetEmissionOnlyGroup();
 
     float radius = 0.1f;
-    glm::vec3 radiance = MathUtils::RadianceFromIrradiance(MathUtils::ColorFromHex(0xf194ff), radius, 1.0f);
+    glm::vec3 radiance = MathUtils::RadianceFromIrradiance(MathUtils::ColorFromHex(0xf194ff), radius, 4.0f);
     //float radius = 10.0f;
     //glm::vec3 radiance = MathUtils::RadianceFromIrradiance(MathUtils::ColorFromHex(0xf194ff), radius, 100.0f);
     auto transformId = ts->Insert({ Transform(glm::vec3(8.0f, 0.0f, 0.0f), glm::vec3(radius)) });

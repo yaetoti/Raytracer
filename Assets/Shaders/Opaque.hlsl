@@ -387,6 +387,24 @@ float4 PSMain(VSOutput input) : SV_TARGET
       0, 0, 1.0, 0.0f
     );
 
+    // Thank you, O.Hlushchuk
+    const float kShadowOffset = 0.1;
+    float4 positionWithOffset = input.positionWorld + float4(lightDir * kShadowOffset, 0);
+    float4 positionCS = mul(lightProj, mul(lightView, positionWithOffset));
+    float comparingDepth = positionCS.z / positionCS.w;
+    float linearDepth = positionCS.w;
+    float texelSize = linearDepth * 2.0 / 8192;
+    float3 normalOffset = input.normalWorld * texelSize;
+    float4 sampleLocation = float4(-lightDir + normalOffset, i);
+
+/*
+    float4 posInLightClipSpace = mul(float4(objectWorldPos, 1.f), viewProjPointLightMatrices[cubeFaceIndex]);
+    float comparingDepth = posInLightClipSpace.z / posInLightClipSpace.w;
+    float linearDepth = posInLightClipSpace.w;
+    float texelSize = linearDepth * 2.f / g_pointLightDSResolution;
+    float3 normal_offset = map_normal * texelSize;
+    float4 sampleLocation = float4(toObject + normal_offset, pointLightIndex);
+
     float4 positionVS = mul(lightView, input.positionWorld);
     float halfSide = positionVS.z;
 
@@ -398,11 +416,14 @@ float4 PSMain(VSOutput input) : SV_TARGET
     float4 positionBiased = input.positionWorld + float4(offset, 0.0);
     float4 positionPS = mul(lightProj, mul(lightView, positionBiased));
     positionPS /= positionPS.w;
+*/
 
     float visibility = 0.0;
-    float depth = shadowMapPoint.Sample(g_linearWrap, float4(-lightDir, i));
+    //float depth = shadowMapPoint.Sample(g_linearWrap, float4(-lightDir, i));
+    float depth = shadowMapPoint.Sample(g_linearWrap, sampleLocation);
     // reversed z
-    visibility = positionPS.z <= depth ? 1.0 : 0.0;
+    //visibility = positionPS.z <= depth ? 1.0 : 0.0;
+    visibility = comparingDepth <= depth ? 1.0 : 0.0;
     visibility = 1 - smoothstep(0.33, 1.0, visibility);
 
     // TODO merge
