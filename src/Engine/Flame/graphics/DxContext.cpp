@@ -7,7 +7,6 @@ namespace Flame {
   DxContext* DxContext::m_instance = nullptr;
 
   bool DxContext::Init() {
-    // TODO move swapchain / backbuffer creation into Window class
     HRESULT result;
 
     // DXGI Factory
