@@ -2,6 +2,8 @@
 #include <d3d11.h>
 #include <memory>
 #include <glm/glm.hpp>
+
+#include "IShadowMapProvider.h"
 #include "Flame/graphics/groups/TextureOnlyGroup.h"
 #include "Flame/graphics/groups/EmissionOnlyGroup.h"
 #include "Model.h"
@@ -35,6 +37,8 @@ namespace Flame {
     void Cleanup();
     void Update(float deltaTime);
     void Render(float deltaTime);
+    void RenderDepth2D();
+    void RenderDepthCubemaps(std::span<glm::vec3> positions);
 
     OpaqueGroup* GetOpaqueGroup();
     HologramGroup* GetHologramGroup();
@@ -42,6 +46,8 @@ namespace Flame {
     EmissionOnlyGroup* GetEmissionOnlyGroup();
 
     bool Hit(const Ray& ray, HitRecord<HitResult>& record, float tMin, float tMax) const;
+
+    void SetShadowMapProvider(const std::shared_ptr<IShadowMapProvider>& provider);
 
     static MeshSystem* Get();
 
@@ -52,5 +58,7 @@ namespace Flame {
     HologramGroup m_hologramGroup;
     TextureOnlyGroup m_textureOnlyGroup;
     EmissionOnlyGroup m_emissionOnlyGroup;
+
+    std::shared_ptr<IShadowMapProvider> m_shadowMapProvider;
   };
 }

@@ -1,26 +1,31 @@
 #pragma once
 
-#include <glm/vec3.hpp>
-#include <glm/vec4.hpp>
+#include <glm/glm.hpp>
 
 namespace Flame {
   struct DirectLight final {
     struct ShaderData final {
-      float direction[4];
-      float radiance[3];
+      glm::mat4 viewMat;
+      glm::mat4 projectionMat;
+      glm::vec4 direction;
+      glm::vec3 radiance;
       float solidAngle;
     };
 
   public:
     ShaderData ToShaderData() const {
       return ShaderData {
-        { direction.x, direction.y, direction.z, 0.0f },
-        { radiance.x, radiance.y, radiance.z },
+        viewMat,
+        projectionMat,
+        glm::vec4(direction, 0.0),
+        radiance,
         solidAngle,
       };
     }
 
   public:
+    glm::mat4 viewMat;
+    glm::mat4 projectionMat;
     glm::vec3 direction;
     glm::vec3 radiance;
     float solidAngle;

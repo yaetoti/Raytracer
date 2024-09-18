@@ -1,10 +1,6 @@
 #pragma once
 
-#include "AabbOld.h"
-#include "HitRecordOld.h"
 #include "Ray.h"
-#include "Sphere.h"
-#include "TriangleOld.h"
 #include "glm/exponential.hpp"
 
 #undef near
@@ -12,55 +8,12 @@
 
 namespace Flame {
   struct MathUtils {
-    template <typename It>
-    static bool HitClosest(It begin, It end, const Ray& r, float tMin, float tMax, HitRecordOld& record) {
-      HitRecordOld tempRecord;
-      bool hitAnything = false;
-      float closest = tMax;
-
-      while (begin != end) {
-        if ((*begin)->Hit(r, tempRecord, tMin, closest)) {
-          hitAnything = true;
-          closest = tempRecord.time;
-          record = tempRecord;
-        }
-        ++begin;
-      }
-
-      return hitAnything;
-    }
-
     static glm::vec3 ColorFromHex(uint32_t color) {
       return glm::vec3(
         static_cast<float>(color >> 16 & 0xFF) / 255.0f,
         static_cast<float>(color >> 8 & 0xFF) / 255.0f,
         static_cast<float>(color & 0xFF)  / 255.0f
       );
-    }
-
-    static AabbOld AabbFromSphere(const Sphere& sphere) {
-      glm::vec3 min;
-      glm::vec3 max;
-
-      for (int dim = 0; dim < 3; ++dim) {
-        min[dim] = sphere.center[dim] - sphere.radius;
-        max[dim] = sphere.center[dim] + sphere.radius;
-      }
-
-      return AabbOld(min, max);
-    }
-
-    static AabbOld AabbFromTriangle(const TriangleOld& triangle) {
-      glm::vec3 min(std::numeric_limits<float>::infinity());
-      glm::vec3 max(-std::numeric_limits<float>::infinity());
-      for (int point = 0; point < 3; ++point) {
-        for (int dim = 0; dim < 3; ++dim) {
-          min[dim] = glm::min(triangle.points[point][dim], min[dim]);
-          max[dim] = glm::max(triangle.points[point][dim], max[dim]);
-        }
-      }
-
-      return AabbOld(min, max);
     }
 
     static glm::vec3 ToBarycentric(const glm::vec3& point, const glm::vec3* triangle) {
@@ -106,6 +59,39 @@ namespace Flame {
       }
     }
 
+    static void BasisFromDir(glm::vec3 front, glm::vec3& right, glm::vec3& up) {
+      // Frisvad with z == -1 problem avoidance
+      float k = 1.0 / glm::max(1.0 + front.z, 0.00001);
+      float a =  front.y * k;
+      float b =  front.y * a;
+      float c = -front.x * a;
+      right = glm::vec3(front.z + b, c, -front.x);
+      up = glm::vec3(c, 1.0 - b, -front.y);
+    }
+
+    static glm::mat3 ViewFromDir(glm::vec3 front) {
+      glm::vec3 right;
+      glm::vec3 up;
+      BasisFromDir(front, right, up);
+      return glm::mat3(
+        right.x, up.x, front.x,
+        right.y, up.y, front.y,
+        right.z, up.z, front.z
+      );
+    }
+
+    static glm::mat4 ViewFromDir(glm::vec3 front, glm::vec3 position) {
+      glm::vec3 right;
+      glm::vec3 up;
+      BasisFromDir(front, right, up);
+      return glm::mat4(
+        right.x, up.x, front.x, 0,
+        right.y, up.y, front.y, 0,
+        right.z, up.z, front.z, 0,
+        -dot(position, right), -dot(position, up), -dot(position, front), 1.0f
+      );
+    }
+
     // GLM temporary replacement
     static glm::mat4 Perspective(float fov, float aspect, float near, float far) {
       float ctgHalfFov = glm::cot(fov * 0.5f);
@@ -130,11 +116,45 @@ namespace Flame {
       //);
 
       // => Z Reversed LHS
+      // Your camera worked wrong in HW2 had a reversed z scale and offset here, stupid moron
       return glm::mat4(
         ctgHalfFov / aspect, 0.0f, 0.0f, 0.0f,
         0.0f, ctgHalfFov, 0.0f, 0.0f,
-        0.0f, 0.0f, 2.0f * near / (far - near), -1.0f,
+        0.0f, 0.0f, -2.0f * near / (far - near), 1.0f,
         0.0f, 0.0f, 2.0f * far * near / (far - near), 0.0f
+      );
+    }
+
+    static glm::mat4 Orthographic(float right, float left, float top, float bottom, float far, float near) {
+      // See yaetoti___ CheatSheet for reference ;) (don't do it, actually)
+      // X [-1; 1]: 2 * P - 1
+      // Y [-1; 1]: 2 * P - 1
+      // Z [1; 0]: -1 * P + 1
+
+      // Z 500 -500 case:
+      // 500 = 0
+      // -500 = 1
+
+      // Z 1000 10 case:
+      // 1000 = 0
+      // 10 = 1
+
+      // Map -> [0; 1]
+      // 500 - -500 = 1000
+      // 1000 - 10 = 990
+      // (X - near) / (far - near)
+
+      // Map [0; 1] -> [1; 0]: -1 * P + 1
+      // (-X + near) / (far - near) + (far - near) / (far - near) = (-X + far) / (far - near)
+      // Decomposing a fraction into scale and translation
+      // -X / (far - near) - scale
+      // far / (far - near) - translation
+
+      return glm::mat4(
+        2.0f / (right - left), 0.0f, 0.0f, 0.0f,
+        0.0f, 2.0f / (top - bottom), 0.0f, 0.0f,
+        0.0f, 0.0f, -1.0f / (far - near), 0.0f,
+        (-right - left) / (right - left), (-top - bottom) / (top - bottom), far / (far - near), 1.0f
       );
     }
 

@@ -28,6 +28,8 @@ namespace Flame {
   }
 
   void MeshSystem::Cleanup() {
+    m_shadowMapProvider.reset();
+
     m_opaqueGroup.Cleanup();
     m_hologramGroup.Cleanup();
     m_emissionOnlyGroup.Cleanup();
@@ -43,6 +45,14 @@ namespace Flame {
     m_hologramGroup.Render();
     m_emissionOnlyGroup.Render();
     m_textureOnlyGroup.Render();
+  }
+
+  void MeshSystem::RenderDepth2D() {
+    m_opaqueGroup.RenderDepth2D();
+  }
+
+  void MeshSystem::RenderDepthCubemaps(std::span<glm::vec3> positions) {
+    m_opaqueGroup.RenderDepthCubemaps(positions);
   }
 
   OpaqueGroup* MeshSystem::GetOpaqueGroup() {
@@ -98,6 +108,11 @@ namespace Flame {
     }
 
     return wasHit;
+  }
+
+  void MeshSystem::SetShadowMapProvider(const std::shared_ptr<IShadowMapProvider>& provider) {
+    m_shadowMapProvider = provider;
+    m_opaqueGroup.SetShadowMapProvider(provider);
   }
 
   MeshSystem* MeshSystem::Get() {

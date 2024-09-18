@@ -74,7 +74,6 @@ namespace Flame {
   }
 
   Ray SpaceshipCamera::GetRay(uint32_t x, uint32_t y) const {
-    // TODO assert failed
     assert(x < m_width && y < m_height);
 
     InvalidateMatrices();

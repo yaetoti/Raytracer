@@ -20,37 +20,39 @@ namespace Flame {
   }
 
   void EmissionOnlyGroup::Cleanup() {
-    m_instanceBufferDirty = true;
     m_pipeline.Reset();
     m_instanceBuffer.Reset();
+    m_instanceCount = 0;
     GetModels().clear();
   }
 
-  void EmissionOnlyGroup::InitInstanceBuffer() {
-    m_instanceBuffer.Reset();
-    HRESULT result = m_instanceBuffer.Init(GetInstanceCount(), D3D11_CPU_ACCESS_WRITE, D3D11_USAGE_DYNAMIC);
-    assert(SUCCEEDED(result));
-  }
-
-  void EmissionOnlyGroup::UpdateInstanceBuffer() {
-    // Fill buffer
+  void EmissionOnlyGroup::UpdateInstanceBufferData() {
     auto mapping = m_instanceBuffer.Map(D3D11_MAP_WRITE_DISCARD);
-    {
-      auto destPtr = static_cast<EmissionOnlyInstanceData::ShaderData*>(mapping.pData);
-      uint32_t numCopied = 0;
+    auto destPtr = static_cast<EmissionOnlyInstanceData::ShaderData*>(mapping.pData);
+    uint32_t numCopied = 0;
 
-      for (const auto& perModel : GetModels()) {
-        for (const auto & perMesh : perModel->GetMeshes()) {
-          for (const auto & perMaterial : perMesh->GetMaterials()) {
-            for (const auto & perInstance : perMaterial->GetInstances()) {
-              destPtr[numCopied++] = perInstance->GetData().GetShaderData();
-            }
+    for (const auto& perModel : GetModels()) {
+      for (const auto & perMesh : perModel->GetMeshes()) {
+        for (const auto & perMaterial : perMesh->GetMaterials()) {
+          for (const auto & perInstance : perMaterial->GetInstances()) {
+            destPtr[numCopied++] = perInstance->GetData().GetShaderData();
           }
         }
       }
     }
 
     m_instanceBuffer.Unmap();
+  }
+
+  void EmissionOnlyGroup::UpdateInstanceBuffer() {
+    uint32_t instanceCount = GetInstanceCount();
+    if (m_instanceCount != instanceCount) {
+      m_instanceCount = instanceCount;
+      HRESULT result = m_instanceBuffer.Init(m_instanceCount, D3D11_CPU_ACCESS_WRITE, D3D11_USAGE_DYNAMIC);
+      assert(SUCCEEDED(result));
+    }
+
+    UpdateInstanceBufferData();
   }
 
   void EmissionOnlyGroup::Render() {
@@ -96,8 +98,6 @@ namespace Flame {
             continue;
           }
 
-          // Aaah, so that's why we have MeshRange... Finally
-          // TODO replace Model index offsetting with correct draw call parameters
           dc->DrawIndexedInstanced(range.indexNum, numInstances, range.indexOffset, range.vertexOffset, numRenderedInstances);
           numRenderedInstances += numInstances;
         }

@@ -5,6 +5,7 @@
 #include "dxgi1_2.h"
 #include "d3d11.h"
 #include <dxgidebug.h>
+#include <span>
 
 namespace Flame {
   struct DxContext final {
@@ -13,6 +14,8 @@ namespace Flame {
 
     bool Init();
     void Cleanup();
+
+    void SetPipelineConstantBuffers(UINT StartSlot, std::span<ID3D11Buffer*> buffers) const;
 
     static DxContext* Get();
 

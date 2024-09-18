@@ -7,7 +7,6 @@ namespace Flame {
   DxContext* DxContext::m_instance = nullptr;
 
   bool DxContext::Init() {
-    // TODO move swapchain / backbuffer creation into Window class
     HRESULT result;
 
     // DXGI Factory
@@ -74,6 +73,14 @@ namespace Flame {
     d3d11Debug->ReportLiveDeviceObjects(D3D11_RLDO_SUMMARY | D3D11_RLDO_DETAIL);
     d3d11Debug.Reset();
     d3d11Device.Reset();
+  }
+
+  void DxContext::SetPipelineConstantBuffers(UINT StartSlot, std::span<ID3D11Buffer*> buffers) const {
+    d3d11DeviceContext->VSSetConstantBuffers(StartSlot, buffers.size(), buffers.data());
+    d3d11DeviceContext->PSSetConstantBuffers(StartSlot, buffers.size(), buffers.data());
+    d3d11DeviceContext->GSSetConstantBuffers(StartSlot, buffers.size(), buffers.data());
+    d3d11DeviceContext->HSSetConstantBuffers(StartSlot, buffers.size(), buffers.data());
+    d3d11DeviceContext->DSSetConstantBuffers(StartSlot, buffers.size(), buffers.data());
   }
 
   DxContext* DxContext::Get() {

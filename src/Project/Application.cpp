@@ -15,11 +15,11 @@
 #include <backends/imgui_impl_win32.h>
 
 Application::Application() {
-  m_window = std::make_shared<Flame::Window>(L"Flame 🔥", 160, 90, 1);
+  m_window = std::make_shared<Flame::Window>(L"Flame 🔥", 800, 600, 1);
   m_input = &m_window->GetInputSystem();
-  m_camera = std::make_shared<Flame::AlignedCamera>(m_window->GetWidth(), m_window->GetHeight(), 60.0f, 0.01f, 1000.0f);
+  m_camera = std::make_shared<Flame::AlignedCamera>(m_window->GetWidth(), m_window->GetHeight(), 60.0f, 0.01f, 20.0f);
   m_camera->SetPosition(glm::vec3(0, 0, 2));
-  m_dxRenderer = std::make_unique<Flame::DxRenderer>(m_window, m_camera);
+  m_dxRenderer = std::make_shared<Flame::DxRenderer>(m_window, m_camera);
   m_dragger = nullptr;
 }
 
@@ -62,6 +62,8 @@ void Application::Run() {
 }
 
 void Application::Init() {
+  Flame::MeshSystem::Get()->SetShadowMapProvider(m_dxRenderer);
+
   m_window->GetDispatcher().AddListener(this);
   m_window->CreateResources();
   m_window->Show(SW_SHOW);
@@ -85,7 +87,7 @@ void Application::Init() {
 
     // Statue
     {
-      uint32_t transformId = ts->Insert({ Transform(glm::vec3(-2, -2, 0)) });
+      uint32_t transformId = ts->Insert({ Transform(glm::vec3(-2, -2, 4)) });
 
       uint32_t modelId = group->AddModel(mm->GetModel("Assets/Models/EastTower/EastTower.fbx"));
       auto& model = group->GetModels()[modelId];
@@ -191,9 +193,10 @@ void Application::Init() {
   {
     auto* group = ms->GetEmissionOnlyGroup();
 
-    //float radius = 0.1f;
-    float radius = 10.0f;
-    glm::vec3 radiance = MathUtils::RadianceFromIrradiance(MathUtils::ColorFromHex(0xf194ff), radius, 100.0f);
+    float radius = 0.1f;
+    glm::vec3 radiance = MathUtils::RadianceFromIrradiance(MathUtils::ColorFromHex(0xf194ff), radius, 4.0f);
+    //float radius = 10.0f;
+    //glm::vec3 radiance = MathUtils::RadianceFromIrradiance(MathUtils::ColorFromHex(0xf194ff), radius, 100.0f);
     auto transformId = ts->Insert({ Transform(glm::vec3(8.0f, 0.0f, 0.0f), glm::vec3(radius)) });
 
     group->AddInstance(
@@ -210,23 +213,27 @@ void Application::Init() {
     ));
   }
 
-  // TODO 2-step initialization is kinda bad because you can forget about that. Don't know what to to at the moment
-  ms->GetOpaqueGroup()->InitInstanceBuffer();
-  ms->GetHologramGroup()->InitInstanceBuffer();
-  ms->GetTextureOnlyGroup()->InitInstanceBuffer();
-  ms->GetEmissionOnlyGroup()->InitInstanceBuffer();
-
   // Init lights
   float sunRadius = 696340.0f;
   float sunDistance = 150000000.0f;
   ls->AddDirectLight(std::make_shared<DirectLight>(
+    glm::mat4(1.0f),
+    glm::mat4(1.0f),
     glm::normalize(glm::vec3(0, -1, 1)),
     MathUtils::RadianceFromIrradiance(MathUtils::ColorFromHex(0x888888), sunRadius, sunDistance),
+    MathUtils::SolidAngle(sunRadius, sunDistance)
+  ));
+  ls->AddDirectLight(std::make_shared<DirectLight>(
+    glm::mat4(1.0f),
+    glm::mat4(1.0f),
+    glm::normalize(glm::vec3(1, -1, -1)),
+    MathUtils::RadianceFromIrradiance(MathUtils::ColorFromHex(0xFF8888), sunRadius, sunDistance),
     MathUtils::SolidAngle(sunRadius, sunDistance)
   ));
 
   float flashlightRadius = 0.01f;
   m_flashlightId = ls->AddSpotLight(std::make_shared<SpotLight>(
+    glm::mat4(1.0f),
     glm::vec3(0.0f),
     glm::vec3(0.0f, 0.0f, 1.0f),
     glm::vec3(0.0f, 1.0f, 0.0f),
@@ -362,7 +369,7 @@ void Application::UpdateCamera(float deltaTime) {
 
   // Rotation
   if (m_input->IsMouseButtonPressed(Flame::MouseButton::LEFT)) {
-    static float rotationSpeedDeg = -180.0f;
+    static float rotationSpeedDeg = 180.0f;
     constexpr float sensitivity = 1.0f;
     auto[x, y] = m_input->GetCursorPos();
     float width = m_window->GetWidth();
@@ -389,6 +396,8 @@ void Application::UpdateCamera(float deltaTime) {
 void Application::UpdateGrabbing(float deltaTime) {
   if (m_input->IsMouseButtonPressed(Flame::MouseButton::RIGHT)) {
     auto[x, y] = m_input->GetCursorPos();
+    x = std::clamp<float>(x, 0.0f, m_window->GetWidth() - 1);
+    y = std::clamp<float>(y, 0.0f, m_window->GetHeight() - 1);
     Flame::Ray ray = m_camera->GetRay(static_cast<uint32_t>(x), static_cast<uint32_t>(y));
 
     if (!m_dragger) {

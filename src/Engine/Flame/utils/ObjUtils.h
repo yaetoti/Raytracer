@@ -8,7 +8,6 @@
 #include "Flame/math/MeshData.h"
 
 namespace Flame {
-  // TODO Linking error without a structure (with just inline func())
   struct ObjUtils final {
     static std::wstring TrimLeft(std::wstring s) {
       s.erase(s.begin(), std::ranges::find_if(s, [](wchar_t c) {

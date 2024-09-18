@@ -1,4 +1,5 @@
 #include "globals.hlsl"
+#include "CubemapUtils.hlsli"
 
 Texture2D<float4> lightTexture : register(t0);
 Texture2D<float4> albedoTexture : register(t1);
@@ -9,6 +10,10 @@ Texture2D<float4> roughnessTexture : register(t4);
 TextureCube<float4> diffuseTexture : register(t5);
 TextureCube<float4> specularTexture : register(t6);
 Texture2D<float2> reflectanceTexture : register(t7);
+
+Texture2DArray<float> shadowMapDirect : register(t8);
+Texture2DArray<float> shadowMapSpot : register(t9);
+TextureCubeArray<float> shadowMapPoint : register(t10);
 
 struct VSInput {
   // MeshSpace
@@ -82,8 +87,8 @@ float2 GetSpotLightUv(float4 pointWS, float4x4 lightMat, float lightAngleCos) {
   float4x4 perspective = float4x4(
     ctgAbs, 0, 0, 0,
     0, ctgAbs, 0, 0,
-    0, 0, -(farPlane + nearPlane) / (farPlane - nearPlane), -2.0f * farPlane * nearPlane / (farPlane - nearPlane),
-    0, 0, -1.0, 0.0f
+    0, 0, (-2.0 * nearPlane) / (farPlane - nearPlane), 2.0f * farPlane * nearPlane / (farPlane - nearPlane),
+    0, 0, 1.0, 0.0f
   );
   
   float4 pointCS = mul(perspective, pointVS);
@@ -253,11 +258,44 @@ float4 PSMain(VSOutput input) : SV_TARGET
       specular = min(1, (solidAngle * Ndf(roughness, NoH)) / (4 * NoV)) * Gmf(roughness, NoV, NoL) * Fresnel(HoL, F0);
     }
 
+    const uint offsetCount = 5;
+    float2 offsets[offsetCount] = {
+      float2(0.0, 0.0),
+      float2(0.5, 0.0),
+      float2(-0.5, 0.0),
+      float2(0.0, 0.5),
+      float2(0.0, -0.5),
+    };
+
+    float radius = length(g_frustumTL.xyz - g_cameraPosition.xyz);
+    float mapSize = 8192;
+    float texelSize = 1.0 / mapSize;
+    float texelSizeWorld = 2 * radius * texelSize;
+    float3 offset = texelSizeWorld * sqrt(2) * 0.5 * (input.normalWorld - 0.5 * lightDir * GNoL);
+
+    float4 positionBiased = input.positionWorld + float4(offset, 0.0);
+    float4 positionPS = mul(g_directLights[i].projectionMat, mul(g_directLights[i].viewMat, positionBiased));
+    positionPS /= positionPS.w;
+
+    float visibility = 0.0;
+    for (uint sampleId = 0; sampleId < offsetCount; ++sampleId) {
+      float2 shadowUv = positionPS.xy * float2(0.5, -0.5) + 0.5.xx + texelSize * offsets[sampleId];
+      float depth = shadowMapDirect.Sample(g_linearWrap, float3(shadowUv, i));
+      // reversed z
+      visibility += positionPS.z < depth ? 1.0 : 0.0;
+    }
+    visibility /= offsetCount;
+    visibility = 1 - smoothstep(0.33, 1.0, visibility);
+
+
+    // TODO fix shadows
+
+
     if (g_diffuseEnabled) {
-      light += g_directLights[i].radiance * diffuse;
+      light += g_directLights[i].radiance * diffuse * visibility;
     }
     if (g_specularEnabled) {
-      light += g_directLights[i].radiance * specular;
+      light += g_directLights[i].radiance * specular * visibility;
     }
   }
 
@@ -338,12 +376,62 @@ float4 PSMain(VSOutput input) : SV_TARGET
     // TODO remove
     //falloffMicro = falloffMacro = 1;
 
+    // Shadows
+    float nearPlane = 0.01;
+    float farPlane = 1000.0;
+    float4x4 lightView = GetViewMatrix(FaceFromDir(-lightDir), g_pointLights[i].position.xyz);
+    float4x4 lightProj = float4x4(
+      1, 0, 0, 0,
+      0, 1, 0, 0,
+      0, 0, (-2 * nearPlane) / (farPlane - nearPlane), 2 * farPlane * nearPlane / (farPlane - nearPlane),
+      0, 0, 1.0, 0.0f
+    );
+
+    // Thank you, O.Hlushchuk
+    const float kShadowOffset = 0.1;
+    float4 positionWithOffset = input.positionWorld + float4(lightDir * kShadowOffset, 0);
+    float4 positionCS = mul(lightProj, mul(lightView, positionWithOffset));
+    float comparingDepth = positionCS.z / positionCS.w;
+    float linearDepth = positionCS.w;
+    float texelSize = linearDepth * 2.0 / 8192;
+    float3 normalOffset = input.normalWorld * texelSize;
+    float4 sampleLocation = float4(-lightDir + normalOffset, i);
+
+/*
+    float4 posInLightClipSpace = mul(float4(objectWorldPos, 1.f), viewProjPointLightMatrices[cubeFaceIndex]);
+    float comparingDepth = posInLightClipSpace.z / posInLightClipSpace.w;
+    float linearDepth = posInLightClipSpace.w;
+    float texelSize = linearDepth * 2.f / g_pointLightDSResolution;
+    float3 normal_offset = map_normal * texelSize;
+    float4 sampleLocation = float4(toObject + normal_offset, pointLightIndex);
+
+    float4 positionVS = mul(lightView, input.positionWorld);
+    float halfSide = positionVS.z;
+
+    const float mapSize = 8192;
+    float texelSize = 1.0 / mapSize;
+    float texelSizeWorld = 2 * halfSide * texelSize;
+    float3 offset = texelSizeWorld * sqrt(2) * 0.5 * (input.normalWorld - 0.9 * lightDir * GNoL);
+
+    float4 positionBiased = input.positionWorld + float4(offset, 0.0);
+    float4 positionPS = mul(lightProj, mul(lightView, positionBiased));
+    positionPS /= positionPS.w;
+*/
+
+    float visibility = 0.0;
+    //float depth = shadowMapPoint.Sample(g_linearWrap, float4(-lightDir, i));
+    float depth = shadowMapPoint.Sample(g_linearWrap, sampleLocation);
+    // reversed z
+    //visibility = positionPS.z <= depth ? 1.0 : 0.0;
+    visibility = comparingDepth <= depth ? 1.0 : 0.0;
+    visibility = 1 - smoothstep(0.33, 1.0, visibility);
+
     // TODO merge
     if (g_diffuseEnabled) {
-      light += g_pointLights[i].radiance * diffuse * falloffMicro * falloffMacro;
+      light += g_pointLights[i].radiance * diffuse * falloffMicro * falloffMacro * visibility;
     }
     if (g_specularEnabled) {
-      light += g_pointLights[i].radiance * specular * falloffMicro * falloffMacro;
+      light += g_pointLights[i].radiance * specular * falloffMicro * falloffMacro * visibility;
     }
   }
 
@@ -383,7 +471,7 @@ float4 PSMain(VSOutput input) : SV_TARGET
     float epsilon = g_spotLights[i].cutoffCosineInner - g_spotLights[i].cutoffCosineOuter;
     float intensity = saturate((theta - g_spotLights[i].cutoffCosineOuter) / epsilon);
 
-    float2 textureUV = GetSpotLightUv(input.positionWorld, g_spotLights[i].lightViewMat, g_spotLights[i].cutoffCosineOuter);
+    float2 textureUV = GetSpotLightUv(input.positionWorld, g_spotLights[i].viewMat, g_spotLights[i].cutoffCosineOuter);
     float4 textureColor = lightTexture.Sample(g_anisotropicWrap, textureUV);
 
     // inout
@@ -431,11 +519,33 @@ float4 PSMain(VSOutput input) : SV_TARGET
     // TODO remove
     //falloffMicro = falloffMacro = 1;
 
+    // Shadows
+    float4 positionVS = mul(g_spotLights[i].viewMat, input.positionWorld);
+    float angleSin = sqrt(1 - g_spotLights[i].cutoffCosineOuter * g_spotLights[i].cutoffCosineOuter);
+    float angleTan = angleSin / g_spotLights[i].cutoffCosineOuter;
+    float halfSide = angleTan * positionVS.z;
+
+    const float mapSize = 8192;
+    float texelSize = 1.0 / mapSize;
+    float texelSizeWorld = 2 * halfSide * texelSize;
+    float3 offset = texelSizeWorld * sqrt(2) * 0.5 * (input.normalWorld - 0.5 * lightDir * GNoL);
+
+    float4 positionBiased = input.positionWorld + float4(offset, 0.0);
+    float4 positionPS = mul(g_spotLights[i].projectionMat, mul(g_spotLights[i].viewMat, positionBiased));
+    positionPS /= positionPS.w;
+
+    float visibility = 0.0;
+    float2 shadowUv = positionPS.xy * float2(0.5, -0.5) + 0.5.xx;
+    float depth = shadowMapSpot.Sample(g_linearWrap, float3(shadowUv, i));
+    // reversed z
+    visibility = positionPS.z < depth ? 1.0 : 0.0;
+    visibility = 1 - smoothstep(0.33, 1.0, visibility);
+
     if (g_diffuseEnabled) {
-      light += g_spotLights[i].radiance * textureColor * intensity * falloffMicro * falloffMacro * diffuse;
+      light += g_spotLights[i].radiance * textureColor * intensity * falloffMicro * falloffMacro * diffuse * visibility;
     }
     if (g_specularEnabled) {
-      light += g_spotLights[i].radiance * textureColor * intensity * falloffMicro * falloffMacro * specular;
+      light += g_spotLights[i].radiance * textureColor * intensity * falloffMicro * falloffMacro * specular * visibility;
     }
   }
 

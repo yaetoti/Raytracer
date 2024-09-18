@@ -80,37 +80,74 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR lpCmdLine, _
 
   // This file should be named Math.cpp
 
+  {
+    Flame::AlignedCamera camera(800, 600, 45, 0.01f, 100.0f);
+    auto corners = camera.GetFrustumCornersWS();
+    float length = glm::length(glm::vec3(corners[7]) - camera.GetPosition());
+    std::cout << "Corner: " << corners[7] << '\n';
+    std::cout << "Length: " << length << '\n';
+  }
+
+
+  {
+    glm::mat4 viewMat = Flame::MathUtils::ViewFromDir(glm::vec3(0, 1, 0), glm::vec3(0, 0, -2));
+    std::cout << "WTF MAT: " << viewMat << '\n';
+    //viewMat = glm::transpose(viewMat);
+
+    glm::vec4 posWS = glm::vec4(0, 0, 1, 1);
+    glm::vec4 posVS = posWS * viewMat;
+    glm::vec4 posVSinv = viewMat * posWS;
+    std::cout << "PosWS: " << posWS << '\n';
+    std::cout << "PosVS: " << posVS << '\n';
+    std::cout << "PosVSinv: " << posVSinv << '\n';
+  }
+
+
+  {
+    glm::mat4 projection = Flame::MathUtils::Orthographic(400, -400, 300, -300, 500, -500);
+    glm::mat4 projectionInv = glm::inverse(projection);
+    glm::vec4 pointVS = glm::vec4(-400, -300, 0, 1);
+    glm::vec4 pointCS = projection * pointVS;
+    glm::vec4 pointVS1 = projectionInv * pointCS;
+
+    std::cout << "PointVS: " << pointVS << '\n';
+    std::cout << "PointCS: " << pointCS << '\n';
+    std::cout << "pointVS1: " << pointVS1 << '\n';
+  }
+
   // Remember, no row_major
   glm::vec3 rightMS(1, 0, 0);
   glm::vec3 upMS(0, 1, 0);
   glm::vec3 frontMS(0, 0, 1);
 
-  glm::mat3 transform = glm::eulerAngleY(glm::radians(32.77f));
-  glm::vec3 rightWS = transform * rightMS;
-  glm::vec3 upWS = transform * upMS;
-  glm::vec3 frontWS = transform * frontMS;
+  {
+    glm::mat3 transform = glm::eulerAngleY(glm::radians(32.77f));
+    glm::vec3 rightWS = transform * rightMS;
+    glm::vec3 upWS = transform * upMS;
+    glm::vec3 frontWS = transform * frontMS;
 
-  glm::mat3 tbnMS(
-    rightMS,
-    upMS,
-    frontMS
-  );
+    glm::mat3 tbnMS(
+      rightMS,
+      upMS,
+      frontMS
+    );
 
-  glm::mat3 tbnWS0(
-    rightWS,
-    upWS,
-    frontWS
-  );
-  glm::mat3 tbnWS1(
-    rightMS,
-    upMS,
-    frontMS
-  );
-  tbnWS1 = transform * tbnWS1;
+    glm::mat3 tbnWS0(
+      rightWS,
+      upWS,
+      frontWS
+    );
+    glm::mat3 tbnWS1(
+      rightMS,
+      upMS,
+      frontMS
+    );
+    tbnWS1 = transform * tbnWS1;
 
-  std::cout << "TBN MS:\n" << tbnMS << '\n';
-  std::cout << "TBN 0-hypothesis:\n" << tbnWS0 << '\n';
-  std::cout << "TBN rotate hypothesis:\n" << tbnWS1 << '\n';
+    std::cout << "TBN MS:\n" << tbnMS << '\n';
+    std::cout << "TBN 0-hypothesis:\n" << tbnWS0 << '\n';
+    std::cout << "TBN rotate hypothesis:\n" << tbnWS1 << '\n';
+  }
 
   HandleCommandArgs(ParseCommandArgs(lpCmdLine));
   Flame::Engine::Init();

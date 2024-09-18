@@ -22,7 +22,7 @@ namespace Flame {
     return false;
   }
 
-  void TextureManager::SaveToDDS(const std::wstring& filename, ID3D11Resource* texture, DXGI_FORMAT format, bool generateMips) {
+  void TextureManager::SaveToDDS(const std::wstring& filename, ID3D11Resource* texture, DXGI_FORMAT format, bool generateMips, bool convert, DXGI_FORMAT convertTo) {
     DirectX::ScratchImage scratchImage;
     HRESULT result;
     result = DirectX::CaptureTexture(
@@ -34,6 +34,13 @@ namespace Flame {
     assert(SUCCEEDED(result));
 
     const DirectX::ScratchImage* imagePtr = &scratchImage;
+
+    DirectX::ScratchImage converted;
+    if (convert) {
+      result = DirectX::Convert(*imagePtr->GetImage(0, 0, 0), convertTo, DirectX::TEX_FILTER_DEFAULT, DirectX::TEX_THRESHOLD_DEFAULT, converted);
+      assert(SUCCEEDED(result));
+      imagePtr = &converted;
+    }
 
     DirectX::ScratchImage mipchain;
     if (generateMips) {

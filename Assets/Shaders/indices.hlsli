@@ -1,0 +1,11 @@
+#ifndef INDICES_HLSL
+#define INDICES_HLSL
+
+#define CBUFFER_FRAME b0
+#define CBUFFER_VIEW b1
+#define CBUFFER_LIGHT b2
+#define CBUFFER_MESH b3
+
+#define CBUFFER_DEPTH_CUBEMAP b4
+
+#endif
