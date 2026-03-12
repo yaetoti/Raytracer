@@ -1,10 +1,12 @@
-#include "Renderer.h"
+#include "Renderer.h"+
 
 #include <algorithm>
 #include <execution>
 
 #include "Flame/math/MathUtils.h"
 #include "Flame/utils/Random.h"
+
+#include <iostream>
 
 namespace Flame {
   Renderer::Renderer(const Scene* scene)
