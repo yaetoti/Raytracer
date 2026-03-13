@@ -44,6 +44,10 @@ namespace Flame {
 
 	    glm::vec3 pvec = glm::cross(r.direction, v0v2);
 	    float det = glm::dot(v0v1, pvec);
+	    // if (glm::abs(det) < 0.00001) {
+		   //  return false;
+	    // }
+
 	    if (det < 0.00001) {
 		    return false;
 	    }

@@ -8,6 +8,8 @@
 
 #include <iostream>
 
+#include "Flame/utils/Timer.h"
+
 namespace Flame {
   Renderer::Renderer(const Scene* scene)
   : m_scene(scene)
@@ -19,27 +21,124 @@ namespace Flame {
     //std::cout << ColorPerRay(camera, camera.GetRandomizedRay(20, 20), 0, light) << '\n';
     //std::cout << "Light:" << light << '\n';
 
-    m_executor.Execute([this, &surface, &camera](uint32_t threadIndex, uint32_t taskIndex) {
-      uint32_t row = taskIndex / m_surfaceWidth;
-      uint32_t col = taskIndex % m_surfaceWidth;
+    // Calculating batch size (8x8 pixels)
+    const uint32_t TILE_SIZE = 8;
+    uint32_t tilesX = (m_surfaceWidth + TILE_SIZE - 1) / TILE_SIZE;
+    uint32_t tilesY = (m_surfaceHeight + TILE_SIZE - 1) / TILE_SIZE;
+    uint32_t totalTiles = tilesX * tilesY;
 
-      glm::vec3 light(0.0f);
-      glm::vec3 color = ColorPerRay(camera, camera.GetRandomizedRay(col, row), 0, light);
-      color = glm::clamp(color, glm::vec3(0), glm::vec3(1));
+    // TODO AI test
+    Timer timer;
 
-      // Accumulate color
-      color.r = m_accumulatedData[(row * m_surfaceWidth + col) * 3 + 0] += color.r;
-      color.g = m_accumulatedData[(row * m_surfaceWidth + col) * 3 + 1] += color.g;
-      color.b = m_accumulatedData[(row * m_surfaceWidth + col) * 3 + 2] += color.b;
-      color *= 255.0f / static_cast<float>(m_framesCount);
+    // Now taskIndex is a number of TILE, not pixel
+    m_executor.Execute([this, &surface, &camera, tilesX, tilesY, TILE_SIZE](uint32_t threadIndex, uint32_t taskIndex) {
+        uint32_t tileY = taskIndex / tilesX;
+        uint32_t tileX = taskIndex % tilesX;
 
-      surface.SetPixel(
-        col, row,
-        static_cast<BYTE>(color.r),
-        static_cast<BYTE>(color.g),
-        static_cast<BYTE>(color.b)
-      );
-    }, m_surfaceWidth * m_surfaceHeight, 20);
+        uint32_t startY = tileY * TILE_SIZE;
+        uint32_t startX = tileX * TILE_SIZE;
+
+        // Surface center
+        float centerX = m_surfaceWidth / 2.0f;
+        float centerY = m_surfaceHeight / 2.0f;
+
+        // Intensity is based on distance from the pixel's position to the surface center
+        float tileCenterX = startX + TILE_SIZE / 2.0f;
+        float tileCenterY = startY + TILE_SIZE / 2.0f;
+        float distance = std::abs(tileCenterX - centerX) + std::abs(tileCenterY - centerY);
+        float halfDiagonal = std::abs(centerX) + std::abs(centerY);
+        float intensity = std::clamp(distance / halfDiagonal, 0.0f, 1.0f);
+
+        // Определяем шаг рендеринга в зависимости от дистанции.
+        // Чем дальше от центра (intensity -> 1), тем больше шаг.
+        // В центре step = 1 (каждый пиксель). На краю step = 8 (один луч на блок 8x8).
+        uint32_t step = 1;
+        if (intensity > 0.8f)      step = 8;
+        else if (intensity > 0.5f) step = 4;
+        else if (intensity > 0.3f) step = 2;
+
+        // Идем по пикселям внутри нашего тайла с вычисленным шагом!
+        for (uint32_t y = startY; y < startY + TILE_SIZE && y < m_surfaceHeight; y += step) {
+            for (uint32_t x = startX; x < startX + TILE_SIZE && x < m_surfaceWidth; x += step) {
+
+                // 1. Трассируем луч ОДИН раз для всего подблока (step x step)
+                glm::vec3 light(0.0f);
+                glm::vec3 color = ColorPerRay(camera, camera.GetRandomizedRay(x, y), 0, 10, light);
+                color = glm::clamp(color, glm::vec3(0), glm::vec3(1));
+
+                // 2. Размножаем полученный цвет на все пиксели подблока
+                for (uint32_t dy = 0; dy < step && (y + dy) < m_surfaceHeight && (y + dy) < startY + TILE_SIZE; ++dy) {
+                    for (uint32_t dx = 0; dx < step && (x + dx) < m_surfaceWidth && (x + dx) < startX + TILE_SIZE; ++dx) {
+
+                        uint32_t targetX = x + dx;
+                        uint32_t targetY = y + dy;
+                        uint32_t pixelIndex = (targetY * m_surfaceWidth + targetX) * 3;
+
+                        // Аккумуляция цвета
+                        float r = m_accumulatedData[pixelIndex + 0] += color.r;
+                        float g = m_accumulatedData[pixelIndex + 1] += color.g;
+                        float b = m_accumulatedData[pixelIndex + 2] += color.b;
+
+                        r *= 255.0f / static_cast<float>(m_framesCount);
+                        g *= 255.0f / static_cast<float>(m_framesCount);
+                        b *= 255.0f / static_cast<float>(m_framesCount);
+
+                        surface.SetPixel(
+                            targetX, targetY,
+                            static_cast<BYTE>(r), static_cast<BYTE>(g), static_cast<BYTE>(b)
+                        );
+                    }
+                }
+            }
+        }
+    }, totalTiles, 20); // Запускаем пулом задач по количеству тайлов
+
+    // m_executor.Execute([this, &surface, &camera](uint32_t threadIndex, uint32_t taskIndex) {
+    //   uint32_t row = taskIndex / m_surfaceWidth;
+    //   uint32_t col = taskIndex % m_surfaceWidth;
+    //
+    //   //TODO AI test
+    //   float randValue = Random::Float();
+    //   float centerX = m_surfaceWidth / 2.0f;
+    //   float centerY = m_surfaceHeight / 2.0f;
+    //   float distanceX = col - centerX;
+    //   float distanceY = row - centerY;
+    //   // float distance = std::sqrt(distanceX * distanceX + distanceY * distanceY);
+    //   // float halfDiagonal = std::sqrt(centerX * centerX + centerY * centerY);
+    //   float distance = std::abs(distanceX) + std::abs(distanceY);
+    //   float halfDiagonal = std::abs(centerX) + std::abs(centerY);
+    //   float intensity = std::clamp(distance / halfDiagonal, 0.0f, 1.0f);
+    //
+    //   float bouncesFloat = (1.0f - intensity) * 9 + 1;
+    //   uint32_t bounces = static_cast<uint32_t>(bouncesFloat);
+    //   float fraction = bouncesFloat - bounces;
+    //   if (randValue < fraction) {
+    //     bounces += 1;
+    //   }
+    //
+    //   //uint32_t bounces = 10;
+    //
+    //   glm::vec3 light(0.0f);
+    //   glm::vec3 color = ColorPerRay(camera, camera.GetRandomizedRay(col, row), 0, bounces, light);
+    //   color = glm::clamp(color, glm::vec3(0), glm::vec3(1));
+    //
+    //   // Accumulate color
+    //   color.r = m_accumulatedData[(row * m_surfaceWidth + col) * 3 + 0] += color.r;
+    //   color.g = m_accumulatedData[(row * m_surfaceWidth + col) * 3 + 1] += color.g;
+    //   color.b = m_accumulatedData[(row * m_surfaceWidth + col) * 3 + 2] += color.b;
+    //   color *= 255.0f / static_cast<float>(m_framesCount);
+    //
+    //   surface.SetPixel(
+    //     col, row,
+    //     static_cast<BYTE>(color.r),
+    //     static_cast<BYTE>(color.g),
+    //     static_cast<BYTE>(color.b)
+    //   );
+    // }, m_surfaceWidth * m_surfaceHeight, 20);
+
+    // TODO AI test
+    float elapsedTime = timer.Tick();
+    std::cout << elapsedTime << std::endl;
 
     ++m_framesCount;
   }
@@ -56,7 +155,7 @@ namespace Flame {
     m_framesCount = 1;
   }
 
-  glm::vec3 Renderer::ColorPerRay(const Camera& camera, const Ray& ray, uint32_t bounce, glm::vec3& lightTotal) {
+  glm::vec3 Renderer::ColorPerRay(const Camera& camera, const Ray& ray, uint32_t bounce, uint32_t bounces, glm::vec3& lightTotal) {
     const auto& hitables = m_scene->GetHitables();
     const auto& materials = m_scene->GetMaterials();
     HitRecord record;
@@ -87,7 +186,7 @@ namespace Flame {
 
     // TODO In Blender works differently
     // Calculate reflected color and light for metallic objects
-    if (bounce < m_bounces) {
+    if (bounce < bounces) {
       // TODO perform for emission
 
       // Don't perform calculations for non-reflective materials
@@ -100,7 +199,7 @@ namespace Flame {
         }
 
         Ray rayReflected(record.point, glm::normalize(glm::reflect(ray.direction, normal)));
-        colorReflected = ColorPerRay(camera, rayReflected, bounce + 1, lightSurface);
+        colorReflected = ColorPerRay(camera, rayReflected, bounce + 1, bounces, lightSurface);
       }
     } else {
       // I'm in too deep (Too much bounces)
