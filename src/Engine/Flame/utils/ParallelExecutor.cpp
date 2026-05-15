@@ -2,7 +2,6 @@
 
 #include <condition_variable>
 #include <functional>
-#include <iostream>
 
 namespace Flame {
   ParallelExecutor::ParallelExecutor(uint32_t threadsCount) {

@@ -171,7 +171,7 @@ void Application::UpdateGrabbing(float deltaTime) {
   if (m_input->IsMouseButtonPressed(Flame::MouseButton::RIGHT)) {
     if (m_dragger == nullptr) {
       Flame::HitRecord record;
-      std::vector<std::unique_ptr<Flame::IHitable>>& hitables = m_scene->GetHitables();
+      const auto& hitables = m_scene->GetHitables();
       if (Flame::MathUtils::HitClosest(hitables.begin(), hitables.end(), ray, 0.0f, 1000.0f, record)) {
         m_dragger = Flame::DraggerFactory::CreateDragger(record);
       }

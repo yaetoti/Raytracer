@@ -5,10 +5,6 @@ namespace Flame {
     return m_hitables;
   }
 
-  std::vector<std::unique_ptr<IHitable>>& Scene::GetHitables() {
-    return m_hitables;
-  }
-
   const std::vector<std::unique_ptr<Material>>& Scene::GetMaterials() const {
     return m_materials;
   }

@@ -73,7 +73,7 @@ void MainScene::Initialize() {
     object->SetScale(glm::vec3(1.0f, 1.0f, 1.0f));
     // Car has correct rotation. The plane is at 45deg
     object->SetRotation(glm::radians(glm::vec3(0.0f, 0.0f, 0.0f)));
-    //m_hitables.emplace_back(std::move(object));
+    m_hitables.emplace_back(std::move(object));
   }
   // StreetLamp
   {

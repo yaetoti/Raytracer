@@ -91,54 +91,10 @@ namespace Flame {
                 }
             }
         }
-    }, totalTiles, 20); // Запускаем пулом задач по количеству тайлов
+    }, totalTiles, 20);
 
-    // m_executor.Execute([this, &surface, &camera](uint32_t threadIndex, uint32_t taskIndex) {
-    //   uint32_t row = taskIndex / m_surfaceWidth;
-    //   uint32_t col = taskIndex % m_surfaceWidth;
-    //
-    //   //TODO AI test
-    //   float randValue = Random::Float();
-    //   float centerX = m_surfaceWidth / 2.0f;
-    //   float centerY = m_surfaceHeight / 2.0f;
-    //   float distanceX = col - centerX;
-    //   float distanceY = row - centerY;
-    //   // float distance = std::sqrt(distanceX * distanceX + distanceY * distanceY);
-    //   // float halfDiagonal = std::sqrt(centerX * centerX + centerY * centerY);
-    //   float distance = std::abs(distanceX) + std::abs(distanceY);
-    //   float halfDiagonal = std::abs(centerX) + std::abs(centerY);
-    //   float intensity = std::clamp(distance / halfDiagonal, 0.0f, 1.0f);
-    //
-    //   float bouncesFloat = (1.0f - intensity) * 9 + 1;
-    //   uint32_t bounces = static_cast<uint32_t>(bouncesFloat);
-    //   float fraction = bouncesFloat - bounces;
-    //   if (randValue < fraction) {
-    //     bounces += 1;
-    //   }
-    //
-    //   //uint32_t bounces = 10;
-    //
-    //   glm::vec3 light(0.0f);
-    //   glm::vec3 color = ColorPerRay(camera, camera.GetRandomizedRay(col, row), 0, bounces, light);
-    //   color = glm::clamp(color, glm::vec3(0), glm::vec3(1));
-    //
-    //   // Accumulate color
-    //   color.r = m_accumulatedData[(row * m_surfaceWidth + col) * 3 + 0] += color.r;
-    //   color.g = m_accumulatedData[(row * m_surfaceWidth + col) * 3 + 1] += color.g;
-    //   color.b = m_accumulatedData[(row * m_surfaceWidth + col) * 3 + 2] += color.b;
-    //   color *= 255.0f / static_cast<float>(m_framesCount);
-    //
-    //   surface.SetPixel(
-    //     col, row,
-    //     static_cast<BYTE>(color.r),
-    //     static_cast<BYTE>(color.g),
-    //     static_cast<BYTE>(color.b)
-    //   );
-    // }, m_surfaceWidth * m_surfaceHeight, 20);
-
-    // TODO AI test
     float elapsedTime = timer.Tick();
-    std::cout << elapsedTime << std::endl;
+    //std::cout << elapsedTime << std::endl;
 
     ++m_framesCount;
   }
@@ -162,6 +118,7 @@ namespace Flame {
 
     // Find surface for which the color will be calculated
     if (!MathUtils::HitClosest(hitables.begin(), hitables.end(), ray, 0.001f, std::numeric_limits<float>::max(), record)) {
+
       // No surface was hit
       glm::vec3 skyColorTop(0.066666f, 0.070588f, 0.180392f);
       glm::vec3 skyColorBottom(0.262745f, 0.207843f, 0.549019f);

@@ -13,8 +13,7 @@ namespace Flame {
     virtual void Update(float deltaTime) {}
     virtual void Cleanup() {}
 
-    const std::vector<std::unique_ptr<IHitable>>& GetHitables() const;
-    std::vector<std::unique_ptr<IHitable>>& GetHitables(); // TODO remove. Replace MathUtils::HitClosest with scene method
+    const std::vector<std::unique_ptr<IHitable>>& GetHitables() const; // TODO remove. Replace MathUtils::HitClosest with scene method
     const std::vector<std::unique_ptr<Material>>& GetMaterials() const;
     const std::vector<std::unique_ptr<DirectLight>>& GetDirectLights() const;
     const std::vector<std::unique_ptr<PointLight>>& GetPointLights() const;
